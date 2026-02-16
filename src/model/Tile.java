@@ -28,6 +28,15 @@ public class Tile {
         return sprite;
     }
 
+    /**
+     * Méthode appelée à chaque cycle de jeu.
+     * Par défaut, une tuile normale ne fait rien.
+     * Les enfants (comme CasePlantable) surchargeront cette méthode.
+     */
+    public void tick() {
+        // Rien par défaut
+    }
+
     public boolean isWalkable() {
         return true;
     }
@@ -35,6 +44,10 @@ public class Tile {
     public boolean isFarmable() {
         return false;
     }
+
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public ArrayList<Entity> getEntities() { return entities; }
 
 }
 
