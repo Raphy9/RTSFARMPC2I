@@ -25,4 +25,15 @@ public class World {
             }
         }
     }
+
+    public Tile getTile(int x, int y) {
+        if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
+            throw new IndexOutOfBoundsException("Position hors du monde : (" + x + ", " + y + ")");
+        }
+        return this.tiles[y][x];
+    }
+
+    public Tile[][] getTiles() {
+        return this.tiles;
+    }
 }
