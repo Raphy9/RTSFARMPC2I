@@ -1,5 +1,6 @@
 package src.model;
 
+import javax.swing.*;
 import java.util.ArrayList;
 
 /**
@@ -11,12 +12,20 @@ public class Tile {
     private int x;
     private int y;
 
+    private ImageIcon sprite; // L'image représentant la tuile
+
+
     ArrayList<Entity> entities;
 
-    public Tile(int x, int y) {
+    public Tile(int x, int y, ImageIcon s) {
         this.x = x;
         this.y = y;
         entities = new ArrayList<>();
+        this.sprite = s;
+    }
+
+    public ImageIcon getSprite() {
+        return sprite;
     }
 
     public boolean isWalkable() {
