@@ -1,25 +1,22 @@
 package src.model;
 
 public class Entity {
-    private String name;
-    private Stats stats;
-    private Inventory inventory;
 
-    public Entity(String name, Stats stats, Inventory inventory) {
-        this.name = name;
-        this.stats = stats;
-        this.inventory = inventory;
+    private int x, y;
+    public Entity(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 
-    public String getName() {
-        return name;
+    public int getX() {
+        return x;
     }
 
-    public Stats getStats() {
-        return stats;
+    public int getY() {
+        return y;
     }
 
-    public Inventory getInventory() {
-        return inventory;
-    }
+    public void pathFinding() {}
+
+
 }
