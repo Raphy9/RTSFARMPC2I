@@ -20,10 +20,20 @@ public class Display extends JPanel {
         this.newGame();
         Global global = new Global(this.world);
         this.frame.add(global);
+
+//        setPreferredSize(new java.awt.Dimension(800, 450));
+        lancePopupNul();
     }
 
     /** Initialise un nouveau monde */
     private void newGame() {
         this.world = new World();
     }
+
+    private void lancePopupNul() {
+        frame.add(new Popup());
+    }
+
 }
+
+

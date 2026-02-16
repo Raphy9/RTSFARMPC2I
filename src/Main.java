@@ -13,11 +13,12 @@ public class Main {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setResizable(false);
 
+        // Initialisation de la vue
+        Display display = new Display(f);
+
         // show frame
         f.pack();
         f.setVisible(true);
 
-        // Initialisation de la vue
-        Display display = new Display(f);
     }
 }
