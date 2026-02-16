@@ -1,5 +1,7 @@
 package src.model;
 
+import javax.swing.*;
+
 /**
  * La classe CasePlantable représente une tuile de terrain qui peut être cultivée.
  * Elle hérite de Tile et ajoute des fonctionnalités spécifiques à l'agriculture (planter, arroser, fertiliser, récolter).
@@ -16,7 +18,7 @@ public class CasePlantable extends Tile {
      * @param y La coordonnée y de la tuile
      */
     public CasePlantable(int x, int y) {
-        super(x, y); // Appelle le constructeur de Tile
+        super(x, y, new ImageIcon("src/assets/parcel.png")); // Appelle le constructeur de Tile
         this.plant = null;
     }
 
