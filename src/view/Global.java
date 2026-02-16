@@ -1,5 +1,7 @@
 package src.view;
 
+import src.model.Camera;
+import src.model.Tile;
 import src.model.World;
 
 import java.awt.*;
@@ -15,14 +17,26 @@ import javax.swing.*;
 public class Global extends JPanel {
 
     private World world;
+    private Camera camera;
 
-    public Global(World world) {
+    public Global(World world, Camera camera) {
         super();
         this.world = world;
+        this.camera = camera;
     }
 
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+        // Dessiner les tuiles visibles en fonction de la position de la caméra
+        // On dessine les tuiles dans la caméra, même les portions de tuiles qui sont partiellement visibles
+        for (int x = 0; x < Camera.WIDTH; x++) {
+            for (int y = 0; y < Camera.HEIGHT; y++) {
+                float paintX = camera.getX() + x;
+                float paintY = camera.getY() + y;
+                Tile tile = world.getTile((int) paintX, (int) paintY);
+                g.drawImage(tile.getSprite().getImage(), x * Display.RATIO_X, y * Display.RATIO_Y, Display.RATIO_X, Display.RATIO_Y, this);
+            }
+        }
     }
 }
