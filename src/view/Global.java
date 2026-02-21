@@ -1,5 +1,6 @@
 package src.view;
 
+import src.control.GlobalController;
 import src.model.Camera;
 import src.model.Tile;
 import src.model.World;
@@ -23,11 +24,12 @@ public class Global extends JPanel {
         super();
         this.world = world;
         this.camera = camera;
+        this.setOpaque(true);
     }
 
     @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
         // Dessiner les tuiles visibles en fonction de la position de la caméra
         // On dessine les tuiles dans la caméra, même les portions de tuiles qui sont partiellement visibles
         for (int x = 0; x < Camera.WIDTH; x++) {

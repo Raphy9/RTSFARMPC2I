@@ -1,5 +1,7 @@
 package src.view;
 
+import src.control.popups.ClosePopup;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -7,13 +9,17 @@ import java.awt.*;
  * qui s'affichent lorsqu'on selectionne une case ou une entite dans la vue globale
  * Comprend un bouton annuler pour fermer le popup et revenir a la vue globale
  */
-public class Popup extends JPanel {
+public class PopupPanel extends JPanel {
 
-    private String title = "Popup nul";
+    private String title;
+    private Display display;
     private final int width = 400, height = 250;
 
-        public Popup() {
+        public PopupPanel(Display display, String title) {
             super();
+            this.title = title;
+            this.display = display;
+
             this.setLayout(new BorderLayout());
             setPreferredSize(new Dimension(width, height));
 
@@ -23,6 +29,7 @@ public class Popup extends JPanel {
 
             // Bouton annuler pour fermer le popup
             JButton exit = new JButton("X");
+            exit.addActionListener(new ClosePopup(display));
             topPanel.add(exit, BorderLayout.EAST);
 
             // Titre
