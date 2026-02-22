@@ -16,7 +16,7 @@ public class ClosePopup implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("Fermeture du popup");
+//        System.out.println("Fermeture du popup");
         display.switchToGlobal();
     }
 }

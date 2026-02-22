@@ -6,6 +6,7 @@ import src.model.World;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 /**
  * Classe principale de l'affichage du jeu, elle cree et gere les differents elements de l'affichage
@@ -60,14 +61,18 @@ public class Display {
 
     /** Met la vue en mode popup, en affichant le popup passe en parametre */
     public void switchToPopup(PopupPanel popup) {
+        // Desactiver les contoles de la vue globale
+        globalView.removeMouseListener(globalController); // ne fait rien si deja enleve
         popupView.showPopup(popup);
     }
 
     /** Met la vue en mode global, en cachant le popup actif */
     public void switchToGlobal() {
         popupView.hidePopup();
-//        popupView.revalidate();
-//        popupView.repaint();
+        // Re-activer les controles de la vue globale
+        if (! Arrays.asList(globalView.getMouseListeners()).contains(globalController)) {
+            globalView.addMouseListener(globalController);
+        }
         // TODO changer quand on aura le mode selection
     }
 

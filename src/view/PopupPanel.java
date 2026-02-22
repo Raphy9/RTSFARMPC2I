@@ -11,14 +11,15 @@ import java.awt.*;
  */
 public class PopupPanel extends JPanel {
 
+    public static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 20);
     private String title;
-    private Display display;
-    private final int width = 400, height = 250;
+    protected final int width, height;
 
-        public PopupPanel(Display display, String title) {
+        public PopupPanel(Display display, int width, int height, String title) {
             super();
             this.title = title;
-            this.display = display;
+            this.width = width;
+            this.height = height;
 
             this.setLayout(new BorderLayout());
             setPreferredSize(new Dimension(width, height));
@@ -33,6 +34,8 @@ public class PopupPanel extends JPanel {
             topPanel.add(exit, BorderLayout.EAST);
 
             // Titre
-            topPanel.add(new JLabel(title, SwingConstants.CENTER), BorderLayout.CENTER);
+            JLabel t = new JLabel(title, SwingConstants.CENTER);
+            t.setFont(TITLE_FONT);
+            topPanel.add(t, BorderLayout.CENTER);
         }
 }
