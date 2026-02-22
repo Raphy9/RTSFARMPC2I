@@ -34,10 +34,10 @@ public class Camera {
      * @param deltaY Le changement de position en Y
      */
     public void move(float deltaX, float deltaY) {
-        if (this.x + deltaX > 0 && this.x + deltaX < World.WIDTH - WIDTH) {
+        if (this.x + deltaX >= 0 && this.x + deltaX < World.WIDTH - WIDTH) {
             this.x += deltaX; // Empêche de dépasser les bords gauche et droit
         }
-        if (this.y + deltaY > 0 && this.y + deltaY < World.HEIGHT - HEIGHT) {
+        if (this.y + deltaY >= 0 && this.y + deltaY < World.HEIGHT - HEIGHT) {
             this.y += deltaY; // Empêche de dépasser les bords haut et bas
         }
     }
