@@ -47,8 +47,6 @@ public class Display {
 
         layeredPane.add(globalView, JLayeredPane.DEFAULT_LAYER);    // layer du dessous
 
-
-
         // Vue popup
         this.popupView = new PopupView(globalView);
         this.popupView.setBounds(0, 0, gameSize.width, gameSize.height);
@@ -72,6 +70,7 @@ public class Display {
     public void switchToPopup(PopupPanel popup) {
         // Desactiver les contoles de la vue globale
         globalView.removeMouseListener(globalController); // ne fait rien si deja enleve
+        globalView.removeKeyListener(cameraController); // ne fait rien si deja enleve
         popupView.showPopup(popup);
     }
 
@@ -81,6 +80,9 @@ public class Display {
         // Re-activer les controles de la vue globale
         if (! Arrays.asList(globalView.getMouseListeners()).contains(globalController)) {
             globalView.addMouseListener(globalController);
+        }
+        if (! Arrays.asList(globalView.getKeyListeners()).contains(cameraController)) {
+            globalView.addKeyListener(cameraController);
         }
         // TODO changer quand on aura le mode selection
     }
