@@ -1,6 +1,5 @@
 package src.view;
 
-import src.control.GlobalController;
 import src.model.Camera;
 import src.model.Tile;
 import src.model.World;
@@ -30,14 +29,32 @@ public class Global extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        // Dessiner les tuiles visibles en fonction de la position de la caméra
-        // On dessine les tuiles dans la caméra, même les portions de tuiles qui sont partiellement visibles
-        for (int x = 0; x < Camera.WIDTH; x++) {
-            for (int y = 0; y < Camera.HEIGHT; y++) {
-                float paintX = camera.getX() + x;
-                float paintY = camera.getY() + y;
-                Tile tile = world.getTile((int) paintX, (int) paintY);
-                g.drawImage(tile.getSprite().getImage(), x * Display.RATIO_X, y * Display.RATIO_Y, Display.RATIO_X, Display.RATIO_Y, this);
+
+        // On récupère la première case où la caméra vise
+        int fstTileX = (int) camera.getX();
+        int fstTileY = (int) camera.getY();
+
+        // Calcul du décalage en pixels (exemple si x = 5.2, le décalage est de 0.2 * 64 = 12 pixels)
+        int pixelDiffX = (int) ((camera.getX() - fstTileX) * Display.RATIO_X);
+        int pixelDiffY = (int) ((camera.getY() - fstTileY) * Display.RATIO_Y);
+
+        // On fait bien un décalage pour prendre les derniers tiles coupés à droite de l'écran
+        for (int x = 0; x <= Camera.WIDTH; x++) {
+            for (int y = 0; y <= Camera.HEIGHT; y++) {
+                // Coordonnées de là où l'on va dessiner sur le panel
+                int worldX = fstTileX + x;
+                int worldY = fstTileY + y;
+
+                // On s'assure ne pas dessiner des cases non existantes (en dehors de la matrice de tuiles)
+                if (worldX >= 0 && worldX < World.WIDTH && worldY >= 0 && worldY < World.HEIGHT) {
+                    Tile tile = world.getTile(worldX, worldY);
+
+                    // On dessine la tuile avec ses coordonnées moins le décalage en pixels
+                    int paintX = (x * Display.RATIO_X) - pixelDiffX;
+                    int paintY = (y * Display.RATIO_Y) - pixelDiffY;
+
+                    g.drawImage(tile.getSprite().getImage(), paintX, paintY, Display.RATIO_X, Display.RATIO_Y, this);
+                }
             }
         }
     }

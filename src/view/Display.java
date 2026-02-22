@@ -1,5 +1,6 @@
 package src.view;
 
+import src.control.CameraController;
 import src.control.GlobalController;
 import src.model.Camera;
 import src.model.World;
@@ -20,6 +21,7 @@ public class Display {
     private Camera camera;
     private Global globalView;
     private GlobalController globalController;
+    private CameraController cameraController;
     private PopupView popupView;
 
     public Display(JFrame frame) {
@@ -37,7 +39,14 @@ public class Display {
         globalView.setPreferredSize(gameSize);
         globalView.setBounds(0, 0, gameSize.width, gameSize.height);
         this.globalController = new GlobalController(this, globalView);
+        this.cameraController = new CameraController(camera, globalView);
+        globalView.addKeyListener(this.cameraController);
+        globalView.setFocusable(true);
+        globalView.requestFocusInWindow();
+
         layeredPane.add(globalView, JLayeredPane.DEFAULT_LAYER);    // layer du dessous
+
+
 
         // Vue popup
         this.popupView = new PopupView(globalView);
