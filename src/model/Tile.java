@@ -14,7 +14,6 @@ public class Tile {
 
     private ImageIcon sprite; // L'image représentant la tuile
 
-
     ArrayList<Entity> entities;
 
     public Tile(int x, int y, ImageIcon s) {
@@ -26,6 +25,14 @@ public class Tile {
 
     public ImageIcon getSprite() {
         return sprite;
+    }
+
+    /**
+     * Méthode pour changer le sprite de la tuile.
+     * @param sprite
+     */
+    public void setSprite(ImageIcon sprite) {
+        this.sprite = sprite;
     }
 
     /**
