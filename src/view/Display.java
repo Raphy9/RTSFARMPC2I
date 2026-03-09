@@ -39,7 +39,7 @@ public class Display {
         this.globalView = new Global(this.world, this.camera);
         globalView.setPreferredSize(gameSize);
         globalView.setBounds(0, 0, gameSize.width, gameSize.height);
-        this.globalController = new GlobalController(this, globalView);
+        this.globalController = new GlobalController(this, globalView, this.world, this.camera);
         this.cameraController = new CameraController(camera, globalView);
         globalView.addKeyListener(this.cameraController);
         globalView.setFocusable(true);
