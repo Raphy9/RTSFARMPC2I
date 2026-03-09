@@ -10,14 +10,17 @@ import java.util.List;
  */
 public class Entity {
 
+    // Position actuelle de l'entité dans le monde
     protected int x, y;
 
+    // Constructeur pour initialiser la position de l'entité
     public Entity(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
 
+    // Getters pour les coordonnées de l'entité
     public int getX() { return x; }
     public int getY() { return y; }
 
@@ -28,7 +31,7 @@ public class Entity {
      * @return Une liste de Tiles représentant le chemin à suivre, ou null si aucun chemin n'est trouvé
      */
     public List<Tile> pathFinding(World world, int targetX, int targetY) {
-        // 1. Vérifications de base
+        // Vérifications de base
         if (targetX < 0 || targetX >= World.WIDTH || targetY < 0 || targetY >= World.HEIGHT) {
             return null;
         }
@@ -36,22 +39,20 @@ public class Entity {
             return null;
         }
 
-        // 2. Initialisation des Listes
-        // LISTE OUVERTE : Les cases qu'on a repérées mais pas encore traitées
+        // Initialisation des Listes
+        // liste ouverte, Les cases qu'on a repérées mais pas encore traitées
         List<Node> openList = new ArrayList<>();
 
-        // LISTE FERMÉE : Les cases déjà traitées (on utilise un tableau booléen pour faire simple)
+        // liste fermée, Les cases déjà traitées (on utilise un tableau booléen pour faire simple)
         boolean[][] closedList = new boolean[World.WIDTH][World.HEIGHT];
 
         // On ajoute le point de départ
         Node startNode = new Node(this.x, this.y, null, 0, getManhattanDistance(this.x, this.y, targetX, targetY));
         openList.add(startNode);
 
-        // 3. Boucle principale
+        // Boucle principale de l'algorithme
         while (!openList.isEmpty()) {
-
-            // --- REMPLACEMENT DE LA PRIORITYQUEUE ---
-            // On cherche MANUELLEMENT le noeud avec le plus petit F dans la liste
+            // On cherche le noeud avec le plus petit coût F dans la liste ouverte
             Node current = openList.get(0);
             for (int i = 1; i < openList.size(); i++) {
                 // Si on trouve un noeud avec un coût F plus petit, il devient le courant
