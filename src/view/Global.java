@@ -15,10 +15,9 @@ public class Global extends JPanel {
     private World world;
     private Camera camera;
 
-    // --- NOUVEAU : Variables d'animation ---
+    //variables d'animation
     private SpriteSheetLoader gardenerLoader;
     private long startTime;
-    // ---------------------------------------
 
     public Global(World world, Camera camera) {
         super();
@@ -26,16 +25,14 @@ public class Global extends JPanel {
         this.camera = camera;
         this.setOpaque(true);
 
-        // --- NOUVEAU : Initialisation ---
         this.startTime = System.currentTimeMillis();
-        // ATTENTION : Mettez le bon chemin vers votre image png
-        this.gardenerLoader = new SpriteSheetLoader("src/assets/Tiny Wonder Farm Free/characters/main character/walk and idle.png");
+        this.gardenerLoader = new SpriteSheetLoader("src/assets/assets1//Tiny Wonder Farm Free/characters/main character/walk and idle.png");
     }
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // 1. DESSINER LE TERRAIN (Votre code existant)
+        // dessiner le terrain
         int fstTileX = (int) camera.getX();
         int fstTileY = (int) camera.getY();
         int pixelDiffX = (int) ((camera.getX() - fstTileX) * Display.RATIO_X);

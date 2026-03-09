@@ -1,32 +1,82 @@
 package src.model;
 
 import javax.swing.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 /**
  * La classe World représente le monde du jeu, qui est une grille de tiles.
- * Cette classe gère la structure du monde et les interactions avec les cases.
  */
 public class World {
-    // Constantes des dimensions du monde (en nombre de cases)
     public static final int WIDTH = 100;
     public static final int HEIGHT = 100;
 
-    // Les cases du monde, représentées par une matrice de Tile
     private Tile[][] tiles;
 
+    // Plus besoin de tableau, on stocke juste l'unique image d'herbe choisie
+    private ImageIcon grassSprite;
+    private ImageIcon defaultParcel; // Image de la parcelle
+    private Gardener testGardener;
+
     public World() {
+        loadTerrainSprites();
         initializeTiles();
+        this.testGardener = new Gardener(WIDTH/2, HEIGHT/2, this);
+
+        Thread t = new Thread(this.testGardener);
+        t.start();
     }
 
-    /* Initialise les cases du monde, en créant une nouvelle instance de Tile pour chaque position */
+    /**
+     * Charge et découpe la Sprite Sheet du terrain.
+     */
+    private void loadTerrainSprites() {
+        try {
+            // chargement de l'image de la Sprite Sheet
+            BufferedImage sheet = ImageIO.read(new File("src/assets/assets1/Tiny Wonder Farm Free/tilemaps/spring farm tilemap.png"));
+
+            int tileWidth = 32;
+            int tileHeight = 32;
+
+            // --- CHANGEMENT ICI ---
+            // On veut la 2ème image (index 1) de la 1ère ligne (Y = 0)
+            int indexColonne = 1;
+            int coordX = indexColonne * tileWidth;
+            int coordY = 0; // 1ère ligne
+
+            BufferedImage subImage = sheet.getSubimage(coordX, coordY, tileWidth, tileHeight);
+            grassSprite = new ImageIcon(subImage);
+
+            // Charger aussi l'image de la parcelle labourée
+            this.defaultParcel = new ImageIcon("src/assets/parcel.png");
+
+        } catch (IOException e) {
+            System.err.println("Erreur : Impossible de charger les sprites du terrain !");
+            e.printStackTrace();
+
+            // Fallback de sécurité si l'image plante
+            grassSprite = new ImageIcon("src/assets/grass.png");
+            this.defaultParcel = new ImageIcon("src/assets/parcel.png");
+        }
+    }
+
+    /**
+     * Initialise les cases du monde avec l'herbe choisie.
+     */
     private void initializeTiles() {
         this.tiles = new Tile[HEIGHT][WIDTH];
+
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
-                if (y == HEIGHT/2 && x == WIDTH/2) {
-                    this.tiles[x][y] = new Tile(x, y, new ImageIcon("src/assets/parcel.png"));
+
+                // Centre de la carte : on met la parcelle
+                if (y == HEIGHT / 2 && x == WIDTH / 2) {
+                    this.tiles[y][x] = new Tile(x, y, defaultParcel);
                 } else {
-                    this.tiles[x][y] = new Tile(x, y, new ImageIcon("src/assets/grass.png"));
+                    // Partout ailleurs : on met l'unique herbe découpée
+                    this.tiles[y][x] = new Tile(x, y, grassSprite);
                 }
             }
         }
@@ -44,6 +94,6 @@ public class World {
     }
 
     public Gardener getGardenerTest() {
-        return new Gardener(WIDTH/2, HEIGHT/2, this);
+        return this.testGardener;
     }
 }
