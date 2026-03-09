@@ -14,8 +14,8 @@ class PlantTest {
 
     @BeforeEach
     void setUp() {
-        // On initialise une Salade avant chaque test (Durée: 100 ticks, Eau: 20.0f/tick)
-        plant = new Plant(PlantType.SALADE);
+        // On initialise un CHOUX avant chaque test (Durée: 120 ticks, Eau: 20.0f/tick)
+        plant = new Plant(PlantType.CHOUX);
     }
 
     @Test
@@ -23,42 +23,53 @@ class PlantTest {
         assertEquals(PlantState.GRAINE, plant.getState(), "La plante doit commencer à l'état GRAINE");
         assertEquals(50.0f, plant.getWaterLevel(), "L'eau initiale doit être de 50");
         assertTrue(plant.isIrrigated(), "Le sol doit être considéré comme irrigué au début");
+        assertNotNull(plant.getSprite(), "Le sprite initial ne doit pas être null");
     }
 
     @Test
     void testWaterConsumption() {
         plant.tick();
-        // Salade consomme 20 par tick. 50 - 20 = 30.
+        // Choux consomme 20 par tick. 50 - 20 = 30.
         assertEquals(30.0f, plant.getWaterLevel(), 0.01, "L'eau doit baisser selon la consommation du type");
     }
 
     @Test
     void testGrowthCycleNormal() {
-        // La salade met 100 ticks pour être mature.
-        // On garde l'eau à fond pour éviter la mort
+        // Le chou met 120 ticks pour être mature.
+        int duration = plant.getType().getGrowthDuration(); // Récupère la durée (120)
 
-        // 1. Passage de GRAINE à POUSSE (> 33 ticks)
-        for (int i = 0; i < 35; i++) {
-            plant.water(20); // On recharge l'eau
+        // 1. Passage de GRAINE à POUSSE (âge > 33% de 120, soit 39.6) -> Atteint à 40 ticks
+        int ticksToPousse = (int) (duration * 0.33f) + 1; // 40 ticks
+        for (int i = 0; i < ticksToPousse; i++) {
+            plant.water(100); // On garde l'eau à fond
             plant.tick();
         }
-        assertEquals(PlantState.POUSSE, plant.getState(), "Après ~35 ticks, la salade doit être une POUSSE");
+        assertEquals(PlantState.POUSSE, plant.getState(), "Après " + ticksToPousse + " ticks, le chou doit être une POUSSE");
 
-        // 2. Passage de POUSSE à MATURE (>= 100 ticks total)
-        for (int i = 0; i < 70; i++) {
-            plant.water(20);
+        // 2. Passage de POUSSE à CROISSANCE (âge > 66% de 120, soit 79.2) -> Atteint à 80 ticks
+        // On est déjà à 40 ticks, il en faut 40 de plus.
+        int ticksToCroissance = (int) (duration * 0.66f) + 1 - ticksToPousse; // 80 - 40 = 40 ticks
+        for (int i = 0; i < ticksToCroissance; i++) {
+            plant.water(100);
             plant.tick();
         }
-        assertEquals(PlantState.MATURE, plant.getState(), "Après 100 ticks, la salade doit être MATURE");
+        assertEquals(PlantState.CROISSANCE, plant.getState(), "Après " + (ticksToPousse + ticksToCroissance) + " ticks, le chou doit être en CROISSANCE");
+
+        // 3. Passage de CROISSANCE à MATURE (âge >= 100% de 120) -> Atteint à 120 ticks
+        // On est à 80 ticks, il en faut 40 de plus.
+        int ticksToMature = duration - (ticksToPousse + ticksToCroissance); // 120 - 80 = 40 ticks
+        for (int i = 0; i < ticksToMature; i++) {
+            plant.water(100);
+            plant.tick();
+        }
+        assertEquals(PlantState.MATURE, plant.getState(), "Après " + duration + " ticks, le chou doit être MATURE");
         assertTrue(plant.isHarvestable(), "La plante doit être récoltable");
     }
 
     @Test
     void testDeathByThirst() {
-        // On vide l'eau manuellement ou on attend
         // 50 eau / 20 conso = 3 ticks d'autonomie.
-        // Ensuite, il faut 100 ticks sans eau pour mourir.
-
+        // Ensuite, il faut 100 ticks sans eau pour mourir. Le test avec 200 ticks est donc largement suffisant.
         for (int i = 0; i < 200; i++) {
             plant.tick(); // On ne remet JAMAIS d'eau
         }
@@ -66,42 +77,25 @@ class PlantTest {
         assertEquals(0.0f, plant.getWaterLevel(), "L'eau doit être à 0");
         assertFalse(plant.isIrrigated(), "Le sol doit être sec");
         assertEquals(PlantState.MORT, plant.getState(), "La plante doit être MORTE de soif");
-    }
-
-    @Test
-    void testRotting() {
-        // 1. On amène la plante à maturité rapidement
-        for (int i = 0; i < 110; i++) {
-            plant.water(100);
-            plant.tick();
-        }
-        assertEquals(PlantState.MATURE, plant.getState());
-
-        // 2. On attend 500 ticks pour qu'elle pourrisse
-        for (int i = 0; i < 501; i++) {
-            plant.water(100);
-            plant.tick();
-        }
-
-        assertEquals(PlantState.POURRIE, plant.getState(), "La plante doit pourrir si on ne la récolte pas");
-        assertFalse(plant.isHarvestable(), "Une plante pourrie ne se récolte pas");
+        assertNotNull(plant.getSprite(), "Le sprite de la plante morte ne doit pas être null");
     }
 
     @Test
     void testFertilizer() {
-        // On applique l'engrais
         boolean success = plant.applyFertilizer();
         assertTrue(success, "L'application d'engrais doit réussir sur une graine");
 
         // Avec engrais, la croissance est double (+2 age par tick)
-        // Salade : 100 ticks normalement. Avec engrais => 50 ticks.
+        // Choux : 120 ticks normalement. Avec engrais => 60 ticks.
+        int duration = plant.getType().getGrowthDuration();
+        int ticksToMatureFertilized = duration / 2;
 
-        for (int i = 0; i < 51; i++) {
+        for (int i = 0; i < ticksToMatureFertilized; i++) {
             plant.water(100);
             plant.tick();
         }
 
-        assertEquals(PlantState.MATURE, plant.getState(), "La plante fertilisée doit pousser 2x plus vite");
+        assertEquals(PlantState.MATURE, plant.getState(), "La plante fertilisée doit être mature après " + ticksToMatureFertilized + " ticks");
     }
 
     @Test

@@ -108,7 +108,7 @@ public class CasePlantable extends Tile {
      */
     public void nettoyer() {
         if (this.plant != null &&
-                (this.plant.getState() == PlantState.MORT || this.plant.getState() == PlantState.POURRIE)) {
+                (this.plant.getState() == PlantState.MORT)) {
             this.plant = null;
         }
     }

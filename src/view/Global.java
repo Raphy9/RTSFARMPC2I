@@ -1,10 +1,6 @@
 package src.view;
 
-import src.model.Camera;
-import src.model.Entity;
-import src.model.Gardener;
-import src.model.Tile;
-import src.model.World;
+import src.model.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -47,6 +43,17 @@ public class Global extends JPanel {
                     int paintX = (x * Display.RATIO_X) - pixelDiffX;
                     int paintY = (y * Display.RATIO_Y) - pixelDiffY;
                     g.drawImage(tile.getSprite().getImage(), paintX, paintY, Display.RATIO_X, Display.RATIO_Y, this);
+                    //On vérifie si c'est une case plantable et on dessine la plante
+                    if (tile instanceof CasePlantable) {
+                        CasePlantable casePlantable = (CasePlantable) tile;
+                        Plant plant = casePlantable.getPlant();
+
+                        if (plant != null) {
+                            // On suppose que la classe Plant a une méthode getSprite()
+                            g.drawImage(plant.getSprite().getImage(), paintX, paintY, Display.RATIO_X, Display.RATIO_Y, this);
+                        }
+                    }
+
                 }
             }
         }
