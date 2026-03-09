@@ -15,5 +15,5 @@ public class Inventory {
 
     public void removeItem(Item item) {
         items.remove(item);
-    }²
+    }
 }
