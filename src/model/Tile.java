@@ -52,6 +52,8 @@ public class Tile {
         return false;
     }
 
+    public boolean isPlantable() {return false;}
+
     public int getX() { return x; }
     public int getY() { return y; }
     public ArrayList<Entity> getEntities() { return entities; }
