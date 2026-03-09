@@ -103,16 +103,19 @@ public class Gardener extends Entity implements Runnable {
     }
 
     // Getters
-    public State getCurrentState() { return currentState; }
-    public Inventory getInventory() { return inventory; }
+    public State getCurrentState() {
+        return currentState;
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
 
     // Pour arrêter définitivement le thread à la fermeture du jeu
     public void stopGardener() {
         this.isRunning = false;
         interruptGardener();
     }
-
-    // Dans src.model.Gardener
 
     private void executeAction(Action action) throws InterruptedException {
         this.currentState = State.MOVING;
@@ -121,27 +124,36 @@ public class Gardener extends Entity implements Runnable {
 
         if (path != null) {
             for (Tile step : path) {
-                // --- NOUVEAU : Calculer la direction du prochain pas ---
+                // CORRECTION CRUCIALE ICI :
+                // Thread.interrupted() vérifie l'interruption ET remet le flag à false !
+                if (Thread.interrupted()) {
+                    throw new InterruptedException("Déplacement annulé par l'utilisateur.");
+                }
+
                 int oldX = this.x;
                 int oldY = this.y;
                 int newX = step.getX();
                 int newY = step.getY();
 
+                // Calcul de la direction
                 if (newX > oldX) this.facingDirection = Entity.RIGHT;
                 else if (newX < oldX) this.facingDirection = Entity.LEFT;
                 else if (newY > oldY) this.facingDirection = Entity.DOWN;
                 else if (newY < oldY) this.facingDirection = Entity.UP;
-                // -------------------------------------------------------
 
                 this.x = newX;
                 this.y = newY;
 
-                Thread.sleep(150); // Temps entre chaque case
+                Thread.sleep(150);
             }
+        } else if (this.x != action.getTargetX() || this.y != action.getTargetY()) {
+            System.out.println("Chemin impossible vers (" + action.getTargetX() + ", " + action.getTargetY() + ")");
+            this.currentState = State.WAITING; // Reset de l'état
+            return;
         }
 
         this.currentState = State.WORKING;
-        Thread.sleep(1000);
+        Thread.sleep(200);
         action.perform(this, world);
         this.currentState = State.WAITING;
     }

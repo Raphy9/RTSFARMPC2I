@@ -55,7 +55,8 @@ public class SpriteSheetLoader {
     private int getRowIndex(int direction) {
         if (direction == src.model.Entity.UP) return 2;
         if (direction == src.model.Entity.LEFT || direction == src.model.Entity.RIGHT) return 1;
-        return 0; // Par défaut et DOWN
+        if (direction == src.model.Entity.DOWN) return 2;
+        return 0; //
     }
 
     public BufferedImage getIdleFrame(int direction, int frameIndex) {
