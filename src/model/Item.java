@@ -44,4 +44,8 @@ public abstract class Item {
         // Renvoie le type de la graine/plante
         return plantType;
     }
+
+    public ImageIcon getImage() {
+        return image;
+    }
 }
