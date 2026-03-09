@@ -32,7 +32,7 @@ public class GlobalController implements MouseListener{
         int clickX = e.getX();
         int clickY = e.getY();
 
-        // 1. Calcul du décalage "fluide" de la caméra (le même que dans Global.paintComponent)
+        // 1. Calcul du décalage en pixels par rapport à la première case visible
         int fstTileX = (int) camera.getX();
         int fstTileY = (int) camera.getY();
         int pixelDiffX = (int) ((camera.getX() - fstTileX) * Display.RATIO_X);
