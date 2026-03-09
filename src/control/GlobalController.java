@@ -32,38 +32,32 @@ public class GlobalController implements MouseListener{
         int clickX = e.getX();
         int clickY = e.getY();
 
-        // 2. Conversion en coordonnées de la grille (World) en tenant compte de la caméra et du zoom
-        int worldX = (int) (clickX / Display.RATIO_X + camera.getX());
-        int worldY = (int) (clickY / Display.RATIO_Y + camera.getY());
+        // 1. Calcul du décalage en pixels par rapport à la première case visible
+        int fstTileX = (int) camera.getX();
+        int fstTileY = (int) camera.getY();
+        int pixelDiffX = (int) ((camera.getX() - fstTileX) * Display.RATIO_X);
+        int pixelDiffY = (int) ((camera.getY() - fstTileY) * Display.RATIO_Y);
 
-        System.out.println("Clic sur l'écran : (" + clickX + ", " + clickY + ") -> Case du monde : (" + worldX + ", " + worldY + ")");
+        // et on ajoute la première case visible
+        int worldX = fstTileX + ((clickX + pixelDiffX) / Display.RATIO_X);
+        int worldY = fstTileY + ((clickY + pixelDiffY) / Display.RATIO_Y);
 
-        // 3. Vérification que l'on ne clique pas hors de la carte
+        System.out.println("Clic Case du monde : (" + worldX + ", " + worldY + ")");
+
         if (worldX >= 0 && worldX < World.WIDTH && worldY >= 0 && worldY < World.HEIGHT) {
-
-            // 4. Récupérer le jardinier et lui donner l'ordre de se déplacer
             Gardener gardener = world.getGardenerTest();
             if (gardener != null) {
-                // On vide sa file d'attente et on l'interrompt pour qu'il réagisse immédiatement
                 gardener.interruptGardener();
-
-                // On ajoute la nouvelle action de déplacement
                 gardener.addAction(new MoveAction(worldX, worldY));
             }
         }
 
-        // J'ai commenté le popup de test selon votre commentaire "TEMPORAIRE".
-        // Vous pourrez le réutiliser plus tard pour faire un clic droit d'information par exemple !
-        /*
-        display.switchToPopup(new TextPopup(display,400, 250,
-                "Popup de test","Voici un popup de test pour vérifier que les clics fonctionnent correctement. Il devrait s'afficher lorsque vous cliquez n'importe où sur la vue globale."));
-        */
         System.out.println("Clic!");
         // TEMPORAIRE : affiche un popup de test (enlever quand on implementera la vraie fonction clic)
 //        display.switchToPopup(new TextPopup(display,400, 250,
 //                "Popup de test","Voici un popup de test pour vérifier que les clics fonctionnent correctement. Il devrait s'afficher lorsque vous cliquez n'importe où sur la vue globale."));
-        // TEMPORAIRE : passer en vue selection
-        display.switchToSelection();
+//        // TEMPORAIRE : passer en vue selection
+//        display.switchToSelection();
     }
 
     @Override
