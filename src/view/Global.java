@@ -26,7 +26,7 @@ public class Global extends JPanel {
         this.setOpaque(true);
 
         this.startTime = System.currentTimeMillis();
-        this.gardenerLoader = new SpriteSheetLoader("src/assets/assets1//Tiny Wonder Farm Free/characters/main character/walk and idle.png");
+        this.gardenerLoader = new SpriteSheetLoader("src/assets/Tiny Wonder Farm Free/characters/main character/walk and idle.png");
     }
     @Override
     protected void paintComponent(Graphics g) {

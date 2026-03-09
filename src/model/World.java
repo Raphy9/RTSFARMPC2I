@@ -35,7 +35,7 @@ public class World {
     private void loadTerrainSprites() {
         try {
             // chargement de l'image de la Sprite Sheet
-            BufferedImage sheet = ImageIO.read(new File("src/assets/assets1/Tiny Wonder Farm Free/tilemaps/spring farm tilemap.png"));
+            BufferedImage sheet = ImageIO.read(new File("src/assets/Tiny Wonder Farm Free/tilemaps/spring farm tilemap.png"));
 
             int tileWidth = 32;
             int tileHeight = 32;
