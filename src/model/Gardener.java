@@ -78,42 +78,6 @@ public class Gardener extends Entity implements Runnable {
         }
     }
 
-    /**
-     * Gère le déplacement puis le travail lié à une action.
-     */
-    private void executeAction(Action action) throws InterruptedException {
-        //  déplacement (algo Pathfinding)
-        this.currentState = State.MOVING;
-
-        // On utilise la méthode de la classe mère Entity
-        List<Tile> path = this.pathFinding(world, action.getTargetX(), action.getTargetY());
-
-        if (path != null) {
-            for (Tile step : path) {
-                // Déplacement case par case
-                this.x = step.getX();
-                this.y = step.getY();
-
-                // Pause pour simuler la vitesse de déplacement
-                // Si le thread est interrompu ici, ça lève une InterruptedException
-                Thread.sleep(300);
-            }
-        } else if (this.x != action.getTargetX() || this.y != action.getTargetY()) {
-            // Pas de chemin trouvé et on n'est pas déjà sur la case
-            System.out.println("Chemin introuvable !");
-            return;
-        }
-
-        // travail (Action concrète)
-        this.currentState = State.WORKING;
-        // Simule le temps de travail (labourer, planter, etc.)
-        Thread.sleep(1000);
-
-        // Exécution logique de l'action sur le modèle (à implémenter dans Action)
-        action.perform(this, world);
-
-        this.currentState = State.WAITING;
-    }
 
     /**
      * Ajoute une action à la file et réveille le jardinier s'il dormait.
@@ -146,5 +110,39 @@ public class Gardener extends Entity implements Runnable {
     public void stopGardener() {
         this.isRunning = false;
         interruptGardener();
+    }
+
+    // Dans src.model.Gardener
+
+    private void executeAction(Action action) throws InterruptedException {
+        this.currentState = State.MOVING;
+
+        List<Tile> path = this.pathFinding(world, action.getTargetX(), action.getTargetY());
+
+        if (path != null) {
+            for (Tile step : path) {
+                // --- NOUVEAU : Calculer la direction du prochain pas ---
+                int oldX = this.x;
+                int oldY = this.y;
+                int newX = step.getX();
+                int newY = step.getY();
+
+                if (newX > oldX) this.facingDirection = Entity.RIGHT;
+                else if (newX < oldX) this.facingDirection = Entity.LEFT;
+                else if (newY > oldY) this.facingDirection = Entity.DOWN;
+                else if (newY < oldY) this.facingDirection = Entity.UP;
+                // -------------------------------------------------------
+
+                this.x = newX;
+                this.y = newY;
+
+                Thread.sleep(150); // Temps entre chaque case
+            }
+        }
+
+        this.currentState = State.WORKING;
+        Thread.sleep(1000);
+        action.perform(this, world);
+        this.currentState = State.WAITING;
     }
 }

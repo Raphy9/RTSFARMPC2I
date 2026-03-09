@@ -10,19 +10,28 @@ import java.util.List;
  */
 public class Entity {
 
-    // Position actuelle de l'entité dans le monde
-    protected int x, y;
+        // Constantes de direction
+        public static final int DOWN = 0;
+        public static final int LEFT = 1;
+        public static final int RIGHT = 2;
+        public static final int UP = 3;
+
+        protected int x, y;
+        protected int facingDirection = DOWN; // Par défaut, regarde en bas
+
+
+        public int getX() { return x; }
+        public int getY() { return y; }
+
+        // Getter de direction
+        public int getFacingDirection() { return facingDirection; }
+
 
     // Constructeur pour initialiser la position de l'entité
     public Entity(int x, int y) {
         this.x = x;
         this.y = y;
     }
-
-
-    // Getters pour les coordonnées de l'entité
-    public int getX() { return x; }
-    public int getY() { return y; }
 
 /**     * Implémentation de l'algorithme A* pour trouver un chemin vers une cible
      * @param world Le monde dans lequel se trouve l'entité

@@ -42,4 +42,8 @@ public class World {
     public Tile[][] getTiles() {
         return this.tiles;
     }
+
+    public Gardener getGardenerTest() {
+        return new Gardener(WIDTH/2, HEIGHT/2, this);
+    }
 }
