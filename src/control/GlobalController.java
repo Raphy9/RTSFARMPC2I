@@ -23,8 +23,10 @@ public class GlobalController implements MouseListener{
     public void mouseClicked(MouseEvent e) {
         System.out.println("Clic!");
         // TEMPORAIRE : affiche un popup de test (enlever quand on implementera la vraie fonction clic)
-        display.switchToPopup(new TextPopup(display,400, 250,
-                "Popup de test","Voici un popup de test pour vérifier que les clics fonctionnent correctement. Il devrait s'afficher lorsque vous cliquez n'importe où sur la vue globale."));
+//        display.switchToPopup(new TextPopup(display,400, 250,
+//                "Popup de test","Voici un popup de test pour vérifier que les clics fonctionnent correctement. Il devrait s'afficher lorsque vous cliquez n'importe où sur la vue globale."));
+        // TEMPORAIRE : passer en vue selection
+        display.switchToSelection();
     }
 
     @Override

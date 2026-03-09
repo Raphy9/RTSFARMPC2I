@@ -1,7 +1,6 @@
 package src.view;
 
 import javax.swing.*;
-import java.awt.*;
 
 /** Classe qui affiche les differents popups par dessus la vue globale
  * Doit toujours avoir un popup actif, si ce n'est pas le cas, changer vers la vue globale */

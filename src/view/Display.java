@@ -2,6 +2,7 @@ package src.view;
 
 import src.control.CameraController;
 import src.control.GlobalController;
+import src.control.SelectionController;
 import src.model.Camera;
 import src.model.World;
 
@@ -24,6 +25,8 @@ public class Display {
     private GlobalController globalController;
     private CameraController cameraController;
     private PopupView popupView;
+    private Selection selectionView;
+    private SelectionController selectionController;
 
     public Display(JFrame frame) {
         this.frame = frame;
@@ -39,19 +42,34 @@ public class Display {
         this.globalView = new Global(this.world, this.camera);
         globalView.setPreferredSize(gameSize);
         globalView.setBounds(0, 0, gameSize.width, gameSize.height);
+        // Controlleurs de la vue globale
         this.globalController = new GlobalController(this, globalView);
         this.cameraController = new CameraController(camera, globalView);
         globalView.addKeyListener(this.cameraController);
+        // Pour que la vue globale puisse bien recevoir les inputs
         globalView.setFocusable(true);
         globalView.requestFocusInWindow();
 
-        layeredPane.add(globalView, JLayeredPane.DEFAULT_LAYER);    // layer du dessous
+        layeredPane.add(globalView, JLayeredPane.DEFAULT_LAYER);    // commencer avec la vue globale
 
         // Vue popup
         this.popupView = new PopupView(globalView);
         this.popupView.setBounds(0, 0, gameSize.width, gameSize.height);
         this.popupView.setPreferredSize(gameSize);
-        layeredPane.add(popupView, JLayeredPane.PALETTE_LAYER);   // au dessus de la vue globale
+
+        layeredPane.add(popupView, JLayeredPane.MODAL_LAYER);   // au dessus de la vue globale
+
+        // Vue Selection
+        this.selectionView = new Selection(this.world, this.camera);
+        this.selectionView.setPreferredSize(gameSize);
+        this.selectionView.setBounds(0, 0, gameSize.width, gameSize.height);
+        // Controleurs de la vue selection
+        this.selectionController = new SelectionController(this, selectionView);
+        selectionView.addMouseListener(this.selectionController);
+        selectionView.addKeyListener(this.cameraController); // pour pouvoir deplacer la camera meme en mode selection
+        // Par defaut, la vue selection est invisible, on l'affichera seulement quand on passera en mode selection
+        layeredPane.add(selectionView, JLayeredPane.PALETTE_LAYER);   // au dessus de la vue globale, sous les popups
+        selectionView.setVisible(false);
 
         this.frame.setContentPane(layeredPane);
         this.frame.pack();
@@ -74,7 +92,8 @@ public class Display {
         popupView.showPopup(popup);
     }
 
-    /** Met la vue en mode global, en cachant le popup actif */
+    /** Met la vue en mode global depuis le mode popup, en cachant le popup actif
+     * Utliser SEULEMENT depuis le mode popup */
     public void switchToGlobal() {
         popupView.hidePopup();
         // Re-activer les controles de la vue globale
@@ -84,7 +103,18 @@ public class Display {
         if (! Arrays.asList(globalView.getKeyListeners()).contains(cameraController)) {
             globalView.addKeyListener(cameraController);
         }
-        // TODO changer quand on aura le mode selection
+    }
+
+    /** Met la vue en mode selection, en affichant la vue selection et en cachant la vue globale */
+    public void switchToSelection() {
+        globalView.setVisible(false);
+        selectionView.setVisible(true);
+    }
+
+    /** Met la vue en mode global depuis le mode selection, en cachant la vue selection et en affichant la vue globale */
+    public void switchToGlobalFromSelection() {
+        selectionView.setVisible(false);
+        globalView.setVisible(true);
     }
 
     /** Repaint la fenetre */
