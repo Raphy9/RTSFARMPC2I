@@ -29,7 +29,6 @@ public class GlobalController implements MouseListener{
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // 1. Récupération des coordonnées du clic à l'écran (en pixels)
         int clickX = e.getX();
         int clickY = e.getY();
 
