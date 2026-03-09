@@ -1,6 +1,9 @@
 package src.model;
 
+import javax.swing.*;
+
 public abstract class Item {
+    private ImageIcon image;
     private PlantType plantType;
     private int quantity;
 
@@ -18,6 +21,20 @@ public abstract class Item {
     public int getQuantity() {
         // Renvoie la quantité
         return quantity;
+    }
+
+    /*
+    Méthode pour ajouter une certaine quantité de cet item
+     */
+    public void addQuantity(int x) {
+        quantity += x;
+    }
+
+    /*
+    Méthode pour retirer une certaine quantité de cet item
+     */
+    public void removeQuantity(int x) {
+        quantity -= x;
     }
 
     /*
