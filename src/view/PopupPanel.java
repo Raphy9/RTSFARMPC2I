@@ -30,6 +30,7 @@ public class PopupPanel extends JPanel {
 
             // Bouton annuler pour fermer le popup
             JButton exit = new JButton("X");
+            exit.setFocusable(false);
             exit.addActionListener(new ClosePopup(display));
             topPanel.add(exit, BorderLayout.EAST);
 

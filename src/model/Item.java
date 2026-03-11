@@ -3,16 +3,24 @@ package src.model;
 import javax.swing.*;
 
 public abstract class Item {
-    private ImageIcon image;
-    private PlantType plantType;
-    private int quantity;
+    private ImageIcon image; // Image de l'item, définie dans les classes filles en fonction du type de plante (image différente pour les graines et les plantes)
+    private PlantType plantType; // Type de l'item, qui correspond au type de plante (choux, carotte, citrouille, fraise)
+    private int quantity; // Quantité de l'item, qui peut être modifiée en ajoutant ou retirant des items (ex: récolter une plante ajoute une plante à l'inventaire et retire une graine, planter une graine retire une graine de l'inventaire)
 
     /*
     Constructeur par défaut de tous les items
      */
     public Item(PlantType pType) {
         quantity = 0;
-        plantType = plantType;
+        plantType = pType;
+    }
+
+    /*
+    Constructeur pour créer un item avec une quantité définie (uitilisé pour tester l'inventaire sans gameplay pour l'instant)
+     */
+    public Item(PlantType pType, int quantity) {
+        this.quantity = quantity;
+        this.plantType = pType;
     }
 
     /*
@@ -45,7 +53,17 @@ public abstract class Item {
         return plantType;
     }
 
+    /*
+    Méthode pour récupérer l'image de l'item
+     */
     public ImageIcon getImage() {
         return image;
+    }
+
+    /*
+    Méthode pour définir l'image de l'item, utilisée dans les classes filles pour définir l'image en fonction du type de plante
+     */
+    public void defineImage(ImageIcon image) {
+        this.image = image;
     }
 }

@@ -19,11 +19,16 @@ public class World {
     private ImageIcon grassSprite;
     private ImageIcon defaultParcel; // Image de la parcelle
     private Gardener testGardener;
+    private Barn barn;
 
     public World() {
         loadTerrainSprites();
         initializeTiles();
         this.testGardener = new Gardener(WIDTH/2, HEIGHT/2, this);
+
+        // Initialisation de la grange et remplissage de départ pour les tests
+        barn = new Barn();
+        fstSetBarn();
 
         Thread t = new Thread(this.testGardener);
         t.start();
@@ -95,5 +100,22 @@ public class World {
 
     public Gardener getGardenerTest() {
         return this.testGardener;
+    }
+
+    public Barn getBarn() {
+        return this.barn;
+    }
+
+    /*
+     Méthode pour remplir la grange de départ avec quelques items, à appeler dans le constructeur du monde.
+     On peut la modifier pour tester différents items dans la grange.
+     */
+    private void fstSetBarn() {
+        barn.addItem(new ItemPlant(PlantType.CAROTTE, 10));
+        barn.addItem(new ItemPlant(PlantType.CHOUX, 20));
+        barn.addItem(new ItemPlant(PlantType.FRAISE, 20));
+        barn.addItem(new ItemSeed(PlantType.CAROTTE, 20));
+        barn.addItem(new ItemSeed(PlantType.CHOUX, 20));
+        barn.addItem(new ItemSeed(PlantType.FRAISE, 20));
     }
 }
