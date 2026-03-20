@@ -1,5 +1,7 @@
 package src.model;
 
+import src.view.Display;
+
 public class Camera {
     // Constantes de la taille de la caméra (en nombre de tuiles à afficher)
     public static final int WIDTH = 28;
@@ -40,5 +42,16 @@ public class Camera {
         if (this.y + deltaY >= 0 && this.y + deltaY < World.HEIGHT - HEIGHT) {
             this.y += deltaY; // Empêche de dépasser les bords haut et bas
         }
+    }
+
+    /** Convertit les coordonnees ecran en coordonnees du monde
+     * @param screenX La coordonnee X de l'ecran
+     * @param screenY La coordonnee Y de l'ecran
+     * @return un tableau de float contenant les coordonnees du monde correspondantes
+     */
+    public float[] screenToWorld(float screenX, float screenY) {
+        float worldX = this.x + (screenX / Display.RATIO_X);
+        float worldY = this.y + (screenY / Display.RATIO_Y);
+        return new float[]{worldX, worldY};
     }
 }

@@ -22,7 +22,7 @@ public class SelectionController implements MouseListener {
     @Override
     public void mouseClicked(MouseEvent e) {
         // TEMPORAIRE : revient juste vers la vue globale
-        System.out.println("Clic dans la selection! " + this.toString());
+        System.out.println("Clic dans la selection! " + this);
         display.switchToGlobalFromSelection();
     }
 
