@@ -1,5 +1,7 @@
 package src.model;
 
+import src.model.actions.Action;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;

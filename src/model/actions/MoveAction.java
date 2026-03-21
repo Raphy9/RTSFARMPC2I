@@ -1,4 +1,7 @@
-package src.model;
+package src.model.actions;
+
+import src.model.Gardener;
+import src.model.World;
 
 /**
  * Action simple ordonnant au jardinier de se déplacer vers une case.

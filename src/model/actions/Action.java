@@ -1,4 +1,7 @@
-package src.model;
+package src.model.actions;
+
+import src.model.Gardener;
+import src.model.World;
 
 /**
  * Classe abstraite représentant une tâche pour un jardinier.
