@@ -14,12 +14,15 @@ public class GlobalController implements MouseListener{
     private Display display;
     private World world;
     private Camera camera;
+    private ActionsPopup actionsPopup;
 
     public GlobalController(Display display, Global globalView, World world, Camera camera) {
         globalView.addMouseListener(this);
         this.display = display;
         this.world = world;
         this.camera = camera;
+        // Creer le popup d'actions pour les jardiniers
+        this.actionsPopup = new ActionsPopup(display);
     }
 
     @Override
@@ -32,7 +35,7 @@ public class GlobalController implements MouseListener{
         for (Entity entity : tile.getEntities()) {
             if (entity instanceof Gardener) {
                 System.out.println("Clic sur un jardinier! " + entity);
-                // TODO : lancer popup choix d'action
+                display.switchToPopup(actionsPopup);
                 return;
             }
         }
