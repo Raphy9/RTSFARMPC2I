@@ -22,7 +22,7 @@ public class GlobalController implements MouseListener{
         this.world = world;
         this.camera = camera;
         // Creer le popup d'actions pour les jardiniers
-        this.actionsPopup = new ActionsPopup(display);
+        this.actionsPopup = new ActionsPopup(display, world);
     }
 
     @Override

@@ -86,9 +86,10 @@ public class Display {
 
     /** Met la vue en mode popup, en affichant le popup passe en parametre */
     public void switchToPopup(PopupPanel popup) {
-        // Desactiver les contoles de la vue globale
+        // Si on est en mode global, desactiver les contoles de la vue globale
         globalView.removeMouseListener(globalController); // ne fait rien si deja enleve
         globalView.removeKeyListener(cameraController); // ne fait rien si deja enleve
+        // Afficher le popup
         popupView.showPopup(popup);
     }
 

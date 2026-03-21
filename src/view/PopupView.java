@@ -23,7 +23,7 @@ public class PopupView extends JPanel {
         currentPopup = popup;
         // Centrer le popup dans la fenetre (on pourra affiner le positionnement plus tard si besoin)
         int x = (getWidth() - popup.getPreferredSize().width) / 2;
-        int y = (getHeight() - popup.getPreferredSize().width) / 2;
+        int y = (getHeight() - popup.getPreferredSize().height) / 2;
         popup.setBounds(x, y, popup.getPreferredSize().width, popup.getPreferredSize().height);
 
         this.add(currentPopup);

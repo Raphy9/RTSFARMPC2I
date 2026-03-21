@@ -1,6 +1,7 @@
 package src.view;
 
 import src.control.popups.PlantActionSelector;
+import src.model.World;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,14 +12,14 @@ import java.awt.*;
  */
 public class ActionsPopup extends PopupPanel {
 
-    public ActionsPopup(Display display) {
+    public ActionsPopup(Display display, World world) {
         super(display, 250, 120, "Actions");
 
         JPanel actionsPanel = new JPanel(new FlowLayout());
 
         // Bouton planter qui lance le popup de selection de graine
         JButton plantButton = new JButton("Planter");
-        plantButton.addActionListener(new PlantActionSelector());
+        plantButton.addActionListener(new PlantActionSelector(display, world));
         actionsPanel.add(plantButton);
 
         // Boutons d'arrosage et de recolte (a implementer plus tard)

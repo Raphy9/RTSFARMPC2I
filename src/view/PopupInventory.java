@@ -1,5 +1,6 @@
 package src.view;
 
+import src.control.popups.InventorySelector;
 import src.model.Inventory;
 import src.model.Item;
 
@@ -8,6 +9,7 @@ import java.awt.*;
 
 /**
  * Classe popup pour afficher l'inventaire de la grange uniquement, on n'affiche pas l'inventaire des jardiniers
+ * Popup recree a chaque fois qu'on en a besoin, car l'inventaire evolue
  */
 public class PopupInventory extends PopupPanel {
     private Inventory inventory; // L'inventaire dont on va afficher les items, dans ce cas c'est l'inventaire de la grange
@@ -21,15 +23,21 @@ public class PopupInventory extends PopupPanel {
     // avec des cases vides si il n'y a pas d'item à afficher
     private JPanel gridInventory;
 
-    /*
+    private Class expectedItemType; // Type d'item qu'on doit selectionner
+
+    /**
     Constructeur de la classe PopupInventory, qui prend en paramètre l'inventaire à afficher (Inventory inventory)
     et les paramètres pour le popup (Display display, int width, int height, String title)
-     */
-    public PopupInventory(Display display, int width, int height, String title, Inventory inventory) {
+     @param display l'affichage de la vue globale, pour pouvoir fermer le popup et revenir à la vue globale
+     @param inventory l'inventaire à afficher dans le popup, dans ce cas c'est l'inventaire de la grange
+     @param expectedItemType le type d'item qu'on doit selectionner dans le popup (ex: ItemSeed.class pour les graines)
+    */
+    public PopupInventory(Display display, Inventory inventory, Class expectedItemType) {
         // Appelle du constructeur de la classe mère PopupPanel pour initialiser le popup avec les paramètres donnés
-        super(display, width, height, title);
+        super(display, 400, 200, "Inventaire");
 
         this.inventory = inventory;
+        this.expectedItemType = expectedItemType;
 
 //        // Initialisation de l'image de fond pour le popup d'invenaire
 //        backgroundImage = new ImageIcon("src/assets/inventory_background.png");
@@ -65,6 +73,8 @@ public class PopupInventory extends PopupPanel {
 
                 // On crée un bouton pour afficher l'item, avec la quantité de l'item affichée sur le bouton (ex: "x3" pour 3 items)
                 JButton itemButton = new JButton("x" + item.getQuantity());
+                // Controleur du bouton
+                itemButton.addActionListener(new InventorySelector(expectedItemType, item));
 
                 // On affiche l'image de l'item sur le bouton, en utilisant la méthode getImage() de l'item pour récupérer l'image correspondante
                 // On redimensionne l'image de l'item pour qu'elle s'adapte à la taille du bouton, en utilisant la méthode getScaledInstance() de l'image de l'item
@@ -91,4 +101,5 @@ public class PopupInventory extends PopupPanel {
         // On ajoute la grille d'inventaire au centre du popup, par dessus l'image de fond }
         this.add(gridInventory, BorderLayout.CENTER);
     }
+
 }
