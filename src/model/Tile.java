@@ -52,11 +52,19 @@ public class Tile {
         return false;
     }
 
-    public boolean isPlantable() {return false;}
+//    public boolean isPlantable() {return false;}
 
     public int getX() { return x; }
     public int getY() { return y; }
     public ArrayList<Entity> getEntities() { return entities; }
+
+    public void addEntity(Entity e) {
+        entities.add(e);
+    }
+
+    public void removeEntity(Entity e) {
+        entities.remove(e);
+    }
 
 }
 

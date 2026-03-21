@@ -30,8 +30,7 @@ public class Gardener extends Entity implements Runnable {
     private volatile boolean isRunning;
 
     public Gardener(int x, int y, World world) {
-        super(x, y); // Appelle le constructeur de Entity
-        this.world = world;
+        super(world, x, y); // Appelle le constructeur de Entity
         this.inventory = new Inventory();
         this.actionQueue = new LinkedList<>();
         this.currentState = State.WAITING;
@@ -141,8 +140,11 @@ public class Gardener extends Entity implements Runnable {
                 else if (newY > oldY) this.facingDirection = Entity.DOWN;
                 else if (newY < oldY) this.facingDirection = Entity.UP;
 
+                // Deplacer le jardinier sur la nouvelle tuile
                 this.x = newX;
                 this.y = newY;
+                world.getTile(oldX, oldY).removeEntity(this);
+                world.getTile(newX, newY).addEntity(this);
 
                 Thread.sleep(150);
             }

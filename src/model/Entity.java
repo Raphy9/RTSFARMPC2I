@@ -16,9 +16,9 @@ public class Entity {
         public static final int RIGHT = 2;
         public static final int UP = 3;
 
+        protected World world;
         protected int x, y;
         protected int facingDirection = DOWN; // Par défaut, regarde en bas
-
 
         public int getX() { return x; }
         public int getY() { return y; }
@@ -28,9 +28,11 @@ public class Entity {
 
 
     // Constructeur pour initialiser la position de l'entité
-    public Entity(int x, int y) {
+    public Entity(World world, int x, int y) {
         this.x = x;
         this.y = y;
+        this.world = world;
+        world.getTiles()[x][y].addEntity(this); // Ajoute l'entité à la tuile correspondante
     }
 
 /**     * Implémentation de l'algorithme A* pour trouver un chemin vers une cible
