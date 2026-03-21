@@ -1,6 +1,7 @@
 package src.model.actions;
 
 import src.model.Gardener;
+import src.model.ItemSeed;
 
 public class PlantActionBuilder extends ActionBuilder {
 
@@ -10,8 +11,14 @@ public class PlantActionBuilder extends ActionBuilder {
 
     @Override
     public void buildAction() {
-        // temporaire
-        getGardener().addAction(new MoveAction(getX(), getY()));
-        // TODO faire le vrai truc
+        if (getItem() != null && getItem() instanceof src.model.ItemSeed) {
+            src.model.ItemSeed seed = (src.model.ItemSeed) getItem();
+
+            src.model.actions.PlantAction action = new src.model.actions.PlantAction(getX(), getY(), seed);
+
+            getGardener().interruptGardener();
+            getGardener().addAction(action);
+            System.out.println("Ordre de planter envoyé !");
+        }
     }
 }

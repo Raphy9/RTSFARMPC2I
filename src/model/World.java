@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 import javax.imageio.ImageIO;
+import javax.swing.Timer;
 
 /**
  * La classe World représente le monde du jeu, qui est une grille de tiles.
@@ -33,6 +34,10 @@ public class World {
 
         Thread t = new Thread(this.testGardener);
         t.start();
+
+        // Création d'une horloge qui appelle la méthode tick() toutes les secondes (1000 ms)
+        Timer gameTimer = new Timer(1000, e -> this.tick());
+        gameTimer.start();
     }
 
     /**
@@ -40,31 +45,15 @@ public class World {
      */
     private void loadTerrainSprites() {
         try {
-            // chargement de l'image de la Sprite Sheet
-            BufferedImage sheet = ImageIO.read(new File("src/assets/Tiny Wonder Farm Free/tilemaps/spring farm tilemap.png"));
+            // Charger  une image pour l'herbe
+            grassSprite = new ImageIcon("src/assets/grass2.jpg");
 
-            int tileWidth = 32;
-            int tileHeight = 32;
-
-            // --- CHANGEMENT ICI ---
-            // On veut la 2ème image (index 1) de la 1ère ligne (Y = 0)
-            int indexColonne = 1;
-            int coordX = indexColonne * tileWidth;
-            int coordY = 0; // 1ère ligne
-
-            BufferedImage subImage = sheet.getSubimage(coordX, coordY, tileWidth, tileHeight);
-            grassSprite = new ImageIcon(subImage);
-
-            // Charger aussi l'image de la parcelle labourée
+            // Charger l'image de la parcelle labourée
             this.defaultParcel = new ImageIcon("src/assets/parcel.png");
 
-        } catch (IOException e) {
-            System.err.println("Erreur : Impossible de charger les sprites du terrain !");
+        } catch (Exception e) {
+            System.err.println("Erreur : Impossible de charger les sprites !");
             e.printStackTrace();
-
-            // Fallback de sécurité si l'image plante
-            grassSprite = new ImageIcon("src/assets/grass.png");
-            this.defaultParcel = new ImageIcon("src/assets/parcel.png");
         }
     }
 
@@ -119,5 +108,18 @@ public class World {
         barn.addItem(new ItemSeed(PlantType.CAROTTE, 20));
         barn.addItem(new ItemSeed(PlantType.CHOUX, 20));
         barn.addItem(new ItemSeed(PlantType.FRAISE, 20));
+    }
+
+    /**
+     * Fait avancer le temps d'un cycle dans tout le jeu.
+     */
+    public void tick() {
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                if (this.tiles[y][x] != null) {
+                    this.tiles[y][x].tick(); // Transmet le tick à la case (et donc à la plante)
+                }
+            }
+        }
     }
 }

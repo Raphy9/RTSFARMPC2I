@@ -29,7 +29,8 @@ public class ActionsPopup extends PopupPanel {
         JButton waterButton = new JButton("Arroser");
         actionsPanel.add(waterButton);
 
-        JButton harvestButton = new JButton("Recolter");
+        JButton harvestButton = new JButton("Récolter");
+        harvestButton.addActionListener(new src.control.popups.HarvestActionSelector(display, gardener));
         actionsPanel.add(harvestButton);
 
         this.add(actionsPanel, BorderLayout.CENTER);

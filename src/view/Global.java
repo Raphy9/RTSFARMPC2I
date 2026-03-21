@@ -90,7 +90,7 @@ public class Global extends JPanel {
                 int drawY = ((gardener.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
 
                 // Dessiner avec effet miroir si gauche
-                if (direction == Entity.LEFT) {
+                if (direction == Entity.RIGHT) {
                     // g.drawImage(img, destX1, destY1, destX2, destY2, srcX1, srcY1, srcX2, srcY2, observer)
                     g.drawImage(spriteToDraw,
                             drawX + Display.RATIO_X, drawY, // Point haut-gauche destination (inversé)

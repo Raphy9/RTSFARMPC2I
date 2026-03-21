@@ -26,6 +26,10 @@ public class Entity {
         // Getter de direction
         public int getFacingDirection() { return facingDirection; }
 
+        //Setter de direction
+        public void setFacingDirection(int direction) {
+            this.facingDirection = direction;
+        }
 
     // Constructeur pour initialiser la position de l'entité
     public Entity(World world, int x, int y) {

@@ -22,21 +22,40 @@ public class GlobalController implements MouseListener{
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // Selectionner la case
         Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
+
+        if (coords.x < 0 || coords.x >= World.WIDTH || coords.y < 0 || coords.y >= World.HEIGHT) {
+            return;
+        }
+
         Tile tile = world.getTile(coords.x, coords.y);
-//        System.out.println("Clic sur la case: " + tile.getX() + ", " + tile.getY());
-        // Si la case continent un jardinier, le selectionner
-        for (Entity entity : tile.getEntities()) {
-            if (entity instanceof Gardener) {
-                System.out.println("Clic sur un jardinier! " + entity);
-                // Enchaine avec le popup d'actions pour le jardinier selectionne
-                display.switchToPopup(new ActionsPopup(display, world, (Gardener) entity));
+
+        // 1. Si on clique sur le jardinier : Ouvre le Menu
+        for (src.model.Entity entity : tile.getEntities()) {
+            if (entity instanceof src.model.Gardener) {
+                System.out.println("Clic sur le jardinier -> Ouverture du menu");
+                display.switchToPopup(new src.view.ActionsPopup(display, world, (src.model.Gardener) entity));
                 return;
             }
         }
-    }
 
+        // 2. Si on clique ailleurs : Déplacement
+        src.model.Gardener gardener = world.getGardenerTest();
+        if (gardener != null && tile.isWalkable()) {
+            System.out.println("Clic sur case vide -> Envoi de l'ordre MoveAction vers (" + coords.x + ", " + coords.y + ")");
+
+            int dx = coords.x - gardener.getX();
+            int dy = coords.y - gardener.getY();
+            if (Math.abs(dx) > Math.abs(dy)) {
+                gardener.setFacingDirection(dx > 0 ? src.model.Entity.RIGHT : src.model.Entity.LEFT);
+            } else if (dy != 0) {
+                gardener.setFacingDirection(dy > 0 ? src.model.Entity.DOWN : src.model.Entity.UP);
+            }
+
+            gardener.interruptGardener();
+            gardener.addAction(new src.model.actions.MoveAction(coords.x, coords.y));
+        }
+    }
     @Override
     public void mousePressed(MouseEvent e) {
 

@@ -13,6 +13,8 @@ import java.util.Queue;
  */
 public class Gardener extends Entity implements Runnable {
 
+
+
     // états du jardinier
     public enum State {
         WAITING,    // En attente
@@ -20,7 +22,6 @@ public class Gardener extends Entity implements Runnable {
         WORKING     // Au travail
     }
 
-    private World world;
     private Inventory inventory;
     private State currentState;
 
@@ -50,35 +51,77 @@ public class Gardener extends Entity implements Runnable {
         while (isRunning) {
             Action currentAction = null;
 
-            //  Récupération d'une action de manière synchronisée pour éviter les problèmes de concurrence avec le joueur qui ajoute des actions
-            synchronized (actionQueue) {
-                while (actionQueue.isEmpty() && isRunning) {
-                    currentState = State.WAITING;
-                    try {
-                        // Le jardinier s'endort s'il n'a rien à faire (wait())
-                        actionQueue.wait();
-                    } catch (InterruptedException e) {
-                        // Réveil forcé
-                        break;
+            try {
+                synchronized (actionQueue) {
+                    while (actionQueue.isEmpty() && isRunning) {
+                        currentState = State.WAITING;
+                        try {
+                            actionQueue.wait();
+                        } catch (InterruptedException e) {
+                            break; // Le joueur a cliqué, on sort du sommeil !
+                        }
                     }
+                    if (!isRunning) break;
+                    currentAction = actionQueue.poll();
                 }
-                if (!isRunning) break;
-                currentAction = actionQueue.poll(); // Récupère et retire la prochaine action
-            }
 
-            // Exécution de l'action s'il y en a une
-            if (currentAction != null) {
-                try {
+                if (currentAction != null) {
+                    Thread.interrupted();
                     executeAction(currentAction);
-                } catch (InterruptedException e) {
-                    // L'action a été interrompue en cours de route (ex: pendant un déplacement)
-                    System.out.println("Jardinier interrompu dans son action !");
-                    this.currentState = State.WAITING;
                 }
+            } catch (InterruptedException e) {
+                System.out.println("Jardinier : Action annulée en cours de route.");
+                this.currentState = State.WAITING;
+            } catch (Exception e) {
+                // SÉCURITÉ ANTI-CRASH : Empêche le thread de mourir en silence !
+                System.err.println("ERREUR FATALE DANS LE THREAD DU JARDINIER !");
+                e.printStackTrace();
+                this.currentState = State.WAITING;
             }
         }
     }
 
+    private void executeAction(Action action) throws InterruptedException {
+        this.currentState = State.MOVING;
+        System.out.println("Jardinier : Calcul du chemin vers (" + action.getTargetX() + ", " + action.getTargetY() + ")");
+
+        List<Tile> path = this.pathFinding(world, action.getTargetX(), action.getTargetY());
+
+        if (path != null) {
+            System.out.println("Jardinier : Chemin trouvé ! (" + path.size() + " cases)");
+            for (Tile step : path) {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException("Déplacement annulé.");
+                }
+
+                int oldX = this.x;
+                int oldY = this.y;
+                int newX = step.getX();
+                int newY = step.getY();
+
+                if (newX > oldX) this.facingDirection = Entity.RIGHT;
+                else if (newX < oldX) this.facingDirection = Entity.LEFT;
+                else if (newY > oldY) this.facingDirection = Entity.DOWN;
+                else if (newY < oldY) this.facingDirection = Entity.UP;
+
+                this.x = newX;
+                this.y = newY;
+                world.getTile(oldX, oldY).removeEntity(this);
+                world.getTile(newX, newY).addEntity(this);
+
+                Thread.sleep(150); // Pause pour l'animation
+            }
+        } else if (this.x != action.getTargetX() || this.y != action.getTargetY()) {
+            System.out.println("Jardinier : Impossible de trouver un chemin !");
+            this.currentState = State.WAITING;
+            return;
+        }
+
+        this.currentState = State.WORKING;
+        Thread.sleep(200);
+        action.perform(this, world);
+        this.currentState = State.WAITING;
+    }
 
     /**
      * Ajoute une action à la file et réveille le jardinier s'il dormait.
@@ -98,8 +141,8 @@ public class Gardener extends Entity implements Runnable {
         synchronized (actionQueue) {
             actionQueue.clear(); // Vide les prochaines actions
         }
-        if (gardenerThread != null && gardenerThread.isAlive()) {
-            gardenerThread.interrupt(); // Coupe le Thread.sleep() ou wait() en cours
+        if (this.currentState != State.WAITING && gardenerThread != null && gardenerThread.isAlive()) {
+            gardenerThread.interrupt();
         }
     }
 
@@ -118,47 +161,4 @@ public class Gardener extends Entity implements Runnable {
         interruptGardener();
     }
 
-    private void executeAction(Action action) throws InterruptedException {
-        this.currentState = State.MOVING;
-
-        List<Tile> path = this.pathFinding(world, action.getTargetX(), action.getTargetY());
-
-        if (path != null) {
-            for (Tile step : path) {
-                // CORRECTION CRUCIALE ICI :
-                // Thread.interrupted() vérifie l'interruption ET remet le flag à false !
-                if (Thread.interrupted()) {
-                    throw new InterruptedException("Déplacement annulé par l'utilisateur.");
-                }
-
-                int oldX = this.x;
-                int oldY = this.y;
-                int newX = step.getX();
-                int newY = step.getY();
-
-                // Calcul de la direction
-                if (newX > oldX) this.facingDirection = Entity.RIGHT;
-                else if (newX < oldX) this.facingDirection = Entity.LEFT;
-                else if (newY > oldY) this.facingDirection = Entity.DOWN;
-                else if (newY < oldY) this.facingDirection = Entity.UP;
-
-                // Deplacer le jardinier sur la nouvelle tuile
-                this.x = newX;
-                this.y = newY;
-                world.getTile(oldX, oldY).removeEntity(this);
-                world.getTile(newX, newY).addEntity(this);
-
-                Thread.sleep(150);
-            }
-        } else if (this.x != action.getTargetX() || this.y != action.getTargetY()) {
-            System.out.println("Chemin impossible vers (" + action.getTargetX() + ", " + action.getTargetY() + ")");
-            this.currentState = State.WAITING; // Reset de l'état
-            return;
-        }
-
-        this.currentState = State.WORKING;
-        Thread.sleep(200);
-        action.perform(this, world);
-        this.currentState = State.WAITING;
-    }
 }
