@@ -6,6 +6,7 @@ import src.control.SelectionController;
 import src.model.Camera;
 import src.model.Tile;
 import src.model.World;
+import src.model.actions.ActionBuilder;
 
 import javax.swing.*;
 import java.awt.*;
@@ -114,11 +115,14 @@ public class Display {
     /** Met la vue en mode selection, en affichant la vue selection et en cachant la vue globale
      * @param selectionCriteria le critere de selection pour les cases, par exemple "case avec une plante" ou "case vide,
      * fonction Tile -> boolean qui retourne true si la case est acceptee par la selection, false sinon
+     * @param message le message a afficher dans la vue selection, par exemple "Selectionner une case plantable"
+     * @param builder le builder d'action en cours
      * */
-    public void switchToSelection(Predicate<Tile> selectionCriteria, String message) {
+    public void switchToSelection(Predicate<Tile> selectionCriteria, String message, ActionBuilder builder) {
         popupView.hidePopup();   // si on vient d'un popup, le cacher
         selectionView.setMessage(message);   // indiquer a l'utilisateur ce qu'il doit selectionner
         selectionController.setSelectionCriteria(selectionCriteria);
+        selectionController.setActionBuilder(builder);
         globalView.setVisible(false);
         selectionView.setVisible(true);
         selectionView.requestFocusInWindow(); // pour que la vue selection puisse recevoir les inputs apres le changement de vue

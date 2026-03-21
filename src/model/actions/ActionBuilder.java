@@ -51,6 +51,6 @@ public abstract class ActionBuilder {
      * A appeler une seule fois, lorsque tous les parametres ont ete definis
      * @return l'action construite a partir des parametres du builder, prete a etre executee par le jardinier
      */
-    public abstract Action buildAction();
+    public abstract void buildAction();
 
 }

@@ -2,6 +2,7 @@ package src.control;
 
 import src.model.Tile;
 import src.model.World;
+import src.model.actions.ActionBuilder;
 import src.view.Display;
 import src.view.Global;
 import src.view.Selection;
@@ -18,6 +19,7 @@ public class SelectionController implements MouseListener {
 
     private Display display;
     private World world;
+    private ActionBuilder builder;    // pour stocker l'action en construction et pouvoir lui passer les infos de la case selectionnee
     // Critere de selection pour les cases, par exemple "case avec une plante" ou "case vide
     private Predicate<Tile> selectionCriteria = tile -> true;    // par defaut accepte toutes les cases
 
@@ -37,6 +39,14 @@ public class SelectionController implements MouseListener {
         this.selectionCriteria = selectionCriteria;
     }
 
+    /** Change le builder d'action en construction, pour pouvoir lui passer les infos de la case selectionnee
+     * A utiliser avant de lancer la vue selection pour definir l'action en construction a laquelle la selection doit fournir des infos
+     * @param builder le builder d'action en construction, pour pouvoir lui passer les infos de la case selectionnee
+     */
+    public void setActionBuilder(ActionBuilder builder) {
+        this.builder = builder;
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {
         // Selectionner la case
@@ -45,7 +55,10 @@ public class SelectionController implements MouseListener {
         // Determiner si la case selectionnee correspond au critere de selection
         if (selectionCriteria.test(tile)) {
             System.out.println("Case selectionnee! : " + tile.getX() + ", " + tile.getY());
-            // TODO : enchaine avec l'action associee a la case selectionnee, par exemple planter une graine si on est en train de selectionner une case pour planter
+            // Passer les infos de la case selectionnee au builder d'action en construction
+            builder.setTarget(coords.x, coords.y);
+            // Construire l'action finale a partir du builder et l'executer
+            builder.buildAction();
             display.switchToGlobal();
         } else {
             // pour le moment

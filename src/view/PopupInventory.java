@@ -3,6 +3,7 @@ package src.view;
 import src.control.popups.InventorySelector;
 import src.model.Inventory;
 import src.model.Item;
+import src.model.actions.ActionBuilder;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,7 +34,7 @@ public class PopupInventory extends PopupPanel {
      @param inventory l'inventaire à afficher dans le popup, dans ce cas c'est l'inventaire de la grange
      @param expectedItemType le type d'item qu'on doit selectionner dans le popup (ex: ItemSeed.class pour les graines)
     */
-    public PopupInventory(Display display, Inventory inventory, Class expectedItemType) {
+    public PopupInventory(Display display, Inventory inventory, Class expectedItemType, ActionBuilder builder) {
         // Appelle du constructeur de la classe mère PopupPanel pour initialiser le popup avec les paramètres donnés
         super(display, 400, 200, "Inventaire");
 
@@ -48,7 +49,7 @@ public class PopupInventory extends PopupPanel {
 //        backgroundLabel.setLayout(new BorderLayout());
 //        this.add(backgroundLabel, BorderLayout.CENTER);
 
-        initializeGrid();
+        initializeGrid(builder);
     }
 
     /*
@@ -58,7 +59,7 @@ public class PopupInventory extends PopupPanel {
     On peut changer pour afficher par ordre alphabétique ou par type d'item (graines d'abord, puis plantes),
     mais pour l'instant on affiche les items dans l'ordre où ils sont stockés dans la liste d'items de l'inventaire
      */
-    private void initializeGrid() {
+    private void initializeGrid(ActionBuilder builder) {
         // On définit la grille d'inventaire en utilisant un GridLayout pour afficher les items dans une grille selon les dimensions (HEIGHT x WIDTH)
         gridInventory = new JPanel(new GridLayout(HEIGHT, WIDTH));
 
@@ -76,7 +77,7 @@ public class PopupInventory extends PopupPanel {
                 // On crée un bouton pour afficher l'item, avec la quantité de l'item affichée sur le bouton (ex: "x3" pour 3 items)
                 JButton itemButton = new JButton("x" + item.getQuantity());
                 // Controleur du bouton
-                itemButton.addActionListener(new InventorySelector(display, expectedItemType, item));
+                itemButton.addActionListener(new InventorySelector(display, expectedItemType, item, builder));
 
                 // On affiche l'image de l'item sur le bouton, en utilisant la méthode getImage() de l'item pour récupérer l'image correspondante
                 // On redimensionne l'image de l'item pour qu'elle s'adapte à la taille du bouton, en utilisant la méthode getScaledInstance() de l'image de l'item
