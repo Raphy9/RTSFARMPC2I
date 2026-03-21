@@ -4,11 +4,13 @@ import src.control.CameraController;
 import src.control.GlobalController;
 import src.control.SelectionController;
 import src.model.Camera;
+import src.model.Tile;
 import src.model.World;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.function.Predicate;
 
 /**
  * Classe principale de l'affichage du jeu, elle cree et gere les differents elements de l'affichage
@@ -43,7 +45,7 @@ public class Display {
         globalView.setPreferredSize(gameSize);
         globalView.setBounds(0, 0, gameSize.width, gameSize.height);
         // Controlleurs de la vue globale
-        this.globalController = new GlobalController(this, globalView, this.world, this.camera);
+        this.globalController = new GlobalController(this, globalView, this.world);
         this.cameraController = new CameraController(camera, globalView);
         globalView.addKeyListener(this.cameraController);
         // Pour que la vue globale puisse bien recevoir les inputs
@@ -64,9 +66,10 @@ public class Display {
         this.selectionView.setPreferredSize(gameSize);
         this.selectionView.setBounds(0, 0, gameSize.width, gameSize.height);
         // Controleurs de la vue selection
-        this.selectionController = new SelectionController(this, selectionView);
+        this.selectionController = new SelectionController(this, world);
         selectionView.addMouseListener(this.selectionController);
         selectionView.addKeyListener(this.cameraController); // pour pouvoir deplacer la camera meme en mode selection
+        selectionView.setFocusable(true);
         // Par defaut, la vue selection est invisible, on l'affichera seulement quand on passera en mode selection
         layeredPane.add(selectionView, JLayeredPane.PALETTE_LAYER);   // au dessus de la vue globale, sous les popups
         selectionView.setVisible(false);
@@ -93,29 +96,36 @@ public class Display {
         popupView.showPopup(popup);
     }
 
-    /** Met la vue en mode global depuis le mode popup, en cachant le popup actif
-     * Utliser SEULEMENT depuis le mode popup */
+    /** Met la vue en mode global */
     public void switchToGlobal() {
-        popupView.hidePopup();
-        // Re-activer les controles de la vue globale
+        popupView.hidePopup(); // cacher le popup si on vient d'un popup
+        selectionView.setVisible(false);    // si on vient du mode selection, cacher la vue selection
+        globalView.setVisible(true);
+        // Re-activer les controles de la vue globale si besoin
         if (! Arrays.asList(globalView.getMouseListeners()).contains(globalController)) {
             globalView.addMouseListener(globalController);
         }
         if (! Arrays.asList(globalView.getKeyListeners()).contains(cameraController)) {
             globalView.addKeyListener(cameraController);
         }
+        globalView.requestFocusInWindow(); // pour que la vue globale puisse recevoir les inputs apres le changement de vue
     }
 
-    /** Met la vue en mode selection, en affichant la vue selection et en cachant la vue globale */
-    public void switchToSelection() {
+    /** Met la vue en mode selection, en affichant la vue selection et en cachant la vue globale
+     * @param selectionCriteria le critere de selection pour les cases, par exemple "case avec une plante" ou "case vide,
+     * fonction Tile -> boolean qui retourne true si la case est acceptee par la selection, false sinon
+     * */
+    public void switchToSelection(Predicate<Tile> selectionCriteria, String message) {
+        popupView.hidePopup();   // si on vient d'un popup, le cacher
+        selectionView.setMessage(message);   // indiquer a l'utilisateur ce qu'il doit selectionner
+        selectionController.setSelectionCriteria(selectionCriteria);
         globalView.setVisible(false);
         selectionView.setVisible(true);
+        selectionView.requestFocusInWindow(); // pour que la vue selection puisse recevoir les inputs apres le changement de vue
     }
 
-    /** Met la vue en mode global depuis le mode selection, en cachant la vue selection et en affichant la vue globale */
-    public void switchToGlobalFromSelection() {
-        selectionView.setVisible(false);
-        globalView.setVisible(true);
+    public Camera getCamera() {
+        return camera;
     }
 
     /** Repaint la fenetre */

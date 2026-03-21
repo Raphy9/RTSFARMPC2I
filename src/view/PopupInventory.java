@@ -12,6 +12,7 @@ import java.awt.*;
  * Popup recree a chaque fois qu'on en a besoin, car l'inventaire evolue
  */
 public class PopupInventory extends PopupPanel {
+    private Display display;
     private Inventory inventory; // L'inventaire dont on va afficher les items, dans ce cas c'est l'inventaire de la grange
     private ImageIcon backgroundImage; // Image de fond pour le popup d'inventaire, on peut l'utiliser pour rendre le popup plus joli et plus immersif
 
@@ -36,6 +37,7 @@ public class PopupInventory extends PopupPanel {
         // Appelle du constructeur de la classe mère PopupPanel pour initialiser le popup avec les paramètres donnés
         super(display, 400, 200, "Inventaire");
 
+        this.display = display;
         this.inventory = inventory;
         this.expectedItemType = expectedItemType;
 
@@ -74,7 +76,7 @@ public class PopupInventory extends PopupPanel {
                 // On crée un bouton pour afficher l'item, avec la quantité de l'item affichée sur le bouton (ex: "x3" pour 3 items)
                 JButton itemButton = new JButton("x" + item.getQuantity());
                 // Controleur du bouton
-                itemButton.addActionListener(new InventorySelector(expectedItemType, item));
+                itemButton.addActionListener(new InventorySelector(display, expectedItemType, item));
 
                 // On affiche l'image de l'item sur le bouton, en utilisant la méthode getImage() de l'item pour récupérer l'image correspondante
                 // On redimensionne l'image de l'item pour qu'elle s'adapte à la taille du bouton, en utilisant la méthode getScaledInstance() de l'image de l'item

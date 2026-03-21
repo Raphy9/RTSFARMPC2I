@@ -6,8 +6,8 @@ import java.awt.*;
 
 public class Camera {
     // Constantes de la taille de la caméra (en nombre de tuiles à afficher)
-    public static final int WIDTH = 28;
-    public static final int HEIGHT = 18;
+    public static final int WIDTH = 28;  // 28
+    public static final int HEIGHT = 13;  // 18
 
     // Position de la caméra dans le monde du jeu
     private float x;

@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 import javax.imageio.ImageIO;
 
 /**
@@ -76,9 +77,10 @@ public class World {
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
 
-                // Centre de la carte : on met la parcelle
-                if (y == HEIGHT / 2 && x == WIDTH / 2) {
-                    this.tiles[y][x] = new Tile(x, y, defaultParcel);
+                // Temporaire : on met des cases plantables aléatoirement pour tester
+                Random rand = new Random();
+                if (rand.nextInt(10) < 1) {  // 10% de chances d'avoir une case plantable
+                    this.tiles[y][x] = new CasePlantable(x, y);
                 } else {
                     // Partout ailleurs : on met l'unique herbe découpée
                     this.tiles[y][x] = new Tile(x, y, grassSprite);

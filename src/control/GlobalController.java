@@ -13,14 +13,12 @@ public class GlobalController implements MouseListener{
 
     private Display display;
     private World world;
-    private Camera camera;
     private ActionsPopup actionsPopup;
 
-    public GlobalController(Display display, Global globalView, World world, Camera camera) {
+    public GlobalController(Display display, Global globalView, World world) {
         globalView.addMouseListener(this);
         this.display = display;
         this.world = world;
-        this.camera = camera;
         // Creer le popup d'actions pour les jardiniers
         this.actionsPopup = new ActionsPopup(display, world);
     }
@@ -28,7 +26,7 @@ public class GlobalController implements MouseListener{
     @Override
     public void mouseClicked(MouseEvent e) {
         // Selectionner la case
-        Point coords = camera.screenToWorld(e.getX(), e.getY());
+        Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
         Tile tile = world.getTile(coords.x, coords.y);
 //        System.out.println("Clic sur la case: " + tile.getX() + ", " + tile.getY());
         // Si la case continent un jardinier, le selectionner
