@@ -39,11 +39,11 @@ public class InventorySelector implements ActionListener {
             builder.setItem(item);
 
             if (itemType == ItemSeed.class) {
+                // TODO: transferer les graines dans l'inventaire du jardinier
                 // Si c'est une graine, enchaine avec la selection d'une case plantable
                 display.switchToSelection(Tile::isFarmable, "Selectionner une case plantable", builder);    // critere de selection : case plantable (farmable)
             }
             System.out.println("Item selectionne: " + item);
-            // TODO : gerer la quantite d'items
         }
     }
 }
