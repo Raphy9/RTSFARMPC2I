@@ -1,7 +1,6 @@
 package src.model.actions;
 
-import src.model.actions.Action;
-import src.model.CasePlantable;
+import src.model.PlantTile;
 import src.model.Gardener;
 import src.model.Item;
 import src.model.ItemPlant;
@@ -20,8 +19,8 @@ public class HarvestAction extends Action {
     public void perform(Gardener gardener, World world) {
         Tile tile = world.getTile(targetX, targetY);
 
-        if (tile instanceof CasePlantable) {
-            CasePlantable parcel = (CasePlantable) tile;
+        if (tile instanceof PlantTile) {
+            PlantTile parcel = (PlantTile) tile;
             Plant plant = parcel.getPlant();
 
             if (plant != null && plant.isHarvestable()) {

@@ -1,6 +1,6 @@
 package src.control.popups;
 
-import src.model.CasePlantable;
+import src.model.PlantTile;
 import src.model.Gardener;
 import src.model.Plant;
 import src.model.Tile;
@@ -24,8 +24,8 @@ public class HarvestActionSelector implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         // Le critère : La case doit être plantable, avoir une plante, et être mûre (MATURE)
         Predicate<Tile> criteria = tile -> {
-            if (tile instanceof CasePlantable) {
-                Plant p = ((CasePlantable) tile).getPlant();
+            if (tile instanceof PlantTile) {
+                Plant p = ((PlantTile) tile).getPlant();
                 return p != null && p.isHarvestable();
             }
             return false;

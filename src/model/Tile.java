@@ -52,6 +52,10 @@ public class Tile {
         return false;
     }
 
+    public boolean isPlowable() {
+        return true;
+    }
+
 //    public boolean isPlantable() {return false;}
 
     public int getX() { return x; }

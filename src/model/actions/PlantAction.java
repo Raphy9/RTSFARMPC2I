@@ -1,7 +1,6 @@
 package src.model.actions;
 
-import src.model.actions.Action;
-import src.model.CasePlantable;
+import src.model.PlantTile;
 import src.model.Gardener;
 import src.model.ItemSeed;
 import src.model.Tile;
@@ -24,8 +23,8 @@ public class PlantAction extends Action {
         Tile tile = world.getTile(targetX, targetY);
 
         //  On vérifie qu'on est bien arrivé sur une case plantable
-        if (tile instanceof CasePlantable) {
-            CasePlantable parcel = (CasePlantable) tile;
+        if (tile instanceof PlantTile) {
+            PlantTile parcel = (PlantTile) tile;
 
             // On vérifie que la case est toujours libre (farmable) au moment où le jardinier arrive
             if (parcel.isFarmable()) {

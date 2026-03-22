@@ -2,7 +2,7 @@ package src.test;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import src.model.CasePlantable;
+import src.model.PlantTile;
 import src.model.PlantState;
 import src.model.PlantType;
 
@@ -10,11 +10,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CasePlantableTest {
 
-    private CasePlantable tuile;
+    private PlantTile tuile;
 
     @BeforeEach
     void setUp() {
-        tuile = new CasePlantable(0, 0);
+        tuile = new PlantTile(0, 0);
     }
 
     @Test

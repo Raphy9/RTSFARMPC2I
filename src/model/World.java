@@ -1,11 +1,7 @@
 package src.model;
 
 import javax.swing.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.Random;
-import javax.imageio.ImageIO;
 import javax.swing.Timer;
 
 /**
@@ -69,7 +65,7 @@ public class World {
                 // Temporaire : on met des cases plantables aléatoirement pour tester
                 Random rand = new Random();
                 if (rand.nextInt(10) < 1) {  // 10% de chances d'avoir une case plantable
-                    this.tiles[y][x] = new CasePlantable(x, y);
+                    this.tiles[y][x] = new PlantTile(x, y);
                 } else {
                     // Partout ailleurs : on met l'unique herbe découpée
                     this.tiles[y][x] = new Tile(x, y, grassSprite);
@@ -95,6 +91,10 @@ public class World {
 
     public Barn getBarn() {
         return this.barn;
+    }
+
+    public void toPlantTile(int x, int y) {
+        this.tiles[y][x] = new PlantTile(x, y);
     }
 
     /*

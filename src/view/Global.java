@@ -44,8 +44,8 @@ public class Global extends JPanel {
                     int paintY = (y * Display.RATIO_Y) - pixelDiffY;
                     g.drawImage(tile.getSprite().getImage(), paintX, paintY, Display.RATIO_X, Display.RATIO_Y, this);
                     //On vérifie si c'est une case plantable et on dessine la plante
-                    if (tile instanceof CasePlantable) {
-                        CasePlantable casePlantable = (CasePlantable) tile;
+                    if (tile instanceof PlantTile) {
+                        PlantTile casePlantable = (PlantTile) tile;
                         Plant plant = casePlantable.getPlant();
 
                         if (plant != null) {

@@ -6,7 +6,7 @@ import javax.swing.*;
  * La classe CasePlantable représente une tuile de terrain qui peut être cultivée.
  * Elle hérite de Tile et ajoute des fonctionnalités spécifiques à l'agriculture (planter, arroser, fertiliser, récolter).
  */
-public class CasePlantable extends Tile {
+public class PlantTile extends Tile {
 
     // --- Attributs spécifiques à l'agriculture ---
     private Plant plant;        // La plante (null si vide)
@@ -17,7 +17,7 @@ public class CasePlantable extends Tile {
      * @param x La coordonnée x de la tuile
      * @param y La coordonnée y de la tuile
      */
-    public CasePlantable(int x, int y) {
+    public PlantTile(int x, int y) {
         super(x, y, new ImageIcon("src/assets/parcel.png")); // Appelle le constructeur de Tile
         this.plant = null;
     }
@@ -34,6 +34,17 @@ public class CasePlantable extends Tile {
     public boolean isFarmable() {
         // On peut planter SEULEMENT s'il n'y a pas déjà une plante
         return this.plant == null;
+    }
+
+    /**
+     * Une case plantable ne peut pas être labourée, car elle est déjà prête à être plantée.
+     *
+     * @return false, car on ne peut pas labourer une case plantable
+     */
+    @Override
+    public boolean isPlowable() {
+        // On ne peut pas labourer une case plantable, elle est déjà prête à être plantée
+        return false;
     }
 
     /**
