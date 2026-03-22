@@ -14,7 +14,7 @@ public class Tile {
 
     private ImageIcon sprite; // L'image représentant la tuile
 
-    ArrayList<Entity> entities;
+    private ArrayList<Entity> entities;
 
     public Tile(int x, int y, ImageIcon s) {
         this.x = x;

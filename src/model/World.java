@@ -1,6 +1,7 @@
 package src.model;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.Timer;
 
@@ -94,7 +95,14 @@ public class World {
     }
 
     public void toPlantTile(int x, int y) {
-        this.tiles[y][x] = new PlantTile(x, y);
+        ArrayList<Entity> entities = this.tiles[y][x].getEntities();
+        PlantTile plantTile = new PlantTile(x, y);
+
+        for (Entity entity : entities) {
+            plantTile.addEntity(entity);
+        }
+
+        this.tiles[y][x] = plantTile;
     }
 
     /*
