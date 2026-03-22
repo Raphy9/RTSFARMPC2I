@@ -26,8 +26,7 @@ public class HarvestActionSelector implements ActionListener {
         Predicate<Tile> criteria = tile -> {
              if (tile instanceof PlantTile) {
                 Plant p = ((PlantTile) tile).getPlant();
-                return p != null && p.isHarvestable();
-            }
+                return p != null && (p.isHarvestable() || p.getState() == src.model.PlantState.MORT);            }
             return false;
         };
 

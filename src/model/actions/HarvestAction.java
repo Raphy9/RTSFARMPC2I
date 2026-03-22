@@ -23,33 +23,38 @@ public class HarvestAction extends Action {
             PlantTile parcel = (PlantTile) tile;
             Plant plant = parcel.getPlant();
 
-            if (plant != null && plant.isHarvestable()) {
-                PlantType type = plant.getType();
+            if (plant != null) {
 
-                // 1. Vider la case (votre méthode recolter() met this.plant à null)
-                // Au prochain tick graphique (30 FPS), la plante disparaîtra de l'écran !
-                parcel.harvest();
+                //  La plante est mûre (Récolte normale)
+                if (plant.isHarvestable()) {
+                    PlantType type = plant.getType();
 
-                // 2. Ajouter la plante récoltée à l'inventaire de la grange
-                boolean found = false;
-                for (Object obj : world.getBarn().getItems()) {
-                    Item item = (Item) obj;
-                    // Si on a déjà ce type de plante, on augmente juste la quantité
-                    if (item instanceof ItemPlant && item.getPlantType() == type) {
-                        item.addQuantity(1);
-                        found = true;
-                        break;
+                    parcel.harvest(); // Vide la case
+
+                    // Ajout à l'inventaire
+                    boolean found = false;
+                    for (Object obj : world.getBarn().getItems()) {
+                        Item item = (Item) obj;
+                        if (item instanceof ItemPlant && item.getPlantType() == type) {
+                            item.addQuantity(1);
+                            found = true;
+                            break;
+                        }
                     }
+                    if (!found) {
+                        world.getBarn().addItem(new ItemPlant(type, 1));
+                    }
+                    System.out.println("Succès : Le jardinier a récolté " + type.getName() + " !");
                 }
 
-                // Si on n'en avait pas encore, on crée un nouveau "tas" de 1
-                if (!found) {
-                    world.getBarn().addItem(new ItemPlant(type, 1));
+                //  La plante est morte (Nettoyage)
+                else if (plant.getState() == src.model.PlantState.MORT) {
+                    parcel.clean(); // Vide la case (votre méthode dans PlantTile)
+                    System.out.println("Le jardinier a arraché une plante morte. Rien n'a été ajouté à l'inventaire.");
                 }
 
-                System.out.println("Succès : Le jardinier a récolté " + type.getName() + " !");
             } else {
-                System.out.println("Échec : La plante n'est pas prête ou a disparu.");
+                System.out.println("Échec : Il n'y a rien sur cette case.");
             }
         }
     }
