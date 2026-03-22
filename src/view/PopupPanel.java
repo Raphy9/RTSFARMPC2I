@@ -1,6 +1,6 @@
 package src.view;
 
-import src.control.popups.ClosePopup;
+import src.control.popups.CloseController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +23,7 @@ public class PopupPanel extends JPanel {
 
             this.setLayout(new BorderLayout());
             setPreferredSize(new Dimension(width, height));
+            setFocusable(true);
 
             // Panel du haut avec le bouton annuler
             JPanel topPanel = new JPanel(new BorderLayout());
@@ -31,7 +32,9 @@ public class PopupPanel extends JPanel {
             // Bouton annuler pour fermer le popup
             JButton exit = new JButton("X");
             exit.setFocusable(false);
-            exit.addActionListener(new ClosePopup(display));
+            CloseController closeController = new CloseController(display);
+            exit.addActionListener(closeController);   // pour pouvoir fermer le popup au clic du bouton
+            this.addKeyListener(closeController);   // pour pouvoir fermer le popup avec Echap
             topPanel.add(exit, BorderLayout.EAST);
 
             // Titre

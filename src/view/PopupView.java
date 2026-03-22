@@ -27,6 +27,7 @@ public class PopupView extends JPanel {
         popup.setBounds(x, y, popup.getPreferredSize().width, popup.getPreferredSize().height);
 
         this.add(currentPopup);
+        currentPopup.requestFocusInWindow(); // pour que le popup puisse recevoir les inputs clavier
         this.revalidate();
         this.repaint();
     }

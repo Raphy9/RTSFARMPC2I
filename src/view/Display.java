@@ -3,6 +3,7 @@ package src.view;
 import src.control.CameraController;
 import src.control.GlobalController;
 import src.control.SelectionController;
+import src.control.popups.CloseController;
 import src.model.Camera;
 import src.model.Tile;
 import src.model.World;
@@ -68,8 +69,9 @@ public class Display {
         this.selectionView.setBounds(0, 0, gameSize.width, gameSize.height);
         // Controleurs de la vue selection
         this.selectionController = new SelectionController(this, world);
-        selectionView.addMouseListener(this.selectionController);
+        selectionView.addMouseListener(this.selectionController);   // pour pouvoir selectionner les cases avec la souris
         selectionView.addKeyListener(this.cameraController); // pour pouvoir deplacer la camera meme en mode selection
+        selectionView.addKeyListener(new CloseController(this)); // pour pouvoir fermer la vue selection avec Echap
         selectionView.setFocusable(true);
         // Par defaut, la vue selection est invisible, on l'affichera seulement quand on passera en mode selection
         layeredPane.add(selectionView, JLayeredPane.PALETTE_LAYER);   // au dessus de la vue globale, sous les popups

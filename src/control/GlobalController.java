@@ -39,7 +39,7 @@ public class GlobalController implements MouseListener{
             }
         }
 
-        // 2. Si on clique ailleurs : Déplacement
+        // 2. Si on clique ailleurs : Déplacement (TEMPORAIRE)
         src.model.Gardener gardener = world.getGardenerTest();
         if (gardener != null && tile.isWalkable()) {
             System.out.println("Clic sur case vide -> Envoi de l'ordre MoveAction vers (" + coords.x + ", " + coords.y + ")");
