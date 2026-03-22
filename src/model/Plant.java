@@ -28,7 +28,7 @@ public class Plant {
     public Plant(PlantType type) {
         this.type = type;
         this.state = PlantState.GRAINE;
-        this.currentWaterLevel = 50.0f; // Humidité initiale
+        this.currentWaterLevel = 0.0f; // Humidité initiale
         this.age = 0;
         this.ticksWithoutWater = 0;
         this.hasFertilizer = false;

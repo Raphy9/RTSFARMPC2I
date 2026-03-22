@@ -8,6 +8,8 @@ import javax.swing.*;
  */
 public class PlantTile extends Tile {
 
+    private static final ImageIcon DRY_SPRITE = new ImageIcon("src/assets/parcel.png");
+    private static final ImageIcon WET_SPRITE = new ImageIcon("src/assets/parcel_wet.jpg");
     // --- Attributs spécifiques à l'agriculture ---
     private Plant plant;// La plante (null si vide)
 
@@ -18,7 +20,7 @@ public class PlantTile extends Tile {
      * @param y La coordonnée y de la tuile
      */
     public PlantTile(int x, int y) {
-        super(x, y, new ImageIcon("src/assets/parcel.png")); // Appelle le constructeur de Tile
+        super(x, y, DRY_SPRITE); // Appelle le constructeur de Tile avec l'image de base
         this.plant = null;
     }
 
@@ -125,6 +127,16 @@ public class PlantTile extends Tile {
     }
 
     // --- GETTERS SPÉCIFIQUES ---
+
+    public ImageIcon getSprite() {
+        // Si la case contient une plante ET que cette plante a de l'eau
+        if (this.plant != null && this.plant.isIrrigated()) {
+            return WET_SPRITE; // On affiche la terre sombre
+        }
+
+        // Dans tous les autres cas
+        return DRY_SPRITE; // On affiche la terre claire
+    }
 
     public Plant getPlant() {
         return plant;
