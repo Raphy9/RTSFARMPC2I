@@ -5,28 +5,39 @@ import src.model.PlantTile;
 import src.model.Tile;
 import src.model.World;
 
+/**
+ * Action de labourage : le jardinier se déplace sur la tuile d'exécution (execX,execY) et laboure la case (plowX,plowY).
+ */
 public class PlowAction extends Action {
 
-    public PlowAction(int targetX, int targetY) {
-        super(targetX, targetY);
+    // Les coordonnées de la case à labourer
+    private int plowX, plowY;
+
+    /** Constructeur de PlowAction.
+     * @param execX Les coordonnées x de la tuile d'exécution (où le jardinier doit se déplacer pour effectuer l'action).
+     * @param execY Les coordonnées y de la tuile d'exécution.
+     * @param plowX Les coordonnées x de la case à labourer.
+     * @param plowY Les coordonnées y de la case à labourer.
+     */
+    public PlowAction(int execX, int execY, int plowX, int plowY) {
+        super(execX, execY);
+        this.plowX = plowX;
+        this.plowY = plowY;
     }
 
-    /**
-     * Le jardinier arrive sur la case ciblée. S'il s'agit d'une case non labourée,
-     * il la laboure (la transforme en PlantTile).
-     * @param gardener
-     * @param world
+    /** Le jardinier arrive sur la tuile d'exécution (execX,execY). Cette action laboure la case (plowX,plowY).
+     * Si la case est déjà labourée ou n'existe pas, un message d'erreur est affiché dans la console.
      */
     @Override
     public void perform(Gardener gardener, World world) {
-        Tile tile = world.getTile(targetX, targetY);
+        Tile tile = world.getTile(plowX, plowY);
 
         if (tile.isPlowable()) {
             // On remplace la tile actuelle par une nouvelle PlantTile
-            world.toPlantTile(targetX, targetY);
-            System.out.println("Succès : Le jardinier a labouré la case (" + targetX + ", " + targetY + ") !");
+            world.toPlantTile(plowX, plowY);
+            System.out.println("Succès : Le jardinier a labouré la case (" + plowX + ", " + plowY + ") !");
         } else {
-            System.out.println("Échec : La case (" + targetX + ", " + targetY + ") est déjà labourée ou n'existe pas.");
+            System.out.println("Échec : La case (" + plowX + ", " + plowY + ") est déjà labourée ou n'existe pas.");
         }
     }
 }

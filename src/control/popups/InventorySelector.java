@@ -31,6 +31,10 @@ public class InventorySelector implements ActionListener {
         this.builder = builder;
     }
 
+    /** Lorsque le bouton est clique, on verifie que l'item correspond au type attendu pour que le bouton soit actif,
+     * puis on stocke l'item dans le builder pour pouvoir l'utiliser dans l'action finale, et enfin on enchaine avec l'action associee
+     * (ex: si c'est une graine, on enchaine avec la selection d'une case plantable)
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         // Verifier que l'item correspond au type attendu pour que le bouton soit actif

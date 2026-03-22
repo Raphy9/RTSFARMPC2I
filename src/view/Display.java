@@ -14,24 +14,27 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-/**
- * Classe principale de l'affichage du jeu, elle cree et gere les differents elements de l'affichage
- * Display s'occupe de changer entre les differents modes de vue (global, popup, selection, menu)
- */
+/** Classe principale de la vue, qui gère les différentes vues (globale, popup, selection) et les interactions entre elles.
+ * C'est la classe centrale pour le rendu et l'affichage du jeu, elle contient les références vers les autres vues et les contrôleurs.
+ * C'est aussi la classe qui gère le changement de vue (par exemple passer de la vue globale à une vue popup ou de selection) et qui permet aux contrôleurs de déclencher des changements de vue.
+ * */
 public class Display {
     // Ratio multiplicateur pour la taille des objets
     public static final int RATIO_X = 64;
     public static final int RATIO_Y = 64;
-    private JFrame frame;
+    private final JFrame frame;
     private World world;
     private Camera camera;
-    private Global globalView;
-    private GlobalController globalController;
-    private CameraController cameraController;
-    private PopupView popupView;
-    private Selection selectionView;
-    private SelectionController selectionController;
+    private final Global globalView;
+    private final GlobalController globalController;
+    private final CameraController cameraController;
+    private final PopupView popupView;
+    private final Selection selectionView;
+    private final SelectionController selectionController;
 
+    /** Constructeur de la classe Display, qui initialise les différentes vues et contrôleurs, et configure la fenêtre principale du jeu.
+     * @param frame la fenêtre principale du jeu, créée dans la classe Main, pour laquelle on va configurer le contenu et les dimensions
+     */
     public Display(JFrame frame) {
         this.frame = frame;
         this.newGame();
@@ -80,6 +83,13 @@ public class Display {
         this.frame.setContentPane(layeredPane);
         this.frame.pack();
         this.frame.setVisible(true);
+    }
+
+    /**
+     * Accès à la vue globale (Global) pour permettre de déclencher un highlight visuel depuis les contrôleurs.
+     */
+    public Global getGlobalView() {
+        return this.globalView;
     }
 
     /**

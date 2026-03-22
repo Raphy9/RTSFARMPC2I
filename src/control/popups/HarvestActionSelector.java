@@ -11,15 +11,28 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.function.Predicate;
 
+/** Controleur du bouton récolter dans le menu de choix d'action
+ * Lance le mode de sélection d'une plante à récolter
+ */
 public class HarvestActionSelector implements ActionListener {
+    // Le constructeur reçoit la display pour pouvoir lancerle mode de sélection et
     private Display display;
     private HarvestActionBuilder builder;
 
+    /** Le constructeur reçoit la display pour pouvoir lancer le mode de sélection et
+     * builder pour construire l'action une fois la case sélectionnée
+     * @param display la display pour lancer le mode de sélection
+     * @param gardener le jardinier pour construire le HarvestActionBuilder
+     */
     public HarvestActionSelector(Display display, Gardener gardener) {
         this.display = display;
         this.builder = new HarvestActionBuilder(gardener);
     }
 
+    /** Lorsque le bouton est cliqué, on lance le mode de sélection de la display avec un critère de récolte.
+     * La display doit alors permettre à l'utilisateur de cliquer sur une plante valide pour récolter, et une fois la plante sélectionnée,
+     * elle doit appeler builder.buildAction() pour construire et ajouter l'action au jardinier.
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         // Le critère : La case doit être plantable, avoir une plante, et être mûre (MATURE)

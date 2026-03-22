@@ -16,6 +16,9 @@ public class Tile {
 
     private ArrayList<Entity> entities;
 
+    // Par défaut la tuile est franchissable
+    private boolean walkable = true;
+
     public Tile(int x, int y, ImageIcon s) {
         this.x = x;
         this.y = y;
@@ -45,7 +48,11 @@ public class Tile {
     }
 
     public boolean isWalkable() {
-        return true;
+        return walkable;
+    }
+
+    public void setWalkable(boolean walkable) {
+        this.walkable = walkable;
     }
 
     public boolean isFarmable() {
@@ -71,4 +78,3 @@ public class Tile {
     }
 
 }
-

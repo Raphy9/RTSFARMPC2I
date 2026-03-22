@@ -42,17 +42,10 @@ public class PopupInventory extends PopupPanel {
         this.inventory = inventory;
         this.expectedItemType = expectedItemType;
 
-//        // Initialisation de l'image de fond pour le popup d'invenaire
-//        backgroundImage = new ImageIcon("src/assets/inventory_background.png");
-//        // On affiche le fond d'inventaire en utilisant un JLabel pour afficher l'image de fond, et on ajoute la grille d'inventaire par dessus
-//        JLabel backgroundLabel = new JLabel(backgroundImage);
-//        backgroundLabel.setLayout(new BorderLayout());
-//        this.add(backgroundLabel, BorderLayout.CENTER);
-
         initializeGrid(builder);
     }
 
-    /*
+    /**
     Méthode pour initialiser la grille d'inventaire, qui affiche les items de l'inventaire dans une grille de 5x3,
     avec des cases vides si il n'y a pas d'item à afficher
 
@@ -74,14 +67,26 @@ public class PopupInventory extends PopupPanel {
                 // On récupère l'item à afficher à l'index i de la liste d'items de l'inventaire
                 Item item = (Item) inventory.getItems().get(i);
 
+                // Si la quantité de l'item est négative, ne pas l'afficher
+                if (item.getQuantity() < 0) {
+                    gridInventory.add(new JLabel());
+                    continue;
+                }
+
                 // On crée un bouton pour afficher l'item, avec la quantité de l'item affichée sur le bouton (ex: "x3" pour 3 items)
                 JButton itemButton = new JButton("x" + item.getQuantity());
                 // Controleur du bouton
-                itemButton.addActionListener(new InventorySelector(display, expectedItemType, item, builder));
+                if (item.getQuantity() > 0) {
+                    itemButton.addActionListener(new InventorySelector(display, expectedItemType, item, builder));
+                } else {
+                    // quantité == 0 : rendre le bouton inactif pour éviter les clics
+                    itemButton.setEnabled(false);
+                }
 
-                // On affiche l'image de l'item sur le bouton, en utilisant la méthode getImage() de l'item pour récupérer l'image correspondante
-                // On redimensionne l'image de l'item pour qu'elle s'adapte à la taille du bouton, en utilisant la méthode getScaledInstance() de l'image de l'item
-                itemButton.setIcon(new ImageIcon(item.getImage().getImage().getScaledInstance(35, 35, Image.SCALE_SMOOTH)));
+                // Définir icône si disponible
+                if (item.getImage() != null) {
+                    itemButton.setIcon(new ImageIcon(item.getImage().getImage().getScaledInstance(35, 35, Image.SCALE_SMOOTH)));
+                }
 
                 // L'icon et le texte ne sont pas surlignés quand on clique sur le bouton
                 itemButton.setFocusable(false);
@@ -96,7 +101,6 @@ public class PopupInventory extends PopupPanel {
 
             // Sinon on ajoute une case vide à la grille pour remplir la grille de 5x3, même si il n'y a pas d'item à afficher
             else {
-                // Ajouter une case vide si il n'y a pas d'item à afficher
                 gridInventory.add(new JLabel());
             }
         }

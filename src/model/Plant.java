@@ -12,7 +12,7 @@ public class Plant {
     // --- Constantes ---
     private static final float MAX_WATER_LEVEL = 100.0f;
     // private static final int TIME_BEFORE_ROT = 500;   // SUPPRIMÉ : la pourriture est fusionnée avec la mort
-    private static final int TIME_BEFORE_DEATH = 100; // Temps (ticks) sans eau avant de mourir
+    private static final int TIME_BEFORE_DEATH = 300; // Temps (ticks) sans eau avant de mourir
 
     // --- Attributs ---
     private final PlantType type; // Le type de plante (Salade, Carotte, Tomate, etc.)

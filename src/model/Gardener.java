@@ -81,29 +81,38 @@ public class Gardener extends Entity implements Runnable {
         }
     }
 
+    /**
+     * Exécute une action : gère le déplacement vers la cible, puis l'exécution de l'action.
+     * Cette méthode est appelée depuis la boucle principale du Thread du jardinier.
+     */
     private void executeAction(Action action) throws InterruptedException {
-        this.currentState = State.MOVING;
+        this.currentState = State.MOVING; // Le jardinier se prépare à bouger
         System.out.println("Jardinier : Calcul du chemin vers (" + action.getTargetX() + ", " + action.getTargetY() + ")");
 
+        // Contrainte forte de la F2 : Gestion de l'annulation pendant le déplacement
         List<Tile> path = this.pathFinding(world, action.getTargetX(), action.getTargetY());
 
+        // Si le pathfinding retourne null, cela signifie que la cible est inaccessible (ex: bloquée par des obstacles).
         if (path != null) {
             System.out.println("Jardinier : Chemin trouvé ! (" + path.size() + " cases)");
-            for (Tile step : path) {
-                if (Thread.interrupted()) {
+            for (Tile step : path) { // Parcours du chemin case par case
+                if (Thread.interrupted()) { // Si une interruption est détectée, on arrête immédiatement le déplacement
                     throw new InterruptedException("Déplacement annulé.");
                 }
 
+                // Mise à jour de la position du jardinier et de sa direction
                 int oldX = this.x;
                 int oldY = this.y;
                 int newX = step.getX();
                 int newY = step.getY();
 
+                // Mise à jour de la direction du jardinier en fonction du mouvement
                 if (newX > oldX) this.facingDirection = Entity.RIGHT;
                 else if (newX < oldX) this.facingDirection = Entity.LEFT;
                 else if (newY > oldY) this.facingDirection = Entity.DOWN;
                 else if (newY < oldY) this.facingDirection = Entity.UP;
 
+                // Mise à jour de la position du jardinier dans le monde
                 this.x = newX;
                 this.y = newY;
                 world.getTile(oldX, oldY).removeEntity(this);
@@ -111,12 +120,14 @@ public class Gardener extends Entity implements Runnable {
 
                 Thread.sleep(150); // Pause pour l'animation
             }
-        } else if (this.x != action.getTargetX() || this.y != action.getTargetY()) {
+        } // Si le pathfinding retourne null, cela signifie que la cible est inaccessible (ex: bloquée par des obstacles).
+        else if (this.x != action.getTargetX() || this.y != action.getTargetY()) {
             System.out.println("Jardinier : Impossible de trouver un chemin !");
             this.currentState = State.WAITING;
             return;
         }
 
+        // Arrivé à destination, on exécute l'action
         this.currentState = State.WORKING;
         Thread.sleep(200);
         action.perform(this, world);
@@ -124,7 +135,9 @@ public class Gardener extends Entity implements Runnable {
     }
 
     /**
-     * Ajoute une action à la file et réveille le jardinier s'il dormait.
+     * Ajoute une action à la file d'attente du jardinier.
+     * Cette méthode est appelée par le Thread principal du jeu lorsque le joueur planifie une action.
+     * Si le jardinier est en train de dormir (wait), il sera réveillé pour traiter cette nouvelle action.
      */
     public void addAction(Action action) {
         synchronized (actionQueue) {
@@ -133,9 +146,8 @@ public class Gardener extends Entity implements Runnable {
         }
     }
 
-    /**
-     * Contrainte forte de la F2 : Gestion de l'annulation.
-     * Interrompt l'action courante, vide la file et retourne en état d'attente.
+    /** Méthode pour interrompre le jardinier : elle vide les actions en attente et interrompt le thread s'il est en train de se déplacer ou de travailler.
+     * Cette méthode est appelée lorsque le joueur clique sur une nouvelle action alors que le jardinier est déjà occupé.
      */
     public void interruptGardener() {
         synchronized (actionQueue) {
@@ -159,6 +171,13 @@ public class Gardener extends Entity implements Runnable {
     public void stopGardener() {
         this.isRunning = false;
         interruptGardener();
+    }
+
+    // Méthode de test : renvoie le nombre d'actions en attente (pour les tests unitaires)
+    public int getPendingActionsCount() {
+        synchronized (actionQueue) {
+            return actionQueue.size();
+        }
     }
 
 }

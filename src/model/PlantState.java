@@ -6,7 +6,7 @@ package src.model;
 public enum PlantState {
     GRAINE,     // Step 1
     POUSSE,     // Step 2
-    CROISSANCE, // Step 3 (Nouvel état intermédiaire)
+    CROISSANCE, // Step 3
     MATURE,     // Step 4
     MORT        // fstep (état d'échec)
 }

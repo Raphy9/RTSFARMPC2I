@@ -2,24 +2,30 @@ package src.model;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Random;
 import javax.swing.Timer;
+import java.awt.Point;
 
-/**
- * La classe World représente le monde du jeu, qui est une grille de tiles.
+/** * La classe World représente le monde du jeu, contenant les cases (tiles), le jardinier, la grange, etc.
+ * Elle gère l'initialisation du monde, le chargement des sprites, et la logique de mise à jour (tick).
  */
 public class World {
+    // Dimensions du monde (en nombre de cases)
     public static final int WIDTH = 100;
     public static final int HEIGHT = 100;
 
     private Tile[][] tiles;
 
-    // Plus besoin de tableau, on stocke juste l'unique image d'herbe choisie
+    // Image principale d'herbe
     private ImageIcon grassSprite;
-    private ImageIcon defaultParcel; // Image de la parcelle
     private Gardener testGardener;
     private Barn barn;
 
+    // Coordonnées de la grange (Option A : position fixe au démarrage)
+    private int barnX = 55;
+    private int barnY = 55;
+
+    /** Constructeur du monde : charge les sprites, initialise les cases, crée le jardinier et la grange, et lance le thread du jardinier et l'horloge de tick.
+     */
     public World() {
         loadTerrainSprites();
         initializeTiles();
@@ -45,12 +51,8 @@ public class World {
             // Charger  une image pour l'herbe
             grassSprite = new ImageIcon("src/assets/grass2.jpg");
 
-            // Charger l'image de la parcelle labourée
-            this.defaultParcel = new ImageIcon("src/assets/parcel.png");
-
         } catch (Exception e) {
-            System.err.println("Erreur : Impossible de charger les sprites !");
-            e.printStackTrace();
+            System.err.println("Erreur : Impossible de charger les sprites ! " + e.getMessage());
         }
     }
 
@@ -63,15 +65,18 @@ public class World {
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
 
-                // Temporaire : on met des cases plantables aléatoirement pour tester
-                Random rand = new Random();
-                if (rand.nextInt(10) < 1) {  // 10% de chances d'avoir une case plantable
-                    this.tiles[y][x] = new PlantTile(x, y);
-                } else {
-                    // Partout ailleurs : on met l'unique herbe découpée
-                    this.tiles[y][x] = new Tile(x, y, grassSprite);
-                }
+                this.tiles[y][x] = new Tile(x, y, grassSprite);
+
             }
+        }
+
+        // Marquer la tuile de la grange avec un sprite chest et la rendre non franchissable
+        try {
+            ImageIcon chest = new ImageIcon("src/assets/chest.png");
+            this.tiles[barnY][barnX].setSprite(chest);
+            this.tiles[barnY][barnX].setWalkable(false);
+        } catch (Exception e) {
+            System.err.println("Warning: impossible de charger src/assets/chest.png: " + e.getMessage());
         }
     }
 
@@ -94,6 +99,13 @@ public class World {
         return this.barn;
     }
 
+    /** Retourne la coordonnée X de la grange */
+    public int getBarnX() { return barnX; }
+    /** Retourne la coordonnée Y de la grange */
+    public int getBarnY() { return barnY; }
+    /** Indique si les coordonnées données correspondent à la grange */
+    public boolean isBarnAt(int x, int y) { return x == barnX && y == barnY; }
+
     public void toPlantTile(int x, int y) {
         ArrayList<Entity> entities = this.tiles[y][x].getEntities();
         PlantTile plantTile = new PlantTile(x, y);
@@ -110,12 +122,12 @@ public class World {
      On peut la modifier pour tester différents items dans la grange.
      */
     private void fstSetBarn() {
-        barn.addItem(new ItemPlant(PlantType.CAROTTE, 10));
-        barn.addItem(new ItemPlant(PlantType.CHOUX, 20));
-        barn.addItem(new ItemPlant(PlantType.FRAISE, 20));
-        barn.addItem(new ItemSeed(PlantType.CAROTTE, 20));
-        barn.addItem(new ItemSeed(PlantType.CHOUX, 20));
-        barn.addItem(new ItemSeed(PlantType.FRAISE, 20));
+        barn.addItem(new ItemPlant(PlantType.CAROTTE, 5));
+        barn.addItem(new ItemPlant(PlantType.CHOUX, 5));
+        barn.addItem(new ItemPlant(PlantType.FRAISE, 5));
+        barn.addItem(new ItemSeed(PlantType.CAROTTE, 5));
+        barn.addItem(new ItemSeed(PlantType.CHOUX, 5));
+        barn.addItem(new ItemSeed(PlantType.FRAISE, 5));
     }
 
     /**
@@ -129,5 +141,35 @@ public class World {
                 }
             }
         }
+    }
+
+    /**
+     * Trouve la meilleure tuile adjacente orthogonale (haut, bas, gauche, droite) à la case cible (tx,ty)
+     * qui est marchable (isWalkable). Ne considère pas la case cible elle-même.
+     * Retourne la tuile adjacente la plus proche du jardinier (distance Manhattan minimale) ou null.
+     */
+    public Point findClosestWalkableAdjacent(int tx, int ty, Gardener gardener) {
+        int bestX = -1, bestY = -1;
+        int bestDist = Integer.MAX_VALUE;
+        if (gardener == null) return null;
+
+        // Directions orthogonales uniquement
+        int[][] dirs = {{1,0}, {-1,0}, {0,1}, {0,-1}};
+        for (int[] d : dirs) {
+            int nx = tx + d[0];
+            int ny = ty + d[1];
+            if (nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT) continue;
+            Tile t = getTile(nx, ny);
+            if (t.isWalkable()) {
+                int dist = Math.abs(nx - gardener.getX()) + Math.abs(ny - gardener.getY());
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestX = nx;
+                    bestY = ny;
+                }
+            }
+        }
+        if (bestX == -1) return null;
+        return new Point(bestX, bestY);
     }
 }

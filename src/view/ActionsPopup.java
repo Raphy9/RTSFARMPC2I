@@ -18,6 +18,11 @@ import java.awt.*;
 public class ActionsPopup extends PopupPanel {
 
 
+    /** * Constructeur du popup d'actions, qui crée les boutons pour chaque action possible et leur associe un ActionListener correspondant
+     * @param display la display pour pouvoir lancer les modes de sélection des différentes actions
+     * @param world le monde pour construire les différents ActionBuilders
+     * @param gardener le jardinier pour construire les différents ActionBuilders
+     */
     public ActionsPopup(Display display, World world, Gardener gardener) {
         super(display, 250, 120, "Actions");
 
@@ -25,7 +30,7 @@ public class ActionsPopup extends PopupPanel {
 
         // Bouton labourer qui lance le mode sélection de case à labourer
         JButton plowButton = new JButton("Labourer");
-        plowButton.addActionListener(new PlowActionSelector(display,gardener));
+        plowButton.addActionListener(new PlowActionSelector(display, world, gardener));
         actionsPanel.add(plowButton);
 
         // Bouton planter qui lance le popup de selection de graine
@@ -35,7 +40,7 @@ public class ActionsPopup extends PopupPanel {
 
         // Boutons d'arrosage (à implémenter)
         JButton waterButton = new JButton("Arroser");
-        waterButton.addActionListener(new WaterActionSelector(display, gardener));
+        waterButton.addActionListener(new WaterActionSelector(display, world, gardener));
         actionsPanel.add(waterButton);
 
         // Bouton récolter qui lance le mode sélection de plante à récolter

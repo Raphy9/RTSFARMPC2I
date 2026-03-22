@@ -13,4 +13,11 @@ public class Barn extends Inventory {
     public Barn() {
         super();
     }
+
+    /**
+     * Transfère jusqu'à qty unités de sourceItem depuis cette grange vers target.
+     */
+    public int transferToInventory(Inventory target, Item sourceItem, int qty) {
+        return super.transferTo(target, sourceItem, qty);
+    }
 }

@@ -11,22 +11,28 @@ import java.awt.event.KeyListener;
  * Permet de revenir a la vue globale au clic d'un bouton ou quand Echap est presse */
 public class CloseController implements ActionListener, KeyListener {
 
+    // Le constructeur reçoit la display pour pouvoir switcher à la vue globale
     private Display display;
 
+    /** Le constructeur reçoit la display pour pouvoir switcher à la vue globale
+     * @param display la display pour switcher à la vue globale */
     public CloseController(Display display) {
         this.display = display;
     }
 
+    /** Lorsque le bouton est cliqué, on revient à la vue globale */
     @Override
     public void actionPerformed(ActionEvent e) {
         display.switchToGlobal();   // revenir a la vue globale
     }
 
+    // Implémentation de KeyListener pour permettre de fermer le popup ou la vue de sélection en appuyant sur Echap
     @Override
     public void keyTyped(KeyEvent e) {
 
     }
 
+    // Lorsque une touche est pressée, on vérifie si c'est Echap, et si c'est le cas, on revient à la vue globale
     @Override
     public void keyPressed(KeyEvent e) {
         // Fermer si la touche echap est appuyee
