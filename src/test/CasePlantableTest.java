@@ -25,7 +25,7 @@ class CasePlantableTest {
 
     @Test
     void testPlanterRules() {
-        boolean success = tuile.planter(PlantType.CAROTTE);
+        boolean success = tuile.plant(PlantType.CAROTTE);
 
         assertTrue(success, "La plantation doit réussir immédiatement");
         assertNotNull(tuile.getPlant(), "La plante doit être présente après plantation");
@@ -33,7 +33,7 @@ class CasePlantableTest {
 
         assertFalse(tuile.isFarmable(), "La case ne doit plus accepter de nouvelles graines une fois occupée");
 
-        boolean doublePlant = tuile.planter(PlantType.CHOUX);
+        boolean doublePlant = tuile.plant(PlantType.CHOUX);
         assertFalse(doublePlant, "Impossible de planter si la case est déjà occupée");
 
         assertEquals(PlantType.CAROTTE, tuile.getPlant().getType(), "La plante originale ne doit pas être remplacée");
@@ -41,22 +41,22 @@ class CasePlantableTest {
 
     @Test
     void testRecolteLogic() {
-        tuile.planter(PlantType.CHOUX);
+        tuile.plant(PlantType.CHOUX);
         int duration = PlantType.CHOUX.getGrowthDuration();
 
-        int gain = tuile.recolter();
+        int gain = tuile.harvest();
         assertEquals(0, gain, "On ne gagne rien sur une plante pas mûre");
         assertNotNull(tuile.getPlant(), "La plante doit rester là tant qu'elle n'est pas récoltée");
 
         for (int i = 0; i < duration + 1; i++) {
-            tuile.arroser();
+            tuile.water();
             tuile.tick();
         }
 
         assertNotNull(tuile.getPlant());
         assertEquals(PlantState.MATURE, tuile.getPlant().getState());
 
-        gain = tuile.recolter();
+        gain = tuile.harvest();
         assertEquals(PlantType.CHOUX.getValue(), gain, "Le gain doit correspondre à la valeur de la plante");
         assertNull(tuile.getPlant(), "La case doit être vide après récolte");
         assertTrue(tuile.isFarmable(), "La case doit être de nouveau plantable après la récolte");
@@ -64,7 +64,7 @@ class CasePlantableTest {
 
     @Test
     void testNettoyagePlanteMorte() {
-        tuile.planter(PlantType.CHOUX);
+        tuile.plant(PlantType.CHOUX);
 
         for (int i = 0; i < 200; i++) {
             tuile.tick();
@@ -72,9 +72,9 @@ class CasePlantableTest {
 
         assertNotNull(tuile.getPlant());
         assertEquals(PlantState.MORT, tuile.getPlant().getState());
-        assertEquals(0, tuile.recolter());
+        assertEquals(0, tuile.harvest());
 
-        tuile.nettoyer();
+        tuile.clean();
 
         assertNull(tuile.getPlant(), "La plante morte doit être retirée après nettoyage");
         assertTrue(tuile.isFarmable(), "La case doit être de nouveau disponible");
@@ -82,17 +82,17 @@ class CasePlantableTest {
 
     @Test
     void testMettreEngrais() {
-        assertFalse(tuile.mettreEngrais(), "Impossible de mettre de l'engrais sur une case vide");
+        assertFalse(tuile.fertilizer(), "Impossible de mettre de l'engrais sur une case vide");
 
-        tuile.planter(PlantType.CHOUX);
+        tuile.plant(PlantType.CHOUX);
         int duration = PlantType.CHOUX.getGrowthDuration();
 
-        assertTrue(tuile.mettreEngrais(), "L'application d'engrais doit réussir sur une jeune plante");
-        assertFalse(tuile.mettreEngrais(), "Impossible de mettre de l'engrais deux fois");
+        assertTrue(tuile.fertilizer(), "L'application d'engrais doit réussir sur une jeune plante");
+        assertFalse(tuile.fertilizer(), "Impossible de mettre de l'engrais deux fois");
 
         int ticksToMatureFertilized = duration / 2;
         for (int i = 0; i < ticksToMatureFertilized; i++) {
-            tuile.arroser();
+            tuile.water();
             tuile.tick();
         }
 
@@ -100,6 +100,6 @@ class CasePlantableTest {
         assertEquals(PlantState.MATURE, tuile.getPlant().getState(),
                 "La plante fertilisée devrait être mature en moitié moins de temps");
 
-        assertTrue(tuile.recolter() > 0);
+        assertTrue(tuile.harvest() > 0);
     }
 }

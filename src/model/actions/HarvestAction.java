@@ -28,7 +28,7 @@ public class HarvestAction extends Action {
 
                 // 1. Vider la case (votre méthode recolter() met this.plant à null)
                 // Au prochain tick graphique (30 FPS), la plante disparaîtra de l'écran !
-                parcel.recolter();
+                parcel.harvest();
 
                 // 2. Ajouter la plante récoltée à l'inventaire de la grange
                 boolean found = false;

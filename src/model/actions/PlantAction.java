@@ -30,7 +30,7 @@ public class PlantAction extends Action {
             if (parcel.isFarmable()) {
 
                 // On plante la graine ! (Cela va créer l'objet Plant dans la case)
-                boolean success = parcel.planter(seed.getPlantType());
+                boolean success = parcel.plant(seed.getPlantType());
 
                 if (success) {
                     System.out.println("Succès : Le jardinier a planté " + seed.getPlantType().getName() + " !");

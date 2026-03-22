@@ -9,7 +9,7 @@ import javax.swing.*;
 public class PlantTile extends Tile {
 
     // --- Attributs spécifiques à l'agriculture ---
-    private Plant plant;        // La plante (null si vide)
+    private Plant plant;// La plante (null si vide)
 
     /**
      * Constructeur de CasePlantable.
@@ -67,7 +67,7 @@ public class PlantTile extends Tile {
      * @param type Le type de plante à planter
      * @return true si la plantation a réussi, false si la case est déjà occupée
      */
-    public boolean planter(PlantType type) {
+    public boolean plant(PlantType type) {
         if (this.plant != null) {
             return false;
         }
@@ -79,7 +79,7 @@ public class PlantTile extends Tile {
      * Arrose la plante présente sur cette case, si elle existe.
      * L'arrosage ajoute une quantité d'eau fixe (33.0f) à la plante.
      */
-    public void arroser() {
+    public void water() {
         if (this.plant != null) {
             this.plant.water(33.0f);
         }
@@ -91,7 +91,7 @@ public class PlantTile extends Tile {
      *
      * @return true si l'engrais a été appliqué, false sinon (ex: pas de plante ou déjà mature)
      */
-    public boolean mettreEngrais() {
+    public boolean fertilizer() {
         if (this.plant != null) {
             return this.plant.applyFertilizer();
         }
@@ -104,7 +104,7 @@ public class PlantTile extends Tile {
      *
      * @return le gain en argent de la récolte, ou 0 si la plante n'était pas récoltable
      */
-    public int recolter() {
+    public int harvest() {
         if (this.plant != null && this.plant.isHarvestable()) {
             int gain = this.plant.getType().getValue();
             this.plant = null; // La case se vide après la récolte
@@ -117,7 +117,7 @@ public class PlantTile extends Tile {
      * Nettoie la case en supprimant la plante morte ou pourrie.
      * Cette méthode peut être appelée après une récolte ratée ou pour préparer la case à une nouvelle plantation.
      */
-    public void nettoyer() {
+    public void clean() {
         if (this.plant != null &&
                 (this.plant.getState() == PlantState.MORT)) {
             this.plant = null;
