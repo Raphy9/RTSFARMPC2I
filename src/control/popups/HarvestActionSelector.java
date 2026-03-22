@@ -24,7 +24,7 @@ public class HarvestActionSelector implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         // Le critère : La case doit être plantable, avoir une plante, et être mûre (MATURE)
         Predicate<Tile> criteria = tile -> {
-            if (tile instanceof PlantTile) {
+             if (tile instanceof PlantTile) {
                 Plant p = ((PlantTile) tile).getPlant();
                 return p != null && p.isHarvestable();
             }

@@ -16,7 +16,12 @@ public class WaterAction extends Action {
 
         if (tile instanceof PlantTile) {
             PlantTile plantTile = (PlantTile) tile;
-            plantTile.water();
+            if (plantTile.getPlant() != null) {
+                plantTile.water();
+            }
+            else {
+                System.out.println("Erreur : Il n'y a pas de plante à arroser sur cette case.");
+            }
         } else {
             System.out.println("Erreur : Ce n'est pas une case avec une plante à arroser.");
         }

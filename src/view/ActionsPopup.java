@@ -3,6 +3,7 @@ package src.view;
 import src.control.popups.HarvestActionSelector;
 import src.control.popups.PlantActionSelector;
 import src.control.popups.PlowActionSelector;
+import src.control.popups.WaterActionSelector;
 import src.model.Gardener;
 import src.model.World;
 import src.model.actions.PlantActionBuilder;
@@ -34,6 +35,7 @@ public class ActionsPopup extends PopupPanel {
 
         // Boutons d'arrosage (à implémenter)
         JButton waterButton = new JButton("Arroser");
+        waterButton.addActionListener(new WaterActionSelector(display, gardener));
         actionsPanel.add(waterButton);
 
         // Bouton récolter qui lance le mode sélection de plante à récolter
