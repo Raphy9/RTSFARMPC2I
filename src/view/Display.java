@@ -49,7 +49,7 @@ public class Display {
         // Controlleurs de la vue globale
         this.globalController = new GlobalController(this, globalView, this.world);
         this.cameraController = new CameraController(camera, globalView);
-        globalView.addMouseMotionListener(this.cameraController);
+        globalView.addKeyListener(this.cameraController);
         // Pour que la vue globale puisse bien recevoir les inputs
         globalView.setFocusable(true);
         globalView.requestFocusInWindow();
@@ -70,7 +70,7 @@ public class Display {
         // Controleurs de la vue selection
         this.selectionController = new SelectionController(this, world);
         selectionView.addMouseListener(this.selectionController);   // pour pouvoir selectionner les cases avec la souris
-        selectionView.addMouseMotionListener(this.cameraController); // pour pouvoir deplacer la camera meme en mode selection
+        selectionView.addKeyListener(this.cameraController); // pour pouvoir deplacer la camera meme en mode selection
         selectionView.addKeyListener(new CloseController(this)); // pour pouvoir fermer la vue selection avec Echap
         selectionView.setFocusable(true);
         // Par defaut, la vue selection est invisible, on l'affichera seulement quand on passera en mode selection
@@ -94,7 +94,7 @@ public class Display {
     public void switchToPopup(PopupPanel popup) {
         // Si on est en mode global, desactiver les contoles de la vue globale
         globalView.removeMouseListener(globalController); // ne fait rien si deja enleve
-        globalView.removeMouseMotionListener(cameraController); // ne fait rien si deja enleve
+        globalView.removeKeyListener(cameraController); // ne fait rien si deja enleve
         // Afficher le popup
         popupView.showPopup(popup);
     }
@@ -108,8 +108,8 @@ public class Display {
         if (! Arrays.asList(globalView.getMouseListeners()).contains(globalController)) {
             globalView.addMouseListener(globalController);
         }
-        if (! Arrays.asList(globalView.getMouseMotionListeners()).contains(cameraController)) {
-            globalView.addMouseMotionListener(cameraController);
+        if (! Arrays.asList(globalView.getKeyListeners()).contains(cameraController)) {
+            globalView.addKeyListener(cameraController);
         }
         globalView.requestFocusInWindow(); // pour que la vue globale puisse recevoir les inputs apres le changement de vue
     }
