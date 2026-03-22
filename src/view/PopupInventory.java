@@ -36,7 +36,7 @@ public class PopupInventory extends PopupPanel {
     */
     public PopupInventory(Display display, Inventory inventory, Class expectedItemType, ActionBuilder builder) {
         // Appelle du constructeur de la classe mère PopupPanel pour initialiser le popup avec les paramètres donnés
-        super(display, 400, 200, "Inventaire");
+        super(display, 400, 200, "Selectionner un item");
 
         this.display = display;
         this.inventory = inventory;
