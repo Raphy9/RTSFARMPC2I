@@ -30,16 +30,14 @@ public class BarnInventorySelector implements ActionListener {
         this.afterTransfer = afterTransfer;
     }
 
+    /**
+     * Lorsque le bouton d'item est cliqué, cette méthode est appelée.
+     * Elle doit acheter avec clic gauche de la souris des unités de l'item
+     * Elle doit vendre avec clic droit de la souris des unités de l'item
+     * @param e the event to be processed
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
-        int amount = qty;
-        if (amount == -1) {
-            amount = item.getQuantity();
-        }
-        source.transferTo(target, item, amount);
-        if (afterTransfer != null) {
-            afterTransfer.run();
-        }
-        if (display != null) display.repaint();
+        // TODO : implémenter l'achat (ajout) et la vente (supression) d'items dans l'inventaire
     }
 }

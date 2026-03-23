@@ -1,6 +1,5 @@
 package src.view;
 
-import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -29,16 +28,16 @@ public class ChickenSpriteSheetLoader {
     private void loadAllSheets() {
         try {
             // Idle : la poule se repose
-            animations[0][0] = parseHorizontalSheet("src/assets/chicken_idle_left-Sheet.png");
-            animations[0][1] = parseHorizontalSheet("src/assets/chicken_idle_right-Sheet-Sheet.png");
+            animations[0][0] = parseHorizontalSheet("src/assets/chicken/chicken_idle_left-Sheet.png");
+            animations[0][1] = parseHorizontalSheet("src/assets/chicken/chicken_idle_right-Sheet-Sheet.png");
 
             //Run : la poule court
-            animations[1][0] = parseHorizontalSheet("src/assets/chicken_run_left-Sheet.png");
-            animations[1][1] = parseHorizontalSheet("src/assets/chicken_run_right-Sheet.png");
+            animations[1][0] = parseHorizontalSheet("src/assets/chicken/chicken_run_left-Sheet.png");
+            animations[1][1] = parseHorizontalSheet("src/assets/chicken/chicken_run_right-Sheet.png");
 
             // eating : la poule mange les plantes
-            animations[2][0] = parseHorizontalSheet("src/assets/chicken_eating_left-Sheet.png");
-            animations[2][1] = parseHorizontalSheet("src/assets/chicken_eating_right-Sheet.png");
+            animations[2][0] = parseHorizontalSheet("src/assets/chicken/chicken_eating_left-Sheet.png");
+            animations[2][1] = parseHorizontalSheet("src/assets/chicken/chicken_eating_right-Sheet.png");
 
         } catch (IOException e) {
             System.err.println("Erreur critique : Impossible de charger les sprites de la poule.");
