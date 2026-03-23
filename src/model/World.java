@@ -92,6 +92,17 @@ public class World {
         } catch (Exception e) {
             System.err.println("Warning: impossible de charger src/assets/chest.png: " + e.getMessage());
         }
+
+        // TEMPORAIRE : mettre une parcelle de debut
+        ArrayList<PlantTile> parcelTiles = new ArrayList<>();
+        for (int x = 45; x < 47; x++) {
+            for (int y = 45; y < 50; y++) {
+                PlantTile plantTile = new PlantTile(x, y);
+                this.tiles[y][x] = plantTile;
+                parcelTiles.add(plantTile);
+            }
+        }
+        Parcel startingParcel = new Parcel(parcelTiles);
     }
 
     public Tile getTile(int x, int y) {
