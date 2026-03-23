@@ -1,6 +1,9 @@
 package src.model;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * La classe CasePlantable représente une tuile de terrain qui peut être cultivée.
@@ -13,8 +16,10 @@ public class PlantTile extends Tile {
     // --- Attributs spécifiques à l'agriculture ---
     private Plant plant;// La plante (null si vide)
 
-    /**
-     * Constructeur de CasePlantable.
+    // La parcelle à laquelle cette case appartient
+    private Parcel parcel = new Parcel(new ArrayList<>(List.of(this))); // Init avec une parcelle singleton
+
+    /** Constructeur de CasePlantable.
      *
      * @param x La coordonnée x de la tuile
      * @param y La coordonnée y de la tuile
@@ -47,6 +52,19 @@ public class PlantTile extends Tile {
     public boolean isPlowable() {
         // On ne peut pas labourer une case plantable, elle est déjà prête à être plantée
         return false;
+    }
+
+    /** Renvoie la parcelle à laquelle cette case appartient, ou null si elle n'est pas encore assignée à une parcelle */
+    public Parcel getParcel() {
+        return parcel;
+    }
+
+    /** Assigne une parcelle à cette case.
+     * Cette méthode est utilisée lors de la création ou de la destruction de parcelles.
+     * @param parcel La parcelle à assigner à cette case
+     */
+    public void setParcel(Parcel parcel) {
+        this.parcel = parcel;
     }
 
     /**
