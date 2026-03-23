@@ -39,7 +39,7 @@ public class World {
 
         // Création et lancement d'une poule pour tester les ennemis
         this.enemies = new ArrayList<>();
-        Chicken chicky = new Chicken(5, 10, this);
+        Chicken chicky = new Chicken((WIDTH/2)+1, (HEIGHT/2), this);
         this.enemies.add(chicky);
         chicky.start(); //Lance le thread de la poule
 
@@ -202,6 +202,11 @@ public class World {
         }
         if (bestX == -1) return null;
         return new Point(bestX, bestY);
+    }
+
+    /** Retire un ennemi du monde (quand il est chassé) */
+    public void removeEnemy(Chicken chicken) {
+        this.enemies.remove(chicken);
     }
 
     /**

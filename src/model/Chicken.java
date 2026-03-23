@@ -6,27 +6,24 @@ import java.util.List;
 /**
  * Ennemi autonome (Poule) qui cherche la plante la plus proche pour la détruire.
  * S'exécute dans son propre Thread.
- * La poule suit l'algorithme A*, comme toutes les entités du jeu
  */
 public class Chicken extends Entity implements Runnable {
 
-    // États spécifiques de la poule
-    public enum State { IDLE, RUNNING, EATING }
+    // États possibles de la poule
+    public enum State { IDLE, RUNNING, EATING, FLEEING }
 
-    // La poule n'a pas de direction "Haut/Bas" spécifique, elle regarde soit à gauche soit à droite
+    // Attributs
     private State currentState;
-    // Flag pour contrôler l'exécution du thread
     private boolean isRunning;
-    // Thread dédié pour la poule
     private Thread chickenThread;
 
-    // Constructeur : reçoit la position de départ et une référence au monde pour pouvoir interagir avec lui
+    // Constructeur
     public Chicken(int x, int y, World world) {
         super(world, x, y);
+        // La poule commence en mode "idle" (errante) et cherche une plante à manger
         this.currentState = State.IDLE;
+        // Par défaut, la poule regarde vers la gauche (on peut ajuster selon le sprite)
         this.isRunning = true;
-
-        // La poule regarde vers la gauche par défaut
         this.setFacingDirection(Entity.LEFT);
     }
 
@@ -36,124 +33,182 @@ public class Chicken extends Entity implements Runnable {
         this.chickenThread.start();
     }
 
-    // Arrêt propre du thread de la poule
+    // Arrête le thread de la poule (lorsqu'elle est chassée ou que le jeu se ferme)
     public void stop() {
+        // La poule arrête son comportement et quitte le jeu
         this.isRunning = false;
         if (chickenThread != null) chickenThread.interrupt();
     }
 
-
-    // Le cœur du comportement de la poule : elle cherche, court et mange en boucle tant qu'elle est vivante
+    // Le cœur du comportement de la poule : cherche une plante, s'approche, mange, et réagit aux clics
     @Override
     public void run() {
-        System.out.println("La poule sauvage apparaît !");
+        System.out.println("La poule apparaît !");
 
         while (isRunning) {
             try {
-                // Trouver la plante la plus proche
-                PlantTile targetPlant = findNearestPlant();
-
-                if (targetPlant == null) {
-                    // Pas de culture, On attend 2 secondes avant de rescanner
-                    this.currentState = State.IDLE;
-                    Thread.sleep(2000);
-                    continue; // Recommence la boucle
+                //Si on clique sur la poule, elle doit s'enfuir immédiatement, même si elle est en train de courir vers une plante ou de manger
+                //C'est notre priorité
+                if (this.currentState == State.FLEEING) {
+                    handleFleeing();
+                    continue;
                 }
 
-                //  Calculer le chemin vers la plante
+                // Chercher une cible à manger
+                PlantTile targetPlant = findNearestPlant();
+
+                // Si aucune plante n'est trouvée, la poule erre aléatoirement dans un rayon de 4 cases autour d'elle
+                if (targetPlant == null) {
+                    wanderRandomly();
+                    continue;
+                }
+
+                // Calculer le chemin vers la plante
                 int targetX = targetPlant.getX();
                 int targetY = targetPlant.getY();
-
-                // Calcul A* vers la case exacte de la plante, comme pour toutes les entités
+                // Trouver la tuile adjacente marchable la plus proche de la plante
                 List<Tile> path = pathFinding(world, targetX, targetY);
 
-                // Si le chemin est null, la plante est bloquée par des murs
+                // Si aucun chemin n'est trouvé (ex: la plante est entourée d'obstacles), la poule reste en mode idle et réessaie plus tard
                 if (path == null) {
                     this.currentState = State.IDLE;
                     Thread.sleep(1000);
                     continue;
                 }
 
-                //Déplacement
+                //  Déplacement vers la plante
                 if (!path.isEmpty()) {
-                    // La poule passe en mode course
+                    // La poule commence à courir vers la plante
                     this.currentState = State.RUNNING;
-
-                    // Parcours du chemin étape par étape
                     for (Tile step : path) {
+                        // Si on clique sur la poule PENDANT qu'elle court vers la plante, elle arrête tout
+                        if (this.currentState == State.FLEEING) break;
+
+                        // Se déplacer d'une tuile à la fois
                         int newX = step.getX();
                         int newY = step.getY();
 
-                        // Mise à jour de la direction visuelle
+                        // Mettre à jour la direction de la poule en fonction du mouvement
                         if (newX > this.x) setFacingDirection(Entity.RIGHT);
                         else if (newX < this.x) setFacingDirection(Entity.LEFT);
 
-                        // Déplacement physique (on l'enlève de l'ancienne case et on l'ajoute à la nouvelle)
+                        // Mettre à jour la position de la poule sur la carte
                         int oldX = this.x;
                         int oldY = this.y;
                         this.x = newX;
                         this.y = newY;
+
+                        // Mettre à jour les entités sur les tuiles
                         world.getTile(oldX, oldY).removeEntity(this);
                         world.getTile(newX, newY).addEntity(this);
 
-                        // Vitesse de course (plus c'est bas, plus la poule est rapide)
+                        // Pause entre chaque déplacement pour simuler la course
                         Thread.sleep(200);
                     }
                 }
 
-                // Attaque
-                // Vérifier si la plante est toujours là
-                Plant plant = targetPlant.getPlant();
-                if (plant != null && plant.getState() != PlantState.MORT) {
-
-                    System.out.println("La poule mange une plante en (" + targetX + "," + targetY + ")");
-                    this.currentState = State.EATING;
-
-                    // Temps d'animation de "manger" (3 secondes)
-                    Thread.sleep(3000);
-
-                    // Destruction de la plante (elle devient pourrie, peut-être changer plus tard?)
-                    plant.destroyByEnemy();
+                // Attaque (si elle n'a pas été effrayée entre temps)
+                if (this.currentState != State.FLEEING) {
+                    // La poule est maintenant sur la tuile de la plante (ou à côté si la plante est sur une tuile non marchable), elle peut attaquer
+                    Plant plant = targetPlant.getPlant();
+                    // Si la plante existe toujours et n'est pas déjà morte, la poule la mange
+                    if (plant != null && plant.getState() != PlantState.MORT) {
+                        System.out.println("La poule mange une plante en (" + targetX + "," + targetY + ")");
+                        this.currentState = State.EATING;
+                        Thread.sleep(3000); // Animation de 3 secondes
+                        // Après avoir mangé, la plante est détruite (passée à l'état MORT)
+                        plant.destroyByEnemy();
+                    }
+                    // Après avoir mangé, la poule retourne à l'état idle pour chercher une nouvelle plante
+                    this.currentState = State.IDLE;
+                    Thread.sleep(500);
                 }
 
-                // Petite pause avant de chercher la prochaine cible
-                this.currentState = State.IDLE;
-                Thread.sleep(500);
-                // Si la poule est interrompue pendant son sommeil, on sort proprement de la boucle
             } catch (InterruptedException e) {
-                // Arrêt propre du thread
-                isRunning = false;
+                // Le thread a été interrompu (soit par la fuite, soit par la fermeture du jeu)
+                if (this.currentState != State.FLEEING) {
+                    isRunning = false;
+                }
             }
         }
-        System.out.println("La poule a quitté la ferme.");
+        System.out.println("La poule a définitivement quitté la ferme.");
     }
 
-    /** Scanne le monde pour trouver la PlantTile contenant une plante vivante la plus proche (distance Manhattan) */
+    /**
+     * Gère la fuite de la poule vers le bord le plus proche de la carte.
+     */
+    private void handleFleeing() throws InterruptedException {
+        // Calculer la distance aux bords de la carte
+        int distLeft = this.x;
+        int distRight = World.WIDTH - 1 - this.x;
+        int distTop = this.y;
+        int distBottom = World.HEIGHT - 1 - this.y;
+
+        // Trouver le bord le plus proche
+        int minDist = Math.min(Math.min(distLeft, distRight), Math.min(distTop, distBottom));
+
+        // Déterminer les coordonnées de la cible de fuite (le bord le plus proche)
+        int targetX = this.x;
+        int targetY = this.y;
+
+        // En cas d'égalité, la poule choisit de fuir vers la gauche ou le haut en priorité (arbitraire)
+        if (minDist == distLeft) targetX = 0;
+        else if (minDist == distRight) targetX = World.WIDTH - 1;
+        else if (minDist == distTop) targetY = 0;
+        else targetY = World.HEIGHT - 1;
+
+        // Trouver un chemin vers le bord
+        List<Tile> path = pathFinding(world, targetX, targetY);
+
+        // Si aucun chemin n'est trouvé (ce qui serait surprenant, mais possible si la poule est coincée), elle reste sur place et disparaît après un moment
+        if (path != null && !path.isEmpty()) {
+            for (Tile step : path) {
+                int newX = step.getX();
+                int newY = step.getY();
+
+                // Mettre à jour la direction de la poule en fonction du mouvement
+                if (newX > this.x) setFacingDirection(Entity.RIGHT);
+                else if (newX < this.x) setFacingDirection(Entity.LEFT);
+
+                // Mettre à jour la position de la poule sur la carte
+                int oldX = this.x;
+                int oldY = this.y;
+                this.x = newX;
+                this.y = newY;
+
+                // Mettre à jour les entités sur les tuiles
+                world.getTile(oldX, oldY).removeEntity(this);
+                world.getTile(newX, newY).addEntity(this);
+
+                // Elle s'enfuit (vitesse à ajuster)
+                Thread.sleep(200);
+            }
+        }
+
+        // Arrivée au bord : Elle disparaît vraiment cette fois-ci
+        world.getTile(this.x, this.y).removeEntity(this);
+        world.removeEnemy(this); // L'efface de l'écran !
+        this.isRunning = false;  // Tue le cerveau proprement
+    }
+
+    // Trouve la plante la plus proche qui n'est pas encore morte et pas encore récoltable
     private PlantTile findNearestPlant() {
+        // On parcourt toutes les tuiles du monde pour trouver la plante la plus proche qui n'est pas encore morte et pas encore récoltable
         PlantTile nearest = null;
         int minDistance = Integer.MAX_VALUE;
 
-        // Optimisation : On ne scanne que si le monde existe
         if (world == null) return null;
 
-        // Parcours de toutes les cases du monde pour trouver la plante vivante la plus proche
         for (int x = 0; x < World.WIDTH; x++) {
             for (int y = 0; y < World.HEIGHT; y++) {
-                // Vérifier si la tuile est une PlantTile
                 Tile tile = world.getTile(x, y);
 
-                // Si c'est une PlantTile, vérifier si elle contient une plante vivante (pas morte, pas mûre)
                 if (tile instanceof PlantTile) {
-                    // On récupère la plante de la tuile pour vérifier son état
                     PlantTile pt = (PlantTile) tile;
-                    // On ne cible que les plantes vivantes (pas mûres, pas mortes)
                     Plant p = pt.getPlant();
 
-                    // On ne cible que les plantes vivantes (pas mûres, pas mortes)
                     if (p != null && p.getState() != PlantState.MORT && !p.isHarvestable()) {
-                        // Calcul de la distance Manhattan entre la poule et la plante
                         int dist = Math.abs(x - getX()) + Math.abs(y - getY());
-                        // Si cette plante est plus proche que la précédente, on la garde comme cible
                         if (dist < minDistance) {
                             minDistance = dist;
                             nearest = pt;
@@ -165,14 +220,68 @@ public class Chicken extends Entity implements Runnable {
         return nearest;
     }
 
-    // Getters pour la vue
+    // La poule erre aléatoirement dans un rayon de 4 cases autour d'elle lorsqu'elle n'a pas de cible à manger
+    private void wanderRandomly() throws InterruptedException {
+        int radius = 4;
+        int randomX = this.x + (int)(Math.random() * (radius * 2 + 1)) - radius;
+        int randomY = this.y + (int)(Math.random() * (radius * 2 + 1)) - radius;
+
+        if (randomX >= 0 && randomX < World.WIDTH && randomY >= 0 && randomY < World.HEIGHT) {
+            if (world.getTile(randomX, randomY).isWalkable()) {
+
+                List<Tile> path = pathFinding(world, randomX, randomY);
+
+                if (path != null && !path.isEmpty()) {
+                    this.currentState = State.RUNNING;
+
+                    for (Tile step : path) {
+                        if (!isRunning || this.currentState == State.FLEEING) break;
+
+                        int newX = step.getX();
+                        int newY = step.getY();
+
+                        if (newX > this.x) setFacingDirection(Entity.RIGHT);
+                        else if (newX < this.x) setFacingDirection(Entity.LEFT);
+
+                        int oldX = this.x;
+                        int oldY = this.y;
+                        this.x = newX;
+                        this.y = newY;
+
+                        world.getTile(oldX, oldY).removeEntity(this);
+                        world.getTile(newX, newY).addEntity(this);
+
+                        Thread.sleep(400);
+                    }
+                }
+            }
+        }
+
+        if (this.currentState != State.FLEEING) {
+            this.currentState = State.IDLE;
+            Thread.sleep(1500 + (int)(Math.random() * 1500));
+        }
+    }
+
+
+    public void flee() {
+        if (this.currentState == State.FLEEING) return; // Si elle fuit déjà, on ignore le clic
+
+        System.out.println("Cot cot ! La poule a été chassée !");
+        this.currentState = State.FLEEING; // Change l'intention de la poule
+
+        if (chickenThread != null) {
+            chickenThread.interrupt(); // Coupe son sommeil pour qu'elle réagisse instantanément
+        }
+    }
+
     public State getCurrentState() { return currentState; }
 
-    /** Convertit l'état Enum en Index (0,1,2) pour le ChickenSpriteSheetLoader */
     public int getCurrentStateActionIndex() {
         switch (currentState) {
             case IDLE: return 0;
-            case RUNNING: return 1;
+            case RUNNING:
+            case FLEEING : return 1;
             case EATING: return 2;
             default: return 0;
         }
