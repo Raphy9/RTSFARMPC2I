@@ -63,7 +63,7 @@ public class World {
     private void loadTerrainSprites() {
         try {
             // Charger  une image pour l'herbe
-            grassSprite = new ImageIcon("src/assets/grass2.jpg");
+            grassSprite = new ImageIcon("src/assets/grass.jpg");
 
         } catch (Exception e) {
             System.err.println("Erreur : Impossible de charger les sprites ! " + e.getMessage());
