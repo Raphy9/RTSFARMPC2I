@@ -2,6 +2,7 @@ package src.model.actions;
 
 import src.model.Gardener;
 import src.model.Item;
+import src.model.Parcel;
 import src.view.Display;
 
 /** Classe utilitaire pour construire des actions complexes en plusieurs etapes
@@ -19,6 +20,8 @@ public abstract class ActionBuilder {
     private final Gardener gardener;
     // coordonnees de la case cible de l'action
     private int x, y;    // Elargir une fois qu'on aura les parcelles
+    // Parcelle cible de l'action
+    private Parcel parcel;
     // Item associe a l'action, par exemple la graine a planter. Laisser a null si l'action n'implique pas d'item
     private Item item = null;
 
@@ -68,6 +71,20 @@ public abstract class ActionBuilder {
     public void setTarget(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    /** Setter pour la parcelle cible de l'action, utilisée pour des actions qui impliquent une parcelle entière
+     * @param parcel la parcelle cible de l'action
+     */
+    public void setTarget(Parcel parcel) {
+        this.parcel = parcel;
+    }
+
+    /** Getter pour la parcelle cible de l'action, utilisée pour des actions qui impliquent une parcelle entière
+     * @return la parcelle cible de l'action, ou null si aucune parcelle n'est ciblée
+     */
+    public Parcel getParcel() {
+        return parcel;
     }
 
     /** Getter pour l'item associé à l'action, par exemple la graine à planter. Peut être null si l'action n'implique pas d'item.
