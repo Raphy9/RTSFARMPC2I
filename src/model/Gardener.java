@@ -13,8 +13,6 @@ import java.util.Queue;
  */
 public class Gardener extends Entity implements Runnable {
 
-
-
     // états du jardinier
     public enum State {
         WAITING,    // En attente

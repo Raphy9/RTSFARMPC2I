@@ -10,6 +10,8 @@ import java.util.ArrayList;
  */
 public class Barn extends Inventory {
 
+    private Stats stats;
+
     public Barn() {
         super();
     }
@@ -19,5 +21,30 @@ public class Barn extends Inventory {
      */
     public int transferToInventory(Inventory target, Item sourceItem, int qty) {
         return super.transferTo(target, sourceItem, qty);
+    }
+
+    /**
+     * Vend une certaine quantité d'un item de la grange, en retirant les items vendus de l'inventaire de la grange.
+     */
+    public void sellItem(Item item, int qty) {
+        if (qty > 0 && item != null && getItems().contains(item) && item.getQuantity() - qty >= 0) {
+            item.removeQuantity(qty);
+            // Met à jour l'argent gagné du joueur en fonction de la vente
+            if (item instanceof ItemPlant) {
+                switch (item.getPlantType()) {
+                    case CHOUX -> stats.addMoney(5 * qty);
+                    case CAROTTE -> stats.addMoney(3 * qty);
+                    case CITROUILLE -> stats.addMoney(8 * qty);
+                    case FRAISE -> stats.addMoney(10 * qty);
+                }
+            } else if (item instanceof ItemSeed) {
+                switch (item.getPlantType()) {
+                    case CHOUX -> stats.addMoney(2 * qty);
+                    case CAROTTE -> stats.addMoney(1 * qty);
+                    case CITROUILLE -> stats.addMoney(3 * qty);
+                    case FRAISE -> stats.addMoney(4 * qty);
+                }
+            }
+        }
     }
 }
