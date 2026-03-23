@@ -7,10 +7,11 @@ import java.awt.*;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
+import java.awt.event.MouseMotionListener;
 
 /** Classe qui gère les interactions de l'utilisateur avec la vue globale,
  * comme les clics de souris pour sélectionner des cases ou des entités */
-public class GlobalController implements MouseListener{
+public class GlobalController implements MouseListener, MouseMotionListener{
 
     // Références à la display et au monde pour pouvoir interagir avec eux
     private final Display display;
@@ -24,6 +25,7 @@ public class GlobalController implements MouseListener{
      */
     public GlobalController(Display display, Global globalView, World world) {
         globalView.addMouseListener(this);
+        globalView.addMouseMotionListener(this);
         this.display = display;
         this.world = world;
     }
@@ -133,5 +135,25 @@ public class GlobalController implements MouseListener{
     @Override
     public void mouseExited(MouseEvent e) {
 
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        // On utilise votre méthode existante pour trouver la case survolée
+        Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
+
+        //  On vérifie qu'on ne sort pas de la carte
+        if (coords.x >= 0 && coords.x < World.WIDTH && coords.y >= 0 && coords.y < World.HEIGHT) {
+            // On envoie la coordonnée à la vue
+            display.getGlobalView().setHoveredTile(coords.x, coords.y);
+        } else {
+            // Si on sort de la carte, on efface la jauge (-1, -1)
+            display.getGlobalView().setHoveredTile(-1, -1);
+        }
     }
 }

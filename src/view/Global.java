@@ -17,6 +17,11 @@ public class Global extends JPanel {
     private final SpriteSheetLoader gardenerLoader;
     private final long startTime;
 
+    //images pour la jauge de croissance des plantes
+    private Image progressBarEmpty;
+    private int hoveredX = -1; // -1 veut dire qu'aucune case n'est survolée
+    private int hoveredY = -1;
+
     // Highlight: coordonnées monde de la tuile surbrillée (-1 = none)
     private int highlightX = -1;
     private int highlightY = -1;
@@ -30,6 +35,7 @@ public class Global extends JPanel {
         this.startTime = System.currentTimeMillis();
         // Charge la sprite sheet du personnage principal pour l'animation
         this.gardenerLoader = new SpriteSheetLoader("src/assets/Tiny Wonder Farm Free/characters/main character/walk and idle.png");
+        this.progressBarEmpty = new ImageIcon("src/assets/progress_bar_ui.png").getImage();
     }
 
     /** Affiche un highlight sur la case ciblée par une action (ex: la case où on veut planter). Les coordonnées sont en "monde" (pas en pixels).
@@ -47,6 +53,16 @@ public class Global extends JPanel {
         this.highlightX = -1;
         this.highlightY = -1;
         repaint();
+    }
+
+    /** Met à jour la case actuellement survolée par la souris */
+    public void setHoveredTile(int x, int y) {
+        // On ne redessine que si la case a changé (pour optimiser les performances)
+        if (this.hoveredX != x || this.hoveredY != y) {
+            this.hoveredX = x;
+            this.hoveredY = y;
+            repaint();
+        }
     }
 
     /** Méthode centrale de dessin : elle dessine le terrain en fonction de la position de la caméra, puis les entités (jardiniers) par-dessus.
@@ -109,8 +125,81 @@ public class Global extends JPanel {
             }
         }
 
-        // dessiner les entités (jardiniers)
+        // dessiner les entités (jardiniers) - Une seule fois !
         drawEntities(g, fstTileX, fstTileY, pixelDiffX, pixelDiffY);
+
+        // Dessin des jauges (Croissance + Eau) sur la case survolée
+        if (hoveredX >= 0 && hoveredY >= 0 && hoveredX < World.WIDTH && hoveredY < World.HEIGHT) {
+            Tile hoveredTile = world.getTile(hoveredX, hoveredY);
+
+            // Vérifier si c'est une case plantable
+            if (hoveredTile instanceof PlantTile) {
+                PlantTile plantTile = (PlantTile) hoveredTile;
+                Plant plant = plantTile.getPlant();
+
+                // On affiche les jauges si la plante existe, qu'elle n'est pas morte et pas encore mûre
+                if (plant != null && plant.getState() != PlantState.MORT && !plant.isHarvestable()) {
+
+                    // 1. Calcul des coordonnées d'affichage
+                    int relX = hoveredX - fstTileX;
+                    int relY = hoveredY - fstTileY;
+
+                    // On vérifie que la case survolée est bien visible à l'écran
+                    if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                        int drawX = (relX * Display.RATIO_X) - pixelDiffX;
+                        int drawY = (relY * Display.RATIO_Y) - pixelDiffY;
+
+                        //  PARAMÈTRES COMMUNS DES JAUGES
+                        int barW = 48; // Largeur de la barre
+                        int barH = 12; // Hauteur de la barre
+                        int barX = drawX + (Display.RATIO_X / 2) - (barW / 2); // Centré horizontalement
+                        int innerW = barW - 4; // Espace de remplissage (sans les bords)
+                        int innerH = barH - 4;
+
+                        // 1ère JAUGE : LA CROISSANCE (VERTE)
+                        int growthBarY = drawY - 15; // Placée bien au-dessus
+
+                        if (progressBarEmpty != null) {
+                            g.drawImage(progressBarEmpty, barX, growthBarY, barW, barH, this);
+                        } else {
+                            g.setColor(Color.BLACK); g.drawRect(barX, growthBarY, barW, barH);
+                        }
+
+                        float growthProgress = plant.getGrowthPercentage();
+                        int fillGrowthW = (int) (innerW * growthProgress);
+
+                        if (fillGrowthW > 0) {
+                            g.setColor(new Color(50, 205, 50)); // Vert
+                            g.fillRect(barX + 2, growthBarY + 2, fillGrowthW, innerH);
+                            g.setColor(new Color(144, 238, 144, 180)); // Reflet
+                            g.fillRect(barX + 2, growthBarY + 2, fillGrowthW, innerH / 2);
+                        }
+                        // 2ème JAUGE : L'EAU (BLEUE)
+                        int waterBarY = growthBarY + barH + 3; // Placée juste en dessous de la barre verte (+2px d'écart)
+
+                        if (progressBarEmpty != null) {
+                            g.drawImage(progressBarEmpty, barX, waterBarY, barW, barH, this);
+                        } else {
+                            g.setColor(Color.BLACK); g.drawRect(barX, waterBarY, barW, barH);
+                        }
+
+                        // Le niveau d'eau maximum dans ta classe Plant est de 100.0f
+                        float waterProgress = plant.getWaterLevel() / 100.0f;
+                        if (waterProgress > 1.0f) waterProgress = 1.0f; // Sécurité si on dépasse 100%
+                        if (waterProgress < 0.0f) waterProgress = 0.0f;
+
+                        int fillWaterW = (int) (innerW * waterProgress);
+
+                        if (fillWaterW > 0) {
+                            g.setColor(new Color(30, 144, 255)); // Bleu (Dodger Blue)
+                            g.fillRect(barX + 2, waterBarY + 2, fillWaterW, innerH);
+                            g.setColor(new Color(135, 206, 250, 180)); // Reflet bleu clair
+                            g.fillRect(barX + 2, waterBarY + 2, fillWaterW, innerH / 2);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /** Méthode pour dessiner les entités (jardiniers) à l'écran, en fonction de leur position dans le monde et de la caméra.
