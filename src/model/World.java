@@ -24,6 +24,8 @@ public class World {
     private int barnX = 55;
     private int barnY = 55;
 
+    private Stats stats;
+
     /** Constructeur du monde : charge les sprites, initialise les cases, crée le jardinier et la grange, et lance le thread du jardinier et l'horloge de tick.
      */
     public World() {
@@ -34,6 +36,8 @@ public class World {
         // Initialisation de la grange et remplissage de départ pour les tests
         barn = new Barn();
         fstSetBarn();
+
+        stats = new Stats(100);
 
         Thread t = new Thread(this.testGardener);
         t.start();
