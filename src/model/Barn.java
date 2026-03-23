@@ -30,6 +30,7 @@ public class Barn extends Inventory {
         if (qty > 0 && item != null && getItems().contains(item) && item.getQuantity() - qty >= 0) {
             item.removeQuantity(qty);
             // Met à jour l'argent gagné du joueur en fonction de la vente
+            // Si l'item est une plante
             if (item instanceof ItemPlant) {
                 switch (item.getPlantType()) {
                     case CHOUX -> stats.addMoney(5 * qty);
@@ -37,13 +38,40 @@ public class Barn extends Inventory {
                     case CITROUILLE -> stats.addMoney(8 * qty);
                     case FRAISE -> stats.addMoney(10 * qty);
                 }
-            } else if (item instanceof ItemSeed) {
+            }
+            // Si l'item est une graine
+            else if (item instanceof ItemSeed) {
                 switch (item.getPlantType()) {
                     case CHOUX -> stats.addMoney(2 * qty);
                     case CAROTTE -> stats.addMoney(1 * qty);
                     case CITROUILLE -> stats.addMoney(3 * qty);
                     case FRAISE -> stats.addMoney(4 * qty);
                 }
+            }
+        }
+    }
+
+    /**
+     * Achète une certaine quantité d'un item, en ajoutant les items achetés à l'inventaire de la grange.
+     * Le prix d'achat est défini en fonction du type de graine (on achète que des graines)
+     */
+    public void buyItem(PlantType plantType, int qty) {
+        if (qty > 0) {
+            int cost = 0;
+            // On définit le coût d'achat en fonction du type de graine
+            switch (plantType) {
+                case CHOUX -> cost = 2 * qty;
+                case CAROTTE -> cost = qty;
+                case CITROUILLE -> cost = 3 * qty;
+                case FRAISE -> cost = 4 * qty;
+            }
+            // Vérifie que le joueur a assez d'argent pour l'achat
+            if (stats.getMoney() >= cost) {
+                // Le joueur a assez d'argent, on effectue l'achat en retirant l'argent
+                stats.removeMoney(cost);
+                // On ajoute les graines à l'inventaire de la grange
+                ItemSeed item = new ItemSeed(plantType, qty);
+                super.addItem(item);
             }
         }
     }

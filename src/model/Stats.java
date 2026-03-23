@@ -25,6 +25,10 @@ public class Stats {
         this.money += m;
     }
 
+    public void removeMoney(int m) {
+        this.money -= m;
+    }
+
     public int getExp() {
         return exp;
     }
