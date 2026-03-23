@@ -31,19 +31,8 @@ public class HarvestAction extends Action {
 
                     parcel.harvest(); // Vide la case
 
-                    // Ajout à l'inventaire
-                    boolean found = false;
-                    for (Object obj : world.getBarn().getItems()) {
-                        Item item = (Item) obj;
-                        if (item instanceof ItemPlant && item.getPlantType() == type) {
-                            item.addQuantity(1);
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        world.getBarn().addItem(new ItemPlant(type, 1));
-                    }
+                    // Ajout à l'inventaire du jardinier
+                    gardener.getInventory().addItem(new ItemPlant(type, 1));
                     System.out.println("Succès : Le jardinier a récolté " + type.getName() + " !");
                 }
 

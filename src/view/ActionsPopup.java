@@ -45,7 +45,7 @@ public class ActionsPopup extends PopupPanel {
 
         // Bouton récolter qui lance le mode sélection de plante à récolter
         JButton harvestButton = new JButton("Récolter");
-        harvestButton.addActionListener(new HarvestActionSelector(display, gardener));
+        harvestButton.addActionListener(new HarvestActionSelector(display, gardener, world));
         actionsPanel.add(harvestButton);
 
         this.add(actionsPanel, BorderLayout.CENTER);

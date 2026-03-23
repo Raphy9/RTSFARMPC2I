@@ -1,9 +1,6 @@
 package src.control.popups;
 
-import src.model.PlantTile;
-import src.model.Gardener;
-import src.model.Plant;
-import src.model.Tile;
+import src.model.*;
 import src.model.actions.HarvestActionBuilder;
 import src.view.Display;
 
@@ -24,9 +21,9 @@ public class HarvestActionSelector implements ActionListener {
      * @param display la display pour lancer le mode de sélection
      * @param gardener le jardinier pour construire le HarvestActionBuilder
      */
-    public HarvestActionSelector(Display display, Gardener gardener) {
+    public HarvestActionSelector(Display display, Gardener gardener, World world) {
         this.display = display;
-        this.builder = new HarvestActionBuilder(gardener);
+        this.builder = new HarvestActionBuilder(gardener, world);
     }
 
     /** Lorsque le bouton est cliqué, on lance le mode de sélection de la display avec un critère de récolte.
