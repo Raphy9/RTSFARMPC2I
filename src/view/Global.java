@@ -5,6 +5,7 @@ import src.model.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import javax.swing.*;
+import java.util.*;
 
 /** Vue globale du monde : terrain + entités. C'est la classe centrale de l'affichage, elle connaît le monde et la caméra.
  * C'est elle qui dessine tout, y compris les entités (jardiniers). Elle gère aussi le highlight des cases ciblées par les actions. */
@@ -22,9 +23,8 @@ public class Global extends JPanel {
     private int hoveredX = -1; // -1 veut dire qu'aucune case n'est survolée
     private int hoveredY = -1;
 
-    // Highlight: coordonnées monde de la tuile surbrillée (-1 = none)
-    private int highlightX = -1;
-    private int highlightY = -1;
+    // Highlight: maintenant plusieurs tuiles peuvent être surlignées
+    private final Set<Point> highlights = new HashSet<>();
 
     public Global(World world, Camera camera) {
         super();
@@ -43,15 +43,26 @@ public class Global extends JPanel {
      * @param wy coordonnée y de la tuile à surligner
      */
     public void setHighlight(int wx, int wy) {
-        this.highlightX = wx;
-        this.highlightY = wy;
+        // Ajoute le point à l'ensemble des surlignages
+        highlights.add(new Point(wx, wy));
         repaint();
     }
 
     /** Enlève le highlight de la case ciblée. */
-    public void clearHighlight() {
-        this.highlightX = -1;
-        this.highlightY = -1;
+    public void clearHighlight(int wx, int wy) {
+        // Supprime le point de l'ensemble des surlignages
+        highlights.remove(new Point(wx, wy));
+        repaint();
+    }
+
+    /** Retourne true si la case est surlignée */
+    public boolean isHighlighted(int wx, int wy) {
+        return highlights.contains(new Point(wx, wy));
+    }
+
+    /** Enlève tous les highlights */
+    public void clearAllHighlights() {
+        highlights.clear();
         repaint();
     }
 
@@ -106,23 +117,25 @@ public class Global extends JPanel {
             }
         }
 
-        // Dessiner le highlight si demandé
-        if (highlightX >= 0 && highlightY >= 0) {
-            int relX = highlightX - fstTileX;
-            int relY = highlightY - fstTileY;
-            if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
-                int hx = (relX * Display.RATIO_X) - pixelDiffX;
-                int hy = (relY * Display.RATIO_Y) - pixelDiffY;
-                Graphics2D g2 = (Graphics2D) g.create();
-                // overlay semi-transparent
-                g2.setColor(new Color(255, 255, 0, 80));
-                g2.fillRect(hx, hy, Display.RATIO_X, Display.RATIO_Y);
-                // contour
-                g2.setColor(new Color(255, 200, 0));
-                g2.setStroke(new BasicStroke(3));
-                g2.drawRect(hx + 1, hy + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
-                g2.dispose();
+        // Dessiner les highlights s'il y en a
+        if (!highlights.isEmpty()) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setColor(new Color(255, 255, 0, 80)); // overlay semi-transparent
+            g2.setStroke(new BasicStroke(3));
+
+            for (Point p : highlights) {
+                int relX = p.x - fstTileX;
+                int relY = p.y - fstTileY;
+                if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                    int hx = (relX * Display.RATIO_X) - pixelDiffX;
+                    int hy = (relY * Display.RATIO_Y) - pixelDiffY;
+                    g2.setColor(new Color(255, 255, 0, 80));
+                    g2.fillRect(hx, hy, Display.RATIO_X, Display.RATIO_Y);
+                    g2.setColor(new Color(255, 200, 0));
+                    g2.drawRect(hx + 1, hy + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
+                }
             }
+            g2.dispose();
         }
 
         // dessiner les entités (jardiniers) - Une seule fois !

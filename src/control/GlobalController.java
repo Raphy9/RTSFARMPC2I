@@ -68,7 +68,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
                         // demander highlight mais SUR LA CASE SELECTIONNEE (la grange) et planifier le déplacement
                         display.getGlobalView().setHighlight(coords.x, coords.y);
                         Runnable onArrival = () -> SwingUtilities.invokeLater(() -> {
-                            display.getGlobalView().clearHighlight();
+                            display.getGlobalView().clearHighlight(coords.x, coords.y);
                             display.switchToPopup(new src.view.PopupBarn(display, world, g));
                         });
                         g.addAction(new src.model.actions.MoveAction(barnAdj.x, barnAdj.y, onArrival)); // planifier le déplacement vers la tuile adjacente de la grange, avec un callback pour ouvrir le menu une fois arrivé
@@ -77,7 +77,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
                         // Pas trouvé de tuile adjacente marchable -> tenter d'aller aux coordonnées de la grange
                         display.getGlobalView().setHighlight(coords.x, coords.y);
                         Runnable onArrival = () -> SwingUtilities.invokeLater(() -> {
-                            display.getGlobalView().clearHighlight();
+                            display.getGlobalView().clearHighlight(coords.x, coords.y);
                             display.switchToPopup(new src.view.PopupBarn(display, world, g));
                         });
                         g.addAction(new src.model.actions.MoveAction(world.getBarnX(), world.getBarnY(), onArrival));
@@ -113,7 +113,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
             gardener.interruptGardener();
             // Afficher un highlight sur la case cible pendant le déplacement et l'effacer à l'arrivée
             display.getGlobalView().setHighlight(coords.x, coords.y);
-            Runnable clearHighlight = () -> SwingUtilities.invokeLater(() -> display.getGlobalView().clearHighlight());
+            Runnable clearHighlight = () -> SwingUtilities.invokeLater(() -> display.getGlobalView().clearHighlight(coords.x, coords.y));
             gardener.addAction(new src.model.actions.MoveAction(coords.x, coords.y, clearHighlight));
         }
     }

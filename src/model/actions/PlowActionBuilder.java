@@ -37,7 +37,7 @@ public class PlowActionBuilder extends ActionBuilder {
         Runnable clearHighlight = null;
         if (getDisplay() != null) {
             getDisplay().getGlobalView().setHighlight(getX(), getY());
-            clearHighlight = () -> getDisplay().getGlobalView().clearHighlight();
+            clearHighlight = () -> getDisplay().getGlobalView().clearHighlight(getX(), getY());
         }
 
         PlowAction action = new PlowAction(execX, execY, getX(), getY());

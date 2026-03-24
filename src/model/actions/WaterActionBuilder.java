@@ -38,7 +38,7 @@ public class WaterActionBuilder extends ActionBuilder {
         Runnable clearHighlight = null;
         if (getDisplay() != null) {
             getDisplay().getGlobalView().setHighlight(getX(), getY());
-            clearHighlight = () -> getDisplay().getGlobalView().clearHighlight();
+            clearHighlight = () -> getDisplay().getGlobalView().clearHighlight(getX(), getY());
         }
 
         // Construire l'action d'arrosage

@@ -55,8 +55,7 @@ public class PlantActionBuilder extends ActionBuilder {
                 // Mettre en évidence la case cible pendant le processus de planification
                 getDisplay().getGlobalView().setHighlight(tile.getX(), tile.getY());
                 // Préparer le callback qui efface le highlight (on efface lorsque le jardinier arrive)
-                Runnable clearHighlight = null;
-                clearHighlight = () -> getDisplay().getGlobalView().clearHighlight();
+                Runnable clearHighlight = () -> getDisplay().getGlobalView().clearHighlight(tile.getX(), tile.getY());
                 // Déterminer la tuile adjacente walkable la plus proche de la cible (pour y aller avant d'agir)
                 Point adjacent = world.findClosestWalkableAdjacent(tile.getX(), tile.getY(), getGardener());
                 // se déplacer vers la tuile adjacente de la cible, avec le callback pour effacer le highlight une fois arrivé
