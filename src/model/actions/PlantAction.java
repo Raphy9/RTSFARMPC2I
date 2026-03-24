@@ -1,11 +1,6 @@
 package src.model.actions;
 
-import src.model.PlantTile;
-import src.model.Gardener;
-import src.model.ItemSeed;
-import src.model.Tile;
-import src.model.World;
-import src.model.PlantType;
+import src.model.*;
 
 /**
  * Action concrète exécutée par le jardinier pour planter une graine sur le terrain.
@@ -43,10 +38,14 @@ public class PlantAction extends Action {
      */
     @Override
     public void perform(Gardener gardener, World world) {
-        Tile tile = world.getTile(plantX, plantY);
-
-        //  On vérifie qu'on est bien en train d'exécuter depuis une case adjacente (optionnel)
+        // On verifie que le jardinier a bien la graine dans son inventaire au moment de planter
+        Inventory inv = gardener.getInventory();
+        if (inv.findSameItem(new ItemSeed(plantType)) == null) {
+            System.out.println("Attention : Le jardinier n'a plus de graines, impossible de planter !");
+            return;
+        }
         //  On vérifie que la parcelle est plantable
+        Tile tile = world.getTile(plantX, plantY);
         if (tile instanceof PlantTile) {
             PlantTile parcel = (PlantTile) tile;
 
@@ -60,7 +59,6 @@ public class PlantAction extends Action {
                     System.out.println("Succès : Le jardinier a planté " + plantType.getName() + " !");
 
                     //  On déduit la graine utilisée depuis l'inventaire du jardinier
-                    src.model.Inventory inv = gardener.getInventory();
                     // Créer un item prototype pour rechercher la pile correspondante
                     ItemSeed prototype = new ItemSeed(plantType);
                     src.model.Item same = inv.findSameItem(prototype);

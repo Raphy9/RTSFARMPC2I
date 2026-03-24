@@ -1,5 +1,6 @@
 package src.control;
 
+import src.model.PlantTile;
 import src.model.Tile;
 import src.model.World;
 import src.model.actions.ActionBuilder;
@@ -57,6 +58,10 @@ public class SelectionController implements MouseListener {
             System.out.println("Case selectionnee! : " + tile.getX() + ", " + tile.getY());
             // Passer les infos de la case selectionnee au builder d'action en construction
             builder.setTarget(coords.x, coords.y);
+            // Recuperer la parcelle correspondante si elle existe
+            if (tile instanceof PlantTile) {
+                builder.setTarget(((PlantTile) tile).getParcel());
+            }
             // Construire l'action finale a partir du builder et l'executer
             builder.buildAction();
             display.switchToGlobal();
