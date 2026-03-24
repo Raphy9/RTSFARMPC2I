@@ -36,7 +36,7 @@ public class PlantActionBuilder extends ActionBuilder {
     @Override
     public void buildAction() {
         if (getItem() != null && getItem() instanceof src.model.ItemSeed) {
-            int nbTiles = getParcel().getSize();  // nombre de cases dans la parcelle ciblée
+            int nbFreeTiles = getParcel().getAvailableSpotsNb();  // nombre de cases encore libres dans la parcelle ciblée
             getGardener().interruptGardener();  // interrompre l'action en cours
 
             // Etape 1 : chercher les graines dans la grange
@@ -46,7 +46,7 @@ public class PlantActionBuilder extends ActionBuilder {
             // Aller a la grange
             getGardener().addAction(new MoveAction(barnAdj.x, barnAdj.y));
             // Recuperer les graines
-            ItemSeed seedToFetch = new ItemSeed(getItem().getPlantType(), nbTiles);  // type et quantité de graines
+            ItemSeed seedToFetch = new ItemSeed(getItem().getPlantType(), nbFreeTiles);  // type et quantité de graines
             FetchSeedAction fetchAction = new FetchSeedAction(barnAdj.x, barnAdj.y, seedToFetch );
             getGardener().addAction(fetchAction);
 
@@ -62,6 +62,7 @@ public class PlantActionBuilder extends ActionBuilder {
                 getGardener().addAction(new MoveAction(adjacent.x, adjacent.y, clearHighlight));
                 // planter une graine sur la case
                 getGardener().addAction(new PlantAction(adjacent.x, adjacent.y, tile.getX(), tile.getY(), getItem().getPlantType()));
+                // TODO gerer le cas (rare) ou il reste des graines dans l'inventaire du jardinier
             }
         }
     }

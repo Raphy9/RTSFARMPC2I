@@ -2,6 +2,7 @@ package src.control.popups;
 
 import src.model.Item;
 import src.model.ItemSeed;
+import src.model.PlantTile;
 import src.model.Tile;
 import src.model.actions.ActionBuilder;
 import src.view.Display;
@@ -43,8 +44,8 @@ public class InventorySelector implements ActionListener {
             builder.setItem(item);
 
             if (itemType == ItemSeed.class) {
-                // Si c'est une graine, enchaine avec la selection d'une parcelle
-                display.switchToSelection(Tile::isFarmable, "Selectionner une parcelle", builder);    // critere de selection : case plantable (farmable)
+                // Si c'est une graine, enchaine avec la selection d'une parcelle (clic sur une case plantable)
+                display.switchToSelection(t -> t instanceof PlantTile, "Selectionner une parcelle", builder);    // critere de selection : case plantable (farmable)
             }
             System.out.println("Item selectionne: " + item);
         }

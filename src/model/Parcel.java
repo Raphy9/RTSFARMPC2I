@@ -37,4 +37,15 @@ public class Parcel {
         return tiles.size();
     }
 
+    /** Renvoie le nombre de cases plantables non occupées dans cette parcelle */
+    public int getAvailableSpotsNb() {
+        int count = 0;
+        for (PlantTile tile : tiles) {
+            if (tile.isFarmable()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
 }
