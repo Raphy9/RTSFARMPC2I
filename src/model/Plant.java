@@ -24,6 +24,7 @@ public class Plant {
     private boolean hasFertilizer; // Si de l'engrais a été mis
 
     private ImageIcon sprite; //
+
     // --- Constructeur ---
     public Plant(PlantType type) {
         this.type = type;
@@ -98,9 +99,11 @@ public class Plant {
         }
     }
 
-    // --- Actions ---
+    // Actions
 
-    /** Arrose la plante d'une certaine quantité d'eau.
+    /**
+     * Arrose la plante d'une certaine quantité d'eau.
+     *
      * @param amount Quantité d'eau à ajouter (en pourcentage, ex: 20.0f)
      */
     public void water(float amount) {
@@ -114,7 +117,9 @@ public class Plant {
         }
     }
 
-    /** Applique de l'engrais à la plante, ce qui accélère sa croissance.
+    /**
+     * Applique de l'engrais à la plante, ce qui accélère sa croissance.
+     *
      * @return true si l'engrais a été appliqué, false sinon (ex: déjà mature ou morte)
      */
     public boolean applyFertilizer() {
@@ -126,7 +131,7 @@ public class Plant {
         return true;
     }
 
-    // --- NOUVELLES MÉTHODES POUR LES SPRITES ---
+    // NOUVELLES MÉTHODES POUR LES SPRITES
 
     /**
      * INDISPENSABLE POUR L'AFFICHAGE
@@ -169,6 +174,7 @@ public class Plant {
 
     /**
      * INDISPENSABLE POUR L'AFFICHAGE (utilisé par view.Global)
+     *
      * @return L'image (ImageIcon) actuelle de la plante.
      */
     public ImageIcon getSprite() {
@@ -176,17 +182,18 @@ public class Plant {
     }
 
 
-    // --- Getters & Helpers pour la Vue ---
+    // Getters & Helpers pour la Vue
 
     /**
-     * INDISPENSABLE POUR L'AFFICHAGE
      * @return true si le sol est humide (Terre foncée), false si sec (Terre claire)
      */
     public boolean isIrrigated() {
         return currentWaterLevel > 0;
     }
 
-    /** INDISPENSABLE POUR LA RÉCOLTE
+    /**
+     * INDISPENSABLE POUR LA RÉCOLTE
+     *
      * @return true si la plante est mûre et peut être récoltée, false sinon
      */
     public boolean isHarvestable() {
@@ -194,12 +201,32 @@ public class Plant {
     }
 
     // Getters pour la Vue (type, état, niveau d'eau)
-    public PlantType getType() { return type; }
-    public PlantState getState() { return state; }
-    public float getWaterLevel() { return currentWaterLevel; }
+    public PlantType getType() {
+        return type;
+    }
+
+    public PlantState getState() {
+        return state;
+    }
+
+    public float getWaterLevel() {
+        return currentWaterLevel;
+    }
 
     // Pour debug ou barre de vie
     public float getGrowthPercentage() {
         return Math.min((float) age / type.getGrowthDuration(), 1.0f);
+    }
+
+
+    /**
+     * Détruit la plante sur le coup (appelé lorsqu'un ennemi l'attaque).
+     * Passe l'état de la plante à MORT et met à jour son image.
+     */
+    public void destroyByEnemy() {
+        if (this.state != PlantState.MORT) {
+            this.state = PlantState.MORT;
+            updateSprite(); // Change l'image pour afficher la plante pourrie (fstep)
+        }
     }
 }

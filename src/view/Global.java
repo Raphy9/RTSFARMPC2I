@@ -18,6 +18,9 @@ public class Global extends JPanel {
     private final SpriteSheetLoader gardenerLoader;
     private final long startTime;
 
+    //Ajout l'attribut du loader
+    private ChickenSpriteSheetLoader chickenLoader;
+
     //images pour la jauge de croissance des plantes
     private Image progressBarEmpty;
     private int hoveredX = -1; // -1 veut dire qu'aucune case n'est survolée
@@ -35,6 +38,7 @@ public class Global extends JPanel {
         this.startTime = System.currentTimeMillis();
         // Charge la sprite sheet du personnage principal pour l'animation
         this.gardenerLoader = new SpriteSheetLoader("src/assets/Tiny Wonder Farm Free/characters/main character/walk and idle.png");
+        this.chickenLoader = new ChickenSpriteSheetLoader();
         this.progressBarEmpty = new ImageIcon("src/assets/progress_bar_ui.png").getImage();
     }
 
@@ -215,10 +219,7 @@ public class Global extends JPanel {
         }
     }
 
-    /** Méthode pour dessiner les entités (jardiniers) à l'écran, en fonction de leur position dans le monde et de la caméra.
-     * Elle utilise une animation basée sur le temps écoulé pour alterner entre les frames de marche et d'attente du jardinier, en fonction de son état actuel.
-     * Le dessin prend aussi en compte la direction du jardinier pour afficher le sprite dans le bon sens (mirroring pour la gauche).
-     * Note : cette méthode est appelée depuis paintComponent() après avoir dessiné le terrain, pour que les jardiniers soient dessinés par-dessus le terrain.
+    /** Méthode pour dessiner les entités (jardiniers et ennemis) à l'écran, en fonction de leur position dans le monde et de la caméra.
      * @param g le contexte graphique pour dessiner
      * @param fstTileX la coordonnée x de la première tuile visible à l'écran (en monde)
      * @param fstTileY la coordonnée y de la première tuile visible à l'écran (en monde)
@@ -226,7 +227,9 @@ public class Global extends JPanel {
      * @param pixelDiffY le décalage en pixels entre la caméra et la première tuile visible (pour un scrolling fluide)
      */
     private void drawEntities(Graphics g, int fstTileX, int fstTileY, int pixelDiffX, int pixelDiffY) {
-        // Remplacer par la vraie méthode pour obtenir vos jardiniers
+        long elapsedTime = System.currentTimeMillis() - startTime;
+
+        //  Dessin du jardinier
         Gardener gardener = world.getGardenerTest();
 
         if (gardener != null) {
@@ -235,7 +238,6 @@ public class Global extends JPanel {
                     gardener.getY() >= fstTileY && gardener.getY() <= fstTileY + Camera.HEIGHT) {
 
                 // Calcul de la frame actuelle (change toutes les 150ms)
-                long elapsedTime = System.currentTimeMillis() - startTime;
                 int currentFrameIndex = (int) (elapsedTime / 150) % gardenerLoader.getNbFrames();
 
                 BufferedImage spriteToDraw;
@@ -252,9 +254,8 @@ public class Global extends JPanel {
                 int drawX = ((gardener.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
                 int drawY = ((gardener.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
 
-                // Dessiner avec effet miroir si gauche
+                // Dessiner avec effet miroir si droite
                 if (direction == Entity.RIGHT) {
-                    // g.drawImage(img, destX1, destY1, destX2, destY2, srcX1, srcY1, srcX2, srcY2, observer)
                     g.drawImage(spriteToDraw,
                             drawX + Display.RATIO_X, drawY, // Point haut-gauche destination (inversé)
                             drawX, drawY + Display.RATIO_Y, // Point bas-droite destination (inversé)
@@ -265,6 +266,40 @@ public class Global extends JPanel {
                             drawX, drawY,
                             drawX + Display.RATIO_X, drawY + Display.RATIO_Y,
                             0, 0, 24, 24, null);
+                }
+            }
+        }
+
+        // dessin des ennemis (poules)
+        java.util.List<Chicken> enemies = world.getEnemies();
+
+        if (enemies != null && !enemies.isEmpty()) {
+            // La poule a 4 frames par animation, on change toutes les 150ms
+            int currentChickenFrame = (int) (elapsedTime / 150) % 4;
+
+            for (Chicken chicken : enemies) {
+                // Vérifier si la poule est visible à l'écran
+                if (chicken.getX() >= fstTileX && chicken.getX() <= fstTileX + Camera.WIDTH &&
+                        chicken.getY() >= fstTileY && chicken.getY() <= fstTileY + Camera.HEIGHT) {
+
+                    // Récupérer la bonne frame via le loader
+                    BufferedImage spriteToDraw = chickenLoader.getFrame(
+                            chicken.getCurrentStateActionIndex(),
+                            chicken.getFacingDirection(),
+                            currentChickenFrame
+                    );
+
+                    // Calcul de la position à l'écran
+                    int drawX = ((chicken.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
+                    int drawY = ((chicken.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
+
+                    // Les sprites de poule ont déjà un fichier "left" et un fichier "right"
+                    // On les affiche donc normalement, sans avoir besoin d'inverser l'image !
+                    if (spriteToDraw != null) {
+                        g.drawImage(spriteToDraw,
+                                drawX, drawY,
+                                Display.RATIO_X, Display.RATIO_Y, null);
+                    }
                 }
             }
         }

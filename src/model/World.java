@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 import javax.swing.Timer;
 import java.awt.Point;
+import java.util.List;
 
 /** * La classe World représente le monde du jeu, contenant les cases (tiles), le jardinier, la grange, etc.
  * Elle gère l'initialisation du monde, le chargement des sprites, et la logique de mise à jour (tick).
@@ -26,12 +27,21 @@ public class World {
 
     private Stats stats;
 
+    // Liste des ennemis (poules) présents dans le monde
+    private List<Chicken> enemies;
+
     /** Constructeur du monde : charge les sprites, initialise les cases, crée le jardinier et la grange, et lance le thread du jardinier et l'horloge de tick.
      */
     public World() {
         loadTerrainSprites();
         initializeTiles();
         this.testGardener = new Gardener(WIDTH/2, HEIGHT/2, this);
+
+        // Création et lancement d'une poule pour tester les ennemis
+        this.enemies = new ArrayList<>();
+        Chicken chicky = new Chicken((WIDTH/2)+1, (HEIGHT/2), this);
+        this.enemies.add(chicky);
+        chicky.start(); //Lance le thread de la poule
 
         // Initialisation de la grange et remplissage de départ pour les tests
         barn = new Barn();
@@ -53,7 +63,7 @@ public class World {
     private void loadTerrainSprites() {
         try {
             // Charger  une image pour l'herbe
-            grassSprite = new ImageIcon("src/assets/grass2.jpg");
+            grassSprite = new ImageIcon("src/assets/grass.jpg");
 
         } catch (Exception e) {
             System.err.println("Erreur : Impossible de charger les sprites ! " + e.getMessage());
@@ -118,6 +128,10 @@ public class World {
     public int getBarnX() { return barnX; }
     /** Retourne la coordonnée Y de la grange */
     public int getBarnY() { return barnY; }
+
+    /** Retourne la liste des ennemis (poules) présents dans le monde */
+    public List<Chicken> getEnemies() { return enemies; }
+
     /** Indique si les coordonnées données correspondent à la grange */
     public boolean isBarnAt(int x, int y) { return x == barnX && y == barnY; }
 
@@ -161,12 +175,13 @@ public class World {
     /**
      * Trouve la meilleure tuile adjacente orthogonale (haut, bas, gauche, droite) à la case cible (tx,ty)
      * qui est marchable (isWalkable). Ne considère pas la case cible elle-même.
-     * Retourne la tuile adjacente la plus proche du jardinier (distance Manhattan minimale) ou null.
+     * Retourne la tuile adjacente la plus proche de l'entité (distance Manhattan minimale) ou null.
      */
-    public Point findClosestWalkableAdjacent(int tx, int ty, Gardener gardener) {
+    public Point findClosestWalkableAdjacent(int tx, int ty, Entity entity) {
         int bestX = -1, bestY = -1;
         int bestDist = Integer.MAX_VALUE;
-        if (gardener == null) return null;
+
+        if (entity == null) return null; // Modifié ici
 
         // Directions orthogonales uniquement
         int[][] dirs = {{1,0}, {-1,0}, {0,1}, {0,-1}};
@@ -176,7 +191,8 @@ public class World {
             if (nx < 0 || nx >= WIDTH || ny < 0 || ny >= HEIGHT) continue;
             Tile t = getTile(nx, ny);
             if (t.isWalkable()) {
-                int dist = Math.abs(nx - gardener.getX()) + Math.abs(ny - gardener.getY());
+                // Modifié ici : on utilise entity.getX() et entity.getY()
+                int dist = Math.abs(nx - entity.getX()) + Math.abs(ny - entity.getY());
                 if (dist < bestDist) {
                     bestDist = dist;
                     bestX = nx;
@@ -186,5 +202,30 @@ public class World {
         }
         if (bestX == -1) return null;
         return new Point(bestX, bestY);
+    }
+
+    /** Retire un ennemi du monde (quand il est chassé) */
+    public void removeEnemy(Chicken chicken) {
+        this.enemies.remove(chicken);
+    }
+
+    /**
+     * Arrête tous les threads actifs du monde.
+     * À appeler lors de la fermeture du jeu ou du retour au menu principal.
+     */
+    public void stopWorld() {
+        System.out.println("Arrêt du monde : fermeture des Threads...");
+
+        // Arrêter le jardinier
+        if (this.testGardener != null) {
+            this.testGardener.stopGardener();
+        }
+
+        // Arrêter tous les ennemis (poules)
+        if (this.enemies != null) {
+            for (Chicken enemy : enemies) {
+                enemy.stop();
+            }
+        }
     }
 }

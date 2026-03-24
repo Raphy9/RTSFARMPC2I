@@ -33,7 +33,6 @@ public class PopupBarn extends PopupPanel {
     private Inventory gardenerInventory;
     private Inventory barnInventory;
 
-    private JPanel leftGrid;
     private JPanel rightGrid;
 
     private JLabel feedbackLabel; // message temporaire
@@ -71,26 +70,15 @@ public class PopupBarn extends PopupPanel {
     private void initializeUI() {
         JPanel center = new JPanel(new BorderLayout());
 
-        // Titres au-dessus des grilles
-        JPanel topLabels = new JPanel(new GridLayout(1,2));
-        JLabel leftTitle = new JLabel("Gardener", SwingConstants.CENTER);
-        JLabel rightTitle = new JLabel("Barn", SwingConstants.CENTER);
-        leftTitle.setFont(PopupPanel.TITLE_FONT);
-        rightTitle.setFont(PopupPanel.TITLE_FONT);
-        topLabels.add(leftTitle);
-        topLabels.add(rightTitle);
 
         // Grilles d'inventaire
         JPanel grids = new JPanel(new GridLayout(1,2));
-        leftGrid = new JPanel(new GridLayout(HEIGHT_SLOTS, WIDTH_SLOTS));
         rightGrid = new JPanel(new GridLayout(HEIGHT_SLOTS, WIDTH_SLOTS));
 
         // Construire les grilles avec les items initiaux
-        buildLeftGrid();
         buildRightGrid();
 
         // Ajouter les grilles au panel central
-        grids.add(leftGrid);
         grids.add(rightGrid);
 
         // Label de feedback en bas
@@ -98,34 +86,10 @@ public class PopupBarn extends PopupPanel {
         feedbackLabel.setForeground(Color.BLUE);
 
         // Assembler le panel central
-        center.add(topLabels, BorderLayout.NORTH);
         center.add(grids, BorderLayout.CENTER);
         center.add(feedbackLabel, BorderLayout.SOUTH);
 
         this.add(center, BorderLayout.CENTER);
-    }
-
-    /** Méthode pour construire la grille de gauche qui affiche l'inventaire du jardinier.
-     * Elle parcourt les items de l'inventaire du jardinier et crée un bouton pour chaque item, avec une icône et la quantité affichée.
-     * Chaque bouton a un listener de souris pour détecter les clics et les shift-clics, qui ouvrent un BarnInventorySelector pour effectuer le transfert de l'item vers la grange.
-     * Si il n'y a pas d'item à afficher pour une case de la grille, on ajoute un JLabel vide pour garder la structure de la grille.
-     * Après avoir ajouté tous les boutons et les cases vides, on appelle revalidate() et repaint() pour rafraîchir l'affichage de la grille.
-     */
-    private void buildLeftGrid() {
-        leftGrid.removeAll(); // vider la grille avant de la reconstruire
-        // Parcourir les cases de la grille (5x3) et ajouter les items de l'inventaire du jardinier
-        for (int i = 0; i < WIDTH_SLOTS * HEIGHT_SLOTS; i++) {
-            if (i < gardenerInventory.getItems().size()) { // Si il y a un item à afficher pour cette case de la grille
-                Item item = gardenerInventory.getItems().get(i);
-                JButton b = createItemButton(item, gardenerInventory, barnInventory);
-                leftGrid.add(b);
-            } else { // Sinon ajouter une case vide pour garder la structure de la grille
-
-                leftGrid.add(new JLabel());
-            }
-        }
-        leftGrid.revalidate();
-        leftGrid.repaint();
     }
 
     /** Méthode pour construire la grille de droite qui affiche l'inventaire de la grange.
@@ -166,19 +130,6 @@ public class PopupBarn extends PopupPanel {
         itemButton.setHorizontalTextPosition(SwingConstants.CENTER);
         itemButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 
-        // Mouse listener pour détecter shift-click (transfert total)
-        itemButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                boolean shift = (e.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0;
-                int qty = shift ? -1 : 1; // -1 signifiera "tout"
-                BarnInventorySelector selector = new BarnInventorySelector(display, source, target, item, qty, () -> {
-                    refresh();
-                    showTemporaryMessage("Transféré " + (qty == -1 ? "toute la pile" : "1 unité") + " : " + item.getPlantType());
-                });
-                selector.actionPerformed(null);
-            }
-        });
 
         return itemButton;
     }
@@ -189,15 +140,15 @@ public class PopupBarn extends PopupPanel {
      * Le message est affiché dans le feedbackLabel en bas du popup, et il est automatiquement
      * réinitialisé à une chaîne vide après 1 seconde grâce à un Timer Swing.
      */
-    private void showTemporaryMessage(String msg) {
-        feedbackLabel.setText(msg);
-        // Timer Swing pour réinitialiser le message au bout d'une seconde
-        javax.swing.Timer t = new javax.swing.Timer(1000, e -> {
-            feedbackLabel.setText(" ");
-        });
-        t.setRepeats(false);
-        t.start();
-    }
+//    private void showTemporaryMessage(String msg) {
+//        feedbackLabel.setText(msg);
+//        // Timer Swing pour réinitialiser le message au bout d'une seconde
+//        javax.swing.Timer t = new javax.swing.Timer(1000, e -> {
+//            feedbackLabel.setText(" ");
+//        });
+//        t.setRepeats(false);
+//        t.start();
+//    }
 
     /** Méthode pour effectuer le transfert d'items entre les inventaires du jardinier et de la grange.
      * @param source L'inventaire source du transfert (soit le jardinier soit la grange).
@@ -219,7 +170,6 @@ public class PopupBarn extends PopupPanel {
      * ce qui met à jour l'affichage des items et de leurs quantités dans les deux grilles.
      */
     public void refresh() {
-        buildLeftGrid();
         buildRightGrid();
     }
 }

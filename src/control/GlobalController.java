@@ -90,6 +90,12 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
         // 1. Si on clique sur le jardinier : Ouvre le Menu
         for (src.model.Entity entity : tile.getEntities()) {
+            // Si on clique sur une poule, on la chasse (sans ouvrir de menu)
+            if (entity instanceof src.model.Chicken) {
+                src.model.Chicken chicken = (src.model.Chicken) entity;
+                chicken.flee(); // Arrête le thread de la poule
+                return; // On arrête l'interaction ici
+            }
             if (entity instanceof src.model.Gardener) {
                 System.out.println("Clic sur le jardinier -> Ouverture du menu");
                 display.switchToPopup(new src.view.ActionsPopup(display, world, (src.model.Gardener) entity));
