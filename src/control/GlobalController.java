@@ -117,6 +117,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
             }
 
             gardener.interruptGardener();
+            display.getGlobalView().clearAllHighlights();
             // Afficher un highlight sur la case cible pendant le déplacement et l'effacer à l'arrivée
             display.getGlobalView().setHighlight(coords.x, coords.y);
             Runnable clearHighlight = () -> SwingUtilities.invokeLater(() -> display.getGlobalView().clearHighlight(coords.x, coords.y));

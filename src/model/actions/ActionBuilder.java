@@ -5,6 +5,10 @@ import src.model.Item;
 import src.model.Parcel;
 import src.view.Display;
 
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
+
 /** Classe utilitaire pour construire des actions complexes en plusieurs etapes
  * Un objet de ce type est cree lors de la selection d'action et promene dans les differentes vues (selection, popup)
  * jusqu'a ce que l'action soit complete. Elle est ensuite construite et donnee au jardinier pour execution
@@ -27,6 +31,25 @@ public abstract class ActionBuilder {
 
     // Affichage (optionnel) pour feedback visuel (highlight)
     private Display display = null;
+
+    // Liste de points sélectionnés pour l'action, par exemple les cases ciblées pour une action qui implique plusieurs cases (ex: planter sur une parcelle entière)
+    private List<Point> selectedPoints = new ArrayList<>();
+
+    public void addTarget(Point p) {
+        if (!selectedPoints.contains(p)) selectedPoints.add(p);
+    }
+
+    public void removeTarget(Point p) {
+        selectedPoints.remove(p);
+    }
+
+    public void clearTargets() {
+        selectedPoints.clear();
+    }
+
+    public List<Point> getSelectedPoints() {
+        return selectedPoints;
+    }
 
     // rajouter d'autres parametres si besoin
 

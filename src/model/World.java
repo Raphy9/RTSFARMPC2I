@@ -35,6 +35,7 @@ public class World {
     public World() {
         loadTerrainSprites();
         initializeTiles();
+        computeParcels();
         this.testGardener = new Gardener(WIDTH/2, HEIGHT/2, this);
 
         // Création et lancement d'une poule pour tester les ennemis
@@ -93,6 +94,7 @@ public class World {
             System.err.println("Warning: impossible de charger src/assets/chest.png: " + e.getMessage());
         }
 
+        /*
         // TEMPORAIRE : mettre une parcelle de debut
         ArrayList<PlantTile> parcelTiles = new ArrayList<>();
         for (int x = 45; x < 47; x++) {
@@ -103,6 +105,7 @@ public class World {
             }
         }
         Parcel startingParcel = new Parcel(parcelTiles);
+        */
     }
 
     public Tile getTile(int x, int y) {
@@ -228,4 +231,59 @@ public class World {
             }
         }
     }
+
+    /** Méthode pour recalculer automatiquement les parcelles du monde en utilisant un algorithme de Flood Fill.
+     * Parcourt toutes les cases du monde, et chaque fois qu'il trouve une PlantTile non visitée, il lance un
+     * Flood Fill pour trouver toutes les PlantTile connectées orthogonalement
+     */
+    public void computeParcels() {
+        boolean[][] visited = new boolean[WIDTH][HEIGHT];
+
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                Tile t = getTile(x, y);
+                // Si on trouve une PlantTile non visitée, c'est le début d'une nouvelle parcelle
+                if (t instanceof PlantTile && !visited[x][y]) {
+                    ArrayList<PlantTile> parcelTiles = new ArrayList<>();
+                    floodFillParcel(x, y, visited, parcelTiles);
+
+                    // On crée la parcelle (le constructeur de Parcel lie automatiquement les cases à lui-même)
+                    new Parcel(parcelTiles);
+                }
+            }
+        }
+        System.out.println("Parcelles recalculées automatiquement !");
+    }
+
+    /** Algorithme de Flood Fill pour trouver toutes les PlantTile connectées orthogonalement à partir d'une tuile de départ (startX, startY).
+     * Marque les cases visitées dans le tableau visited pour éviter les cycles, et ajoute les PlantTile trouvées à la liste parcelTiles.
+     */
+    private void floodFillParcel(int startX, int startY, boolean[][] visited, ArrayList<PlantTile> parcelTiles) {
+        java.util.Queue<Point> queue = new java.util.LinkedList<>();
+        queue.add(new Point(startX, startY));
+        visited[startX][startY] = true;
+
+        int[][] dirs = {{1,0}, {-1,0}, {0,1}, {0,-1}}; // Droite, Gauche, Bas, Haut
+
+        while (!queue.isEmpty()) {
+            Point p = queue.poll();
+            Tile t = getTile(p.x, p.y);
+            parcelTiles.add((PlantTile) t);
+
+            // Vérifier les 4 voisins
+            for (int[] d : dirs) {
+                int nx = p.x + d[0];
+                int ny = p.y + d[1];
+
+                // Vérifier les limites de la carte
+                if (nx >= 0 && nx < WIDTH && ny >= 0 && ny < HEIGHT) {
+                    if (!visited[nx][ny] && getTile(nx, ny) instanceof PlantTile) {
+                        visited[nx][ny] = true;
+                        queue.add(new Point(nx, ny));
+                    }
+                }
+            }
+        }
+    }
+
 }

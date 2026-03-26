@@ -44,8 +44,12 @@ public class InventorySelector implements ActionListener {
             builder.setItem(item);
 
             if (itemType == ItemSeed.class) {
-                // Si c'est une graine, enchaine avec la selection d'une parcelle (clic sur une case plantable)
-                display.switchToSelection(t -> t instanceof PlantTile, "Selectionner une parcelle", builder);    // critere de selection : case plantable (farmable)
+                // On exige que la case soit une PlantTile ET qu'elle soit vide (farmable)
+                display.switchToSelection(
+                        t -> t instanceof PlantTile && t.isFarmable(),
+                        "Selectionner une parcelle",
+                        builder
+                );
             }
             System.out.println("Item selectionne: " + item);
         }

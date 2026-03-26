@@ -2,11 +2,9 @@ package src.model.actions;
 
 import src.model.Gardener;
 import src.model.World;
-
-import java.awt.*;
+import java.awt.Point;
 
 public class HarvestActionBuilder extends ActionBuilder {
-
     private World world;
 
     public HarvestActionBuilder(Gardener gardener, World world) {
@@ -16,19 +14,31 @@ public class HarvestActionBuilder extends ActionBuilder {
 
     @Override
     public void buildAction() {
-        // Recolter à la case cible (getX(), getY())
-        HarvestAction harvestAction = new HarvestAction(getX(), getY());
-        // Après la récolte, on veut que le jardinier aille à la grange pour stocker les items récoltés
-        Point pos = world.findClosestWalkableAdjacent(world.getBarnX(), world.getBarnY(), getGardener());
-        MoveAction moveAction = new MoveAction(pos.x, pos.y);
-        // Après le déplacement vers la grange, on veut que le jardinier stocke les items
-        StoreAction storeAction = new StoreAction(pos.x, pos.y);
+        getGardener().interruptGardener(); // On stoppe l'action en cours
 
-        getGardener().interruptGardener();
-        getGardener().addAction(harvestAction);
-        getGardener().addAction(moveAction);
-        getGardener().addAction(storeAction);
+        for (Point p : getSelectedPoints()) {
+            if (getDisplay() != null) {
+                getDisplay().getGlobalView().setHighlight(p.x, p.y);
+            }
+            Runnable clearHighlight = () -> {
+                if (getDisplay() != null) {
+                    getDisplay().getGlobalView().clearHighlight(p.x, p.y);
+                }
+            };
 
-        System.out.println("Ordre de récolter envoyé en (" + getX() + ", " + getY() + ") !");
+            Point adjacent = world.findClosestWalkableAdjacent(p.x, p.y, getGardener());
+            int execX = (adjacent != null) ? adjacent.x : p.x;
+            int execY = (adjacent != null) ? adjacent.y : p.y;
+
+            getGardener().addAction(new MoveAction(execX, execY, clearHighlight));
+            getGardener().addAction(new HarvestAction(p.x, p.y));
+        }
+
+        // Après avoir tout récolté, on va à la grange
+        Point barnPos = world.findClosestWalkableAdjacent(world.getBarnX(), world.getBarnY(), getGardener());
+        if (barnPos != null) {
+            getGardener().addAction(new MoveAction(barnPos.x, barnPos.y));
+            getGardener().addAction(new StoreAction(barnPos.x, barnPos.y));
+        }
     }
 }

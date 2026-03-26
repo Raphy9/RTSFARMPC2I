@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import javax.swing.*;
 import java.util.*;
+import java.util.Set;
 
 /** Vue globale du monde : terrain + entités. C'est la classe centrale de l'affichage, elle connaît le monde et la caméra.
  * C'est elle qui dessine tout, y compris les entités (jardiniers). Elle gère aussi le highlight des cases ciblées par les actions. */
@@ -28,6 +29,13 @@ public class Global extends JPanel {
 
     // Highlight: maintenant plusieurs tuiles peuvent être surlignées
     private final Set<Point> highlights = new HashSet<>();
+
+    private Set<Point> selectedTilesBlueHighlight = new HashSet<Point>();
+
+    public void setSelectedTilesBlueHighlight(Set<Point> selectedTiles) {
+        this.selectedTilesBlueHighlight = selectedTiles;
+        this.repaint(); // Force le redessin pour voir les changements
+    }
 
     public Global(World world, Camera camera) {
         super();
@@ -120,27 +128,54 @@ public class Global extends JPanel {
                 }
             }
         }
+        // Highlight : on utilise un Graphics2D pour pouvoir dessiner des rectangles avec une bordure plus épaisse, et des couleurs semi-transparentes pour le remplissage
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setStroke(new BasicStroke(3));
 
-        // Dessiner les highlights s'il y en a
-        if (!highlights.isEmpty()) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setColor(new Color(255, 255, 0, 80)); // overlay semi-transparent
-            g2.setStroke(new BasicStroke(3));
-
-            for (Point p : highlights) {
+        // Dessiner d'abord le surlignement BLEU (Sélection en cours de l'utilisateur)
+        if (selectedTilesBlueHighlight != null && !selectedTilesBlueHighlight.isEmpty()) {
+            for (Point p : selectedTilesBlueHighlight) {
                 int relX = p.x - fstTileX;
                 int relY = p.y - fstTileY;
+
+                // Vérifier si la case est visible à l'écran
                 if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                     int hx = (relX * Display.RATIO_X) - pixelDiffX;
                     int hy = (relY * Display.RATIO_Y) - pixelDiffY;
+
+                    // Remplissage bleu semi-transparent
+                    g2.setColor(new Color(0, 150, 255, 100));
+                    g2.fillRect(hx, hy, Display.RATIO_X, Display.RATIO_Y);
+
+                    // Bordure bleue opaque
+                    g2.setColor(new Color(0, 100, 255));
+                    g2.drawRect(hx + 1, hy + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
+                }
+            }
+        }
+
+        // Dessiner ENSUITE le surlignement JAUNE classique (Cible des actions du jardinier)
+        if (highlights != null && !highlights.isEmpty()) {
+            for (Point p : highlights) {
+                int relX = p.x - fstTileX;
+                int relY = p.y - fstTileY;
+
+                // Vérifier si la case est visible à l'écran
+                if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                    int hx = (relX * Display.RATIO_X) - pixelDiffX;
+                    int hy = (relY * Display.RATIO_Y) - pixelDiffY;
+
+                    // Remplissage jaune semi-transparent
                     g2.setColor(new Color(255, 255, 0, 80));
                     g2.fillRect(hx, hy, Display.RATIO_X, Display.RATIO_Y);
+
+                    // Bordure jaune opaque
                     g2.setColor(new Color(255, 200, 0));
                     g2.drawRect(hx + 1, hy + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
                 }
             }
-            g2.dispose();
         }
+        g2.dispose();
 
         // dessiner les entités (jardiniers) - Une seule fois !
         drawEntities(g, fstTileX, fstTileY, pixelDiffX, pixelDiffY);

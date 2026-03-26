@@ -24,6 +24,7 @@ public class HarvestActionSelector implements ActionListener {
     public HarvestActionSelector(Display display, Gardener gardener, World world) {
         this.display = display;
         this.builder = new HarvestActionBuilder(gardener, world);
+        this.builder.setDisplay(display);
     }
 
     /** Lorsque le bouton est cliqué, on lance le mode de sélection de la display avec un critère de récolte.

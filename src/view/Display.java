@@ -138,10 +138,21 @@ public class Display {
         globalView.setVisible(false);
         selectionView.setVisible(true);
         selectionView.requestFocusInWindow(); // pour que la vue selection puisse recevoir les inputs apres le changement de vue
+        // Vider la sélection précédente
+        builder.clearTargets();
+        // Activer l'écoute du clavier (Entrée)
+        selectionView.removeKeyListener(selectionController);
+        selectionView.addKeyListener(selectionController);
+        selectionView.setVisible(true);
+        selectionView.requestFocusInWindow(); // Indispensable pour capter la touche Entrée !
     }
 
     public Camera getCamera() {
         return camera;
+    }
+
+    public Selection getSelectionView() {
+        return selectionView;
     }
 
     /** Repaint la fenetre */
@@ -152,3 +163,5 @@ public class Display {
 
 
 }
+
+

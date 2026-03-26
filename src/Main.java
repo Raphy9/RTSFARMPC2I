@@ -23,6 +23,7 @@ public class Main {
         timer.schedule(renderer, 0, 1000 / Rendering.FPS);
         // show frame
         f.pack();
+        f.setLocationRelativeTo(null);
         f.setVisible(true);
 
     }
