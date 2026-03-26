@@ -18,6 +18,7 @@ public class Tile {
 
     // Par défaut la tuile est franchissable
     private boolean walkable = true;
+    private boolean plowable = true;
 
     public Tile(int x, int y, ImageIcon s) {
         this.x = x;
@@ -59,8 +60,9 @@ public class Tile {
         return false;
     }
 
+    // Modifie ta méthode existante
     public boolean isPlowable() {
-        return true;
+        return plowable;
     }
 
 //    public boolean isPlantable() {return false;}
@@ -68,6 +70,10 @@ public class Tile {
     public int getX() { return x; }
     public int getY() { return y; }
     public ArrayList<Entity> getEntities() { return entities; }
+
+    public void setPlowable(boolean plowable) {
+        this.plowable = plowable;
+    }
 
     public void addEntity(Entity e) {
         entities.add(e);

@@ -30,6 +30,9 @@ public class World {
     // Liste des ennemis (poules) présents dans le monde
     private List<Chicken> enemies;
 
+    // Liste des sprites d'obstacles (ex: cailloux, arbres) à ajouter plus tard pour diversifier le terrain
+    private List<ImageIcon> obstacleSprites = new ArrayList<>();
+
     /** Constructeur du monde : charge les sprites, initialise les cases, crée le jardinier et la grange, et lance le thread du jardinier et l'horloge de tick.
      */
     public World() {
@@ -71,41 +74,68 @@ public class World {
         }
     }
 
+    /** Charge les sprites d'obstacles depuis le dossier src/assets/Obstacles et les stocke dans la liste obstacleSprites.
+     * Ces sprites pourront être utilisés pour ajouter de la variété au terrain avec des obstacles décoratifs (non franchissables).
+     */
+    private void loadObstacleSprites() {
+        String[] names = {
+                "buisson1", "buisson2",
+                "champi1", "champi2", "champi3",
+                "buche", "rondin", "rocher1", "rocher2"
+        };
+        for (String name : names) {
+            // Assure-toi que le chemin correspond à ton dossier assets
+            obstacleSprites.add(new ImageIcon("src/assets/Obstacles/" + name + ".png"));
+        }
+    }
+
     /**
      * Initialise les cases du monde avec l'herbe choisie.
      */
     private void initializeTiles() {
+        loadObstacleSprites();
         this.tiles = new Tile[HEIGHT][WIDTH];
 
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
 
-                this.tiles[y][x] = new Tile(x, y, grassSprite);
+                // --- ZONE DE SÉCURITÉ ---
+                // On ne met pas d'obstacle sur la grange ou le jardinier au départ
+                if ((x >= barnX - 2 && x <= barnX + 2 && y >= barnY - 2 && y <= barnY + 2) ||
+                        (x == WIDTH/2 && y == HEIGHT/2)) {
+                    tiles[y][x] = new Tile(x, y, grassSprite);
+                    continue;
+                }
 
+                // --- GÉNÉRATION ALÉATOIRE (5% de chance) ---
+                if (Math.random() < 0.05) {
+                    int randomIndex = (int)(Math.random() * obstacleSprites.size());
+                    ImageIcon obsSprite = obstacleSprites.get(randomIndex);
+
+                    Tile obsTile = new Tile(x, y, obsSprite);
+                    obsTile.setWalkable(false); // Le jardinier ne peut pas marcher dessus
+                    obsTile.setPlowable(false); // On ne peut pas labourer un rocher !
+                    tiles[y][x] = obsTile;
+                }
+                else {
+                    // Case d'herbe normale
+                    tiles[y][x] = new Tile(x, y, grassSprite);
+                }
             }
         }
+
 
         // Marquer la tuile de la grange avec un sprite chest et la rendre non franchissable
         try {
             ImageIcon chest = new ImageIcon("src/assets/chest.png");
             this.tiles[barnY][barnX].setSprite(chest);
             this.tiles[barnY][barnX].setWalkable(false);
+            this.tiles[barnY][barnX].setPlowable(false);
         } catch (Exception e) {
             System.err.println("Warning: impossible de charger src/assets/chest.png: " + e.getMessage());
         }
 
-        /*
-        // TEMPORAIRE : mettre une parcelle de debut
-        ArrayList<PlantTile> parcelTiles = new ArrayList<>();
-        for (int x = 45; x < 47; x++) {
-            for (int y = 45; y < 50; y++) {
-                PlantTile plantTile = new PlantTile(x, y);
-                this.tiles[y][x] = plantTile;
-                parcelTiles.add(plantTile);
-            }
-        }
-        Parcel startingParcel = new Parcel(parcelTiles);
-        */
+        computeParcels();
     }
 
     public Tile getTile(int x, int y) {
