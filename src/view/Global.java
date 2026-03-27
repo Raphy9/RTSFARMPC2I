@@ -25,6 +25,7 @@ public class Global extends JPanel {
 
     //images pour la jauge de croissance des plantes
     private Image progressBarEmpty;
+    private ImageIcon slowCoinGif;
     private int hoveredX = -1; // -1 veut dire qu'aucune case n'est survolée
     private int hoveredY = -1;
 
@@ -51,6 +52,7 @@ public class Global extends JPanel {
         this.gardenerLoader = new SpriteSheetLoader("src/assets/Tiny Wonder Farm Free/characters/main character/walk and idle.png");
         this.chickenLoader = new ChickenSpriteSheetLoader();
         this.progressBarEmpty = new ImageIcon("src/assets/progress_bar_ui.png").getImage();
+        this.slowCoinGif = new ImageIcon("src/assets/money.gif");
     }
 
     /** Affiche un highlight sur la case ciblée par une action (ex: la case où on veut planter). Les coordonnées sont en "monde" (pas en pixels).
@@ -346,7 +348,45 @@ public class Global extends JPanel {
             }
         }
 
+        // argent visible en permanence sur l'affichage principal.
+        drawMoney(g);
 
+
+    }
+
+    private void drawMoney(Graphics g) {
+        Barn barn = world.getBarn();
+        int money = barn.getMoney();
+        String text = "" + money;
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 18f));
+        FontMetrics metrics = g2.getFontMetrics();
+
+        int iconSize = 25;
+        int paddingX = 10;
+        int paddingY = 6;
+        int x = 12;
+        int y = 12;
+        int textWidth = metrics.stringWidth(text);
+        int width = iconSize + 8 + textWidth + paddingX * 2;
+        int height = Math.max(iconSize, metrics.getHeight()) + paddingY * 2;
+
+        g2.setColor(new Color(0, 0, 0, 140));
+        g2.fillRoundRect(x, y, width, height, 12, 12);
+        g2.setColor(new Color(255, 225, 120));
+        g2.drawRoundRect(x, y, width, height, 12, 12);
+
+        int contentY = y + paddingY;
+        if (slowCoinGif != null && slowCoinGif.getImage() != null) {
+            g2.drawImage(slowCoinGif.getImage(), x + paddingX, contentY, iconSize, iconSize, this);
+        }
+
+        g2.setColor(Color.WHITE);
+        int textX = x + paddingX + iconSize + 8;
+        int textY = y + paddingY + metrics.getAscent() + (iconSize - metrics.getHeight()) / 2;
+        g2.drawString(text, textX, textY);
+        g2.dispose();
     }
 
     /** Méthode pour dessiner les entités (jardiniers et ennemis) à l'écran, en fonction de leur position dans le monde et de la caméra.

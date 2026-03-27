@@ -14,6 +14,11 @@ public class Barn extends Inventory {
         this.stats = stats;
     }
 
+    /** Retourne la monnaie courante du joueur liee a la grange. */
+    public int getMoney() {
+        return stats.getMoney();
+    }
+
     /**
      * Transfère jusqu'à qty unités de sourceItem depuis cette grange vers target.
      */
