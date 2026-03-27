@@ -13,17 +13,17 @@ import java.awt.*;
  */
 public class PopupBarn extends PopupPanel {
 
-    // === Références du jeu ===
+    // Références du jeu
     private Display display;      // Pour rafraîchir l'écran après les mises à jour
     private World world;          // Pour accéder à la grange: world.getBarn()
     private Barn barn;            // Référence directe à la grange (extends Inventory)
 
-    // === Composants visuels ===
+    // Composants visuels
     private JPanel itemGrid;         // Grille 4x5 des items (20 cases)
     private JPanel categories;       // Barre de 8 boutons: Toutes, Graines, Plantes, + vides
     private JPanel descriptionPanel; // Zone droite: détails de l'item sélectionné
 
-    // === Configuration ===
+    // Configuration
     private static final int WIDTH_SLOTS = 4;       // 4 colonnes
     private static final int HEIGHT_SLOTS = 5;      // 5 lignes = 20 cases
     private static final int DESCRIPTION_SIZE = 400; // 400px de largeur pour la description
@@ -219,8 +219,20 @@ public class PopupBarn extends PopupPanel {
         infoPanel.add(Box.createVerticalStrut(4)); // Petit espace
         infoPanel.add(descriptionLabel);
 
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        JPanel economyPanel = new JPanel();
+        economyPanel.setLayout(new BoxLayout(economyPanel, BoxLayout.Y_AXIS));
+        economyPanel.setOpaque(false);
+
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         actionsPanel.setOpaque(false);
+
+        JTextField quantityInput = new JTextField(7);
+        quantityInput.setPreferredSize(new Dimension(100, 22));
+        quantityInput.setMaximumSize(new Dimension(100, 22));
+
+        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        inputPanel.setOpaque(false);
+        inputPanel.add(quantityInput);
 
         JButton buyButton = new JButton("Acheter");
         JButton sellButton = new JButton("Vendre");  
@@ -228,15 +240,20 @@ public class PopupBarn extends PopupPanel {
         sellButton.setFocusable(false);
 
         // Acheter/Vendre agit sur l'item de la ligne courante.
-        buyButton.addActionListener(new BarnController(barn, this, item, true));
-        sellButton.addActionListener(new BarnController(barn, this, item, false));
+        buyButton.addActionListener(new BarnController(barn, this, item, true, quantityInput));
+        sellButton.addActionListener(new BarnController(barn, this, item, false, quantityInput));
         sellButton.setEnabled(item.getQuantity() > 0);
 
         actionsPanel.add(buyButton);
         actionsPanel.add(sellButton);
 
+        economyPanel.add(inputPanel);
+        economyPanel.add(Box.createVerticalStrut(5));
+        economyPanel.add(Box.createHorizontalStrut(10));
+        economyPanel.add(actionsPanel);
+
         textPanel.add(infoPanel, BorderLayout.NORTH);
-        textPanel.add(actionsPanel, BorderLayout.SOUTH);
+        textPanel.add(economyPanel, BorderLayout.SOUTH);
 
         // === ASSEMBLER ===
         panel.add(iconSquare, BorderLayout.WEST);
