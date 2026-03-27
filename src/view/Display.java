@@ -12,6 +12,8 @@ import src.model.actions.ActionBuilder;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
@@ -32,6 +34,9 @@ public class Display {
     private final PopupView popupView;
     private final Selection selectionView;
     private final SelectionController selectionController;
+    private JLayeredPane layeredPane; // exposé pour manipulations (moveToFront)
+    private JButton btnOpenMenu; // bouton construit devenu champ pour l'accès depuis onClose
+    private JPanel controlPanel; // panel conteneur pour le bouton construire (toujours dans layeredPane)
 
     /** Constructeur de la classe Display, qui initialise les différentes vues et contrôleurs, et configure la fenêtre principale du jeu.
      * @param frame la fenêtre principale du jeu, créée dans la classe Main, pour laquelle on va configurer le contenu et les dimensions
@@ -43,8 +48,8 @@ public class Display {
         this.frame.setPreferredSize(gameSize);
 
         // LayeredPane pour pouvoir superposer les popups par dessus la vue globale
-        JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setPreferredSize(gameSize);
+        this.layeredPane = new JLayeredPane();
+        this.layeredPane.setPreferredSize(gameSize);
 
         // Vue globale
         this.globalView = new Global(this.world, this.camera);
@@ -81,46 +86,109 @@ public class Display {
         layeredPane.add(selectionView, JLayeredPane.PALETTE_LAYER);   // au dessus de la vue globale, sous les popups
         selectionView.setVisible(false);
 
-        //
+        // Contrôleur de placement des bâtiments
         BuildingManager buildingManager = new BuildingManager(world, this);
         globalView.addMouseListener(buildingManager);
         globalView.addMouseMotionListener(buildingManager);
 
-        // Le bouton "Construire", qui permet d'ouvrir le menu de construction
-        JButton btnOpenMenu = ImageButtonFactory.createImageButton(
-                "src/assets/UI/build_idle.png",   // Image normale
-                "src/assets/UI/build_hover.png",  // Image au survol (plus claire)
-                "src/assets/UI/build_pressed.png" // Image au clic (enfoncée)
+        // Bouton "Construire" (visible par défaut)
+        this.btnOpenMenu = ImageButtonFactory.createImageButton(
+                "src/assets/UI/build_idle.png",
+                "src/assets/UI/build_hover.png",
+                "src/assets/UI/build_pressed.png"
         );
-        btnOpenMenu.setFocusable(false);
-        btnOpenMenu.setBounds(gameSize.width - 160, 10, 100, 100);
+        this.btnOpenMenu.setFocusable(false);
+        this.btnOpenMenu.setBounds(0, 0, 100, 100);
 
-        // Le menu de construction, qui s'affiche quand on clique sur le bouton "Construire"
-        BuildingMenu buildMenu = new BuildingMenu(buildingManager, () -> {
-            btnOpenMenu.setVisible(true);      // Réaffiche le bouton
-            buildingManager.cancelPlacement(); // Annule la pose
-            globalView.requestFocusInWindow(); // Rend le clavier
+        // Control panel : conteneur fixe pour le bouton (évite les problèmes de parent/re-add)
+        this.controlPanel = new JPanel(null);
+        this.controlPanel.setOpaque(false);
+        // position will be set after packing / when opening — set initial bounds now
+        this.controlPanel.setBounds(gameSize.width - 160, 10, 100, 100);
+        this.controlPanel.add(this.btnOpenMenu);
+
+        // Panneau latéral droit : catalogue des bâtiments (plus grand et esthétique)
+        BuildingSidePanel sidePanel = new BuildingSidePanel(buildingManager, this, this.world, null);
+        // Définir le callback onClose : simplement ré-afficher le bouton et annuler le placement
+        sidePanel.setOnClose(() -> {
+            System.out.println("[DEBUG] sidePanel.onClose called");
+            SwingUtilities.invokeLater(() -> {
+                // Reposition controlPanel according to current content width
+                int cw = Math.max(100, this.frame.getContentPane().getWidth());
+                int ctrlX = Math.max(8, cw - 160);
+                this.controlPanel.setBounds(ctrlX, 10, 100, 100);
+                // Ensure controlPanel is on top layer and visible
+                if (this.controlPanel.getParent() == null) {
+                    this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
+                }
+                this.layeredPane.setLayer(this.controlPanel, JLayeredPane.DRAG_LAYER);
+                this.controlPanel.setVisible(true);
+                this.controlPanel.revalidate();
+                this.controlPanel.repaint();
+                buildingManager.cancelPlacement();
+                sidePanel.setVisible(false);
+                this.layeredPane.moveToFront(this.controlPanel);
+                this.layeredPane.revalidate();
+                this.layeredPane.repaint();
+                this.controlPanel.requestFocusInWindow();
+                globalView.requestFocusInWindow();
+                System.out.println("[DEBUG] controlPanel visible=" + this.controlPanel.isVisible());
+            });
         });
-        // Positionner le menu de construction à droite de l'écran, en dessous du bouton "Construire"
-        buildMenu.setBounds(gameSize.width - 170, 10, 150, 250);
+        int panelWidth = 380;
+        // Position initial flush-right (will be adjusted on open using actual pane width)
+        sidePanel.setBounds(gameSize.width - panelWidth, 0, panelWidth, gameSize.height);
+        sidePanel.setVisible(false); // s'ouvre via le bouton
+        layeredPane.add(sidePanel, JLayeredPane.PALETTE_LAYER);
 
-        // Action du bouton "Construire" : afficher le menu de construction et cacher le bouton
-        btnOpenMenu.addActionListener(e -> {
-            btnOpenMenu.setVisible(false);
-            buildMenu.setVisible(true);
-            globalView.requestFocusInWindow();
+        // Action du bouton "Construire" : afficher le panneau et cacher le bouton
+        this.btnOpenMenu.addActionListener(e -> {
+            SwingUtilities.invokeLater(() -> {
+                // Compute current content width so the panel is flush-right (as before)
+                int cw = Math.max(this.frame.getContentPane().getWidth(), gameSize.width);
+                int panelX = Math.max(0, cw - panelWidth);
+                sidePanel.setBounds(panelX, 0, panelWidth, gameSize.height);
+                // Hide control panel (button) while the side panel is open
+                this.controlPanel.setVisible(false);
+                sidePanel.setVisible(true);
+                // Bring panel to front
+                this.layeredPane.moveToFront(sidePanel);
+                this.layeredPane.revalidate();
+                this.layeredPane.repaint();
+                globalView.requestFocusInWindow();
+            });
         });
 
-        // Par défaut, le menu de construction est invisible, il s'affiche seulement quand on clique sur le bouton "Construire"
-        buildMenu.setVisible(false);
-        btnOpenMenu.setVisible(true);
+        // Add controlPanel (contains the build button) on DRAG_LAYER so it remains above the side panel
+        this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
 
-        // On ajoute le bouton et le menu de construction au LayeredPane
-        layeredPane.add(btnOpenMenu, JLayeredPane.PALETTE_LAYER);
-        layeredPane.add(buildMenu, JLayeredPane.PALETTE_LAYER);
+        // Reposition controlPanel automatically when frame is shown/resized to avoid it being off-screen
+        this.frame.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                SwingUtilities.invokeLater(() -> {
+                    int cw = Math.max(100, frame.getContentPane().getWidth());
+                    int ctrlX = Math.max(8, cw - 160);
+                    controlPanel.setBounds(ctrlX, 10, 100, 100);
+                    layeredPane.revalidate();
+                    layeredPane.repaint();
+                });
+            }
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+                SwingUtilities.invokeLater(() -> {
+                    int cw = Math.max(100, frame.getContentPane().getWidth());
+                    int ctrlX = Math.max(8, cw - 160);
+                    controlPanel.setBounds(ctrlX, 10, 100, 100);
+                    layeredPane.revalidate();
+                    layeredPane.repaint();
+                });
+            }
+        });
 
         // On remet le LayeredPane comme fond principal
-        this.frame.setContentPane(layeredPane);
+        this.frame.setContentPane(this.layeredPane);
         this.frame.pack();
         this.frame.setVisible(true);
 
@@ -205,7 +273,24 @@ public class Display {
         // hmm peut etre changer, a voir si on a besoin de tout repaint tout le temps
     }
 
+    /** Called by BuildingSidePanel when it is closed (via X or Barn button).
+     * Ensures the build control panel is shown and properly positioned. Runs on the EDT.
+     */
+    public void onBuildingPanelClose() {
+        SwingUtilities.invokeLater(() -> {
+            int cw = Math.max(100, this.frame.getContentPane().getWidth());
+            int ctrlX = Math.max(8, cw - 160);
+            this.controlPanel.setBounds(ctrlX, 10, 100, 100);
+            if (this.controlPanel.getParent() == null) {
+                this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
+            }
+            this.layeredPane.setLayer(this.controlPanel, JLayeredPane.DRAG_LAYER);
+            this.controlPanel.setVisible(true);
+            this.controlPanel.revalidate();
+            this.controlPanel.repaint();
+            this.layeredPane.moveToFront(this.controlPanel);
+            this.frame.requestFocus();
+        });
+    }
 
 }
-
-
