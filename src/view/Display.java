@@ -1,5 +1,6 @@
 package src.view;
 
+import src.control.BuildingManager;
 import src.control.CameraController;
 import src.control.GlobalController;
 import src.control.SelectionController;
@@ -80,9 +81,52 @@ public class Display {
         layeredPane.add(selectionView, JLayeredPane.PALETTE_LAYER);   // au dessus de la vue globale, sous les popups
         selectionView.setVisible(false);
 
+        //
+        BuildingManager buildingManager = new BuildingManager(world, this);
+        globalView.addMouseListener(buildingManager);
+        globalView.addMouseMotionListener(buildingManager);
+
+        // Le bouton "Construire", qui permet d'ouvrir le menu de construction
+        JButton btnOpenMenu = ImageButtonFactory.createImageButton(
+                "src/assets/UI/build_idle.png",   // Image normale
+                "src/assets/UI/build_hover.png",  // Image au survol (plus claire)
+                "src/assets/UI/build_pressed.png" // Image au clic (enfoncée)
+        );
+        btnOpenMenu.setFocusable(false);
+        btnOpenMenu.setBounds(gameSize.width - 160, 10, 100, 100);
+
+        // Le menu de construction, qui s'affiche quand on clique sur le bouton "Construire"
+        BuildingMenu buildMenu = new BuildingMenu(buildingManager, () -> {
+            btnOpenMenu.setVisible(true);      // Réaffiche le bouton
+            buildingManager.cancelPlacement(); // Annule la pose
+            globalView.requestFocusInWindow(); // Rend le clavier
+        });
+        // Positionner le menu de construction à droite de l'écran, en dessous du bouton "Construire"
+        buildMenu.setBounds(gameSize.width - 170, 10, 150, 250);
+
+        // Action du bouton "Construire" : afficher le menu de construction et cacher le bouton
+        btnOpenMenu.addActionListener(e -> {
+            btnOpenMenu.setVisible(false);
+            buildMenu.setVisible(true);
+            globalView.requestFocusInWindow();
+        });
+
+        // Par défaut, le menu de construction est invisible, il s'affiche seulement quand on clique sur le bouton "Construire"
+        buildMenu.setVisible(false);
+        btnOpenMenu.setVisible(true);
+
+        // On ajoute le bouton et le menu de construction au LayeredPane
+        layeredPane.add(btnOpenMenu, JLayeredPane.PALETTE_LAYER);
+        layeredPane.add(buildMenu, JLayeredPane.PALETTE_LAYER);
+
+        // On remet le LayeredPane comme fond principal
         this.frame.setContentPane(layeredPane);
         this.frame.pack();
         this.frame.setVisible(true);
+
+        // Pour que la vue globale puisse bien recevoir les inputs au lancement du jeu
+        globalView.requestFocusInWindow();
+
     }
 
     /**

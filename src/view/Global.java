@@ -1,6 +1,7 @@
 package src.view;
 
 import src.model.*;
+import src.model.buildings.Building;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -26,6 +27,8 @@ public class Global extends JPanel {
     private Image progressBarEmpty;
     private int hoveredX = -1; // -1 veut dire qu'aucune case n'est survolée
     private int hoveredY = -1;
+
+    private src.control.BuildingManager ghostManager;
 
     // Highlight: maintenant plusieurs tuiles peuvent être surlignées
     private final Set<Point> highlights = new HashSet<>();
@@ -65,6 +68,10 @@ public class Global extends JPanel {
         // Supprime le point de l'ensemble des surlignages
         highlights.remove(new Point(wx, wy));
         repaint();
+    }
+
+    public void setGhostBuilding(src.control.BuildingManager manager) {
+        this.ghostManager = manager;
     }
 
     /** Retourne true si la case est surlignée */
@@ -128,6 +135,92 @@ public class Global extends JPanel {
                 }
             }
         }
+
+        // === RENDU DU GHOST BUILDING ===
+        if (ghostManager != null && ghostManager.getGhostBuilding() != null) {
+            Graphics2D g3 = (Graphics2D) g.create();
+            // On utilise la même épaisseur de trait que pour les highlights
+            g3.setStroke(new BasicStroke(3));
+
+            Building b = ghostManager.getGhostBuilding();
+            int gx = ghostManager.getGhostX();
+            int gy = ghostManager.getGhostY();
+
+            // Calculer si on peut poser ou non
+            boolean isValid = ghostManager.canPlace(gx, gy, b);
+
+            // Définition des couleurs façon "Highlight"
+            Color fillColor;
+            Color borderColor;
+
+            if (isValid) {
+                // Bleu Cyan clair transparent pour le remplissage, Cyan opaque pour la bordure
+                fillColor = new Color(0, 200, 255, 100);
+                borderColor = new Color(0, 150, 255);
+            } else {
+                // Rouge transparent pour le remplissage, Rouge opaque pour la bordure
+                fillColor = new Color(255, 0, 0, 100);
+                borderColor = new Color(255, 0, 0);
+            }
+
+            // 1. Dessiner la surbrillance sur chaque case de l'empreinte
+            for (int dx = 0; dx < b.getWidth(); dx++) {
+                for (int dy = 0; dy < b.getHeight(); dy++) {
+                    int relX = (gx + dx) - fstTileX;
+                    int relY = (gy + dy) - fstTileY;
+
+                    if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                        int px = (relX * Display.RATIO_X) - pixelDiffX;
+                        int py = (relY * Display.RATIO_Y) - pixelDiffY;
+
+                        // Remplissage semi-transparent
+                        g3.setColor(fillColor);
+                        g3.fillRect(px, py, Display.RATIO_X, Display.RATIO_Y);
+
+                        // Bordure opaque (avec +1 et -3 pour ne pas déborder, comme tes highlights)
+                        g3.setColor(borderColor);
+                        g3.drawRect(px + 1, py + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
+                    }
+                }
+            }
+
+            // 2. Appliquer la transparence (50%) *uniquement* pour le sprite du bâtiment
+            g3.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+
+            // 3. Dessiner l'image du bâtiment au-dessus de la zone surlignée
+            int relX = gx - fstTileX;
+            int relY = gy - fstTileY;
+            if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                int px = (relX * Display.RATIO_X) - pixelDiffX;
+                int py = (relY * Display.RATIO_Y) - pixelDiffY;
+
+                g3.drawImage(b.getSprite().getImage(), px, py,
+                        Display.RATIO_X * b.getWidth(),
+                        Display.RATIO_Y * b.getHeight(), null);
+            }
+            g3.dispose();
+        }
+
+        // === DESSIN DES BÂTIMENTS DÉJÀ CONSTRUITS ===
+        if (world.getBuildings() != null) {
+            for (src.model.buildings.Building b : world.getBuildings()) {
+
+                int relX = b.getX() - fstTileX;
+                int relY = b.getY() - fstTileY;
+
+                // Si le bâtiment est dans le champ de la caméra
+                if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                    int px = (relX * Display.RATIO_X) - pixelDiffX;
+                    int py = (relY * Display.RATIO_Y) - pixelDiffY;
+
+                    // On dessine l'image étirée sur sa largeur/hauteur
+                    g.drawImage(b.getSprite().getImage(), px, py,
+                            Display.RATIO_X * b.getWidth(),
+                            Display.RATIO_Y * b.getHeight(), null);
+                }
+            }
+        }
+
         // Highlight : on utilise un Graphics2D pour pouvoir dessiner des rectangles avec une bordure plus épaisse, et des couleurs semi-transparentes pour le remplissage
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setStroke(new BasicStroke(3));
@@ -252,6 +345,8 @@ public class Global extends JPanel {
                 }
             }
         }
+
+
     }
 
     /** Méthode pour dessiner les entités (jardiniers et ennemis) à l'écran, en fonction de leur position dans le monde et de la caméra.

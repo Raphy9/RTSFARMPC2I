@@ -1,5 +1,7 @@
 package src.model;
 
+import src.model.buildings.Building;
+
 import javax.swing.*;
 import java.util.ArrayList;
 import javax.swing.Timer;
@@ -25,6 +27,8 @@ public class World {
     private int barnX = 55;
     private int barnY = 55;
 
+    private src.control.BuildingManager ghostManager;
+
     private Stats stats;
 
     // Liste des ennemis (poules) présents dans le monde
@@ -32,6 +36,9 @@ public class World {
 
     // Liste des sprites d'obstacles (ex: cailloux, arbres) à ajouter plus tard pour diversifier le terrain
     private List<ImageIcon> obstacleSprites = new ArrayList<>();
+
+    // Liste des bâtiments (grange, futur silo, etc.) présents dans le monde
+    private List<Building> buildings = new ArrayList<>();
 
     /** Constructeur du monde : charge les sprites, initialise les cases, crée le jardinier et la grange, et lance le thread du jardinier et l'horloge de tick.
      */
@@ -59,6 +66,11 @@ public class World {
         // Création d'une horloge qui appelle la méthode tick() toutes les secondes (1000 ms)
         Timer gameTimer = new Timer(1000, e -> this.tick());
         gameTimer.start();
+    }
+
+
+    public void setGhostBuilding(src.control.BuildingManager manager) {
+        this.ghostManager = manager;
     }
 
     /**
@@ -314,6 +326,30 @@ public class World {
                 }
             }
         }
+    }
+
+    // Ajoute un bâtiment au monde
+    public void addBuilding(Building b) {
+        buildings.add(b);
+    }
+
+    // Récupère la liste des bâtiments (utile pour l'affichage)
+    public List<Building> getBuildings() {
+        return buildings;
+    }
+
+    /**
+     * Vérifie si un bâtiment recouvre la case (x, y)
+     */
+    public boolean hasBuildingAt(int x, int y) {
+        for (src.model.buildings.Building b : buildings) {
+            // Si la case testée est à l'intérieur de l'empreinte du bâtiment
+            if (x >= b.getX() && x < b.getX() + b.getWidth() &&
+                    y >= b.getY() && y < b.getY() + b.getHeight()) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
