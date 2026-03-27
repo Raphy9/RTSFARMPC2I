@@ -67,15 +67,21 @@ public class PlantActionSelector implements ActionListener {
         for (PlantType pt : PlantType.values()) {
             int total = 0;
             // compter dans le jardinier
-            for (Item it : gInv.getItems()) {
-                if (it instanceof ItemSeed && it.getPlantType() == pt) {
-                    total += it.getQuantity();
+            for (Item it1 : gInv.getItems()) {
+                if (it1 instanceof ItemSeed) {
+                    ItemSeed seed = (ItemSeed) it1;
+                    if (seed.getPlantType() == pt) {
+                        total += it1.getQuantity();
+                    }
                 }
             }
             // compter dans la grange
-            for (Item it : barn.getItems()) {
-                if (it instanceof ItemSeed && it.getPlantType() == pt) {
-                    total += it.getQuantity();
+            for (Item it2 : barn.getItems()) {
+                if (it2 instanceof ItemSeed) {
+                    ItemSeed seed = (ItemSeed) it2;
+                    if (seed.getPlantType() == pt) {
+                        total += it2.getQuantity();
+                    }
                 }
             }
             // ajouter un ItemSeed même si total == 0 pour afficher un bouton désactivé

@@ -45,6 +45,7 @@ public class World {
     public World() {
         loadTerrainSprites();
         initializeTiles();
+        initalizeStats();
         computeParcels();
         this.testGardener = new Gardener(WIDTH/2, HEIGHT/2, this);
 
@@ -55,7 +56,7 @@ public class World {
         chicky.start(); //Lance le thread de la poule
 
         // Initialisation de la grange et remplissage de départ pour les tests
-        barn = new Barn();
+        barn = new Barn(stats);
         fstSetBarn();
 
         stats = new Stats(100);
@@ -99,6 +100,13 @@ public class World {
             // Assure-toi que le chemin correspond à ton dossier assets
             obstacleSprites.add(new ImageIcon("src/assets/Obstacles/" + name + ".png"));
         }
+    }
+
+    /**
+     * Initialise les statistiques du monde
+     */
+    private void initalizeStats() {
+        stats = new Stats(100); // Commence avec 100 pièces d'argent
     }
 
     /**

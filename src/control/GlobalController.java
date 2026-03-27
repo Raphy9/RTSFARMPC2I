@@ -49,42 +49,10 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
         Tile tile = world.getTile(coords.x, coords.y);
 
-        // 0. Si on clique sur la tuile de la grange -> Ouvrir PopupBarn seulement si jardinier proche (distance Manhattan <= 1, diagonales exclues)
+        // 0. Si on clique sur la tuile de la grange -> Ouvrir PopupBarn
         if (world.isBarnAt(coords.x, coords.y)) {
-            Gardener g = world.getGardenerTest();
-            if (g != null) { // vérifier la distance entre le jardinier et la grange
-                int dx = Math.abs(g.getX() - coords.x);
-                int dy = Math.abs(g.getY() - coords.y);
-                int manh = dx + dy;
-                if (manh <= 1) { // le jardinier est déjà à côté de la grange, on peut ouvrir directement le menu de la grange
-                    System.out.println("Clic sur la grange -> Ouverture PopupBarn");
-                    display.switchToPopup(new src.view.PopupBarn(display, world, world.getGardenerTest()));
-                } else { // le jardinier n'est pas à côté de la grange, il faut le déplacer vers la grange avant d'ouvrir le menu
-                    // Utiliser la méthode utilitaire du world pour trouver la meilleure tuile adjacente
-                    Point barnAdj = world.findClosestWalkableAdjacent(world.getBarnX(), world.getBarnY(), g);
-                    // Interrompre les actions en cours du jardinier avant de planifier le déplacement
-                    g.interruptGardener();
-                    if (barnAdj != null) { // trouvé une tuile adjacente marchable -> planifier le déplacement vers cette tuile
-                        // demander highlight mais SUR LA CASE SELECTIONNEE (la grange) et planifier le déplacement
-                        display.getGlobalView().setHighlight(coords.x, coords.y);
-                        Runnable onArrival = () -> SwingUtilities.invokeLater(() -> {
-                            display.getGlobalView().clearHighlight(coords.x, coords.y);
-                            display.switchToPopup(new src.view.PopupBarn(display, world, g));
-                        });
-                        g.addAction(new src.model.actions.MoveAction(barnAdj.x, barnAdj.y, onArrival)); // planifier le déplacement vers la tuile adjacente de la grange, avec un callback pour ouvrir le menu une fois arrivé
-                        System.out.println("Jardinier déplacé vers la tuile proche de la grange: (" + barnAdj.x + ", " + barnAdj.y + ")"); // log pour vérifier que le déplacement est planifié vers la bonne tuile
-                    } else { // Pas trouvé de tuile adjacente marchable -> tenter d'aller aux coordonnées de la grange (même si c'est pas censé marcher, au moins ça montre l'intention de déplacement vers la grange)
-                        // Pas trouvé de tuile adjacente marchable -> tenter d'aller aux coordonnées de la grange
-                        display.getGlobalView().setHighlight(coords.x, coords.y);
-                        Runnable onArrival = () -> SwingUtilities.invokeLater(() -> {
-                            display.getGlobalView().clearHighlight(coords.x, coords.y);
-                            display.switchToPopup(new src.view.PopupBarn(display, world, g));
-                        });
-                        g.addAction(new src.model.actions.MoveAction(world.getBarnX(), world.getBarnY(), onArrival));
-                        System.out.println("Jardinier déplacé vers la grange aux coordonnées: (" + world.getBarnX() + ", " + world.getBarnY() + ")");
-                    }
-                }
-            }
+            System.out.println("Clic sur la grange -> Ouverture PopupBarn");
+            display.switchToPopup(new src.view.PopupBarn(display, world));
             return;
         }
 

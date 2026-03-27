@@ -1,175 +1,274 @@
 package src.view;
 
-import src.control.popups.BarnInventorySelector;
-import src.model.Barn;
-import src.model.Gardener;
-import src.model.Inventory;
-import src.model.Item;
-import src.model.World;
+import src.control.popups.BarnController;
+import src.model.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
-/** Popup pour gérer les transferts d'items entre le jardinier et la grange.
- * Affiche deux grilles côte à côte : à gauche l'inventaire du jardinier, à droite l'inventaire de la grange.
- * Permet de transférer des items d'une grille à l'autre en cliquant sur les items. Un clic simple transfère une unité,
- * un shift-clic transfère toute la pile.
- * Affiche un message temporaire pour confirmer le transfert (ex: "Transféré 1 unité : Carotte" ou
- * "Transféré toute la pile : Chou") pendant 1 seconde après chaque transfert.
- * Le popup se rafraîchit automatiquement après chaque transfert pour afficher les quantités mises à jour.
+/**
+ * Popup d'inventaire de la grange: affiche les items stockés dans une grille 4x5.
+ * Interface 3 zones: catégories (haut), grille d'items (centre), description (droite).
+ * Permet le transfert d'items via clic/shift-clic.
  */
 public class PopupBarn extends PopupPanel {
 
-    // Références nécessaires pour accéder aux inventaires du jardinier et de la grange, et pour rafraîchir l'affichage après les transferts
-    private Display display;
-    private World world;
-    private Gardener gardener;
-    private Barn barn;
+    // === Références du jeu ===
+    private Display display;      // Pour rafraîchir l'écran après les mises à jour
+    private World world;          // Pour accéder à la grange: world.getBarn()
+    private Barn barn;            // Référence directe à la grange (extends Inventory)
 
-    // Inventaires à afficher dans les grilles
-    private Inventory gardenerInventory;
-    private Inventory barnInventory;
+    // === Composants visuels ===
+    private JPanel itemGrid;         // Grille 4x5 des items (20 cases)
+    private JPanel categories;       // Barre de 8 boutons: Toutes, Graines, Plantes, + vides
+    private JPanel descriptionPanel; // Zone droite: détails de l'item sélectionné
 
-    private JPanel rightGrid;
+    // === Configuration ===
+    private static final int WIDTH_SLOTS = 4;       // 4 colonnes
+    private static final int HEIGHT_SLOTS = 5;      // 5 lignes = 20 cases
+    private static final int DESCRIPTION_SIZE = 400; // 400px de largeur pour la description
 
-    private JLabel feedbackLabel; // message temporaire
-
-    // Dimensions de la grille d'affichage des items (5x3)
-    private static final int WIDTH_SLOTS = 5;
-    private static final int HEIGHT_SLOTS = 3;
 
     /**
-     * Constructeur du PopupBarn.
-     * @param display L'affichage global de la vue, nécessaire pour fermer le popup et rafraîchir l'affichage après les transferts.
-     * @param world Le monde dans lequel évolue le jardinier, nécessaire pour accéder à la grange et ses inventaires.
-     * @param gardener Le jardinier qui interagit avec la grange, nécessaire pour accéder à son inventaire et effectuer les transferts.
-     *
-     * Le constructeur initialise les références nécessaires, récupère les inventaires du jardinier et de la grange,
-     * puis construit l'interface utilisateur du popup en appelant initializeUI().
+     * Initialise le popup de la grange.
+     * @param display affichage principal (pour rafraîchir après transferts)
+     * @param world le monde (accès à la grange via getBarn())
      */
-    public PopupBarn(Display display, World world, Gardener gardener) {
-        super(display, 600, 300, "Grange");
+    public PopupBarn(Display display, World world) {
+        // Créer le popup avec dimensions maximales (presque tout l'écran)
+        super(display, Camera.WIDTH*Display.RATIO_X - 2*Display.RATIO_X, Camera.HEIGHT*Display.RATIO_Y-2*Display.RATIO_Y, "Grange");
+        
+        // Stocker les références
         this.display = display;
         this.world = world;
-        this.gardener = gardener;
         this.barn = world.getBarn();
-        this.gardenerInventory = gardener.getInventory();
-        this.barnInventory = this.barn;
-
+        
+        // Construire l'interface: catégories + grille + description
         initializeUI();
     }
 
-    /** Méthode pour initialiser l'interface utilisateur du popup.
-     * Elle construit une interface avec deux grilles côte à côte : à gauche l'inventaire du jardinier, à droite l'inventaire de la grange.
-     * Chaque grille affiche les items disponibles avec des boutons cliquables pour effectuer les transferts.
-     * Un JLabel en bas est utilisé pour afficher des messages temporaires de confirmation après chaque transfert.
+    /**
+     * Construit l'interface: 3 zones disposées verticalement et horizontalement.
+     * NORD: boutons de catégories (Toutes, Graines, Plantes)
+     * CENTRE: grille 4x5 d'items
+     * EST: panneau de description (détails de l'item)
      */
     private void initializeUI() {
         JPanel center = new JPanel(new BorderLayout());
-
-
-        // Grilles d'inventaire
-        JPanel grids = new JPanel(new GridLayout(1,2));
-        rightGrid = new JPanel(new GridLayout(HEIGHT_SLOTS, WIDTH_SLOTS));
-
-        // Construire les grilles avec les items initiaux
-        buildRightGrid();
-
-        // Ajouter les grilles au panel central
-        grids.add(rightGrid);
-
-        // Label de feedback en bas
-        feedbackLabel = new JLabel(" ", SwingConstants.CENTER);
-        feedbackLabel.setForeground(Color.BLUE);
-
-        // Assembler le panel central
-        center.add(grids, BorderLayout.CENTER);
-        center.add(feedbackLabel, BorderLayout.SOUTH);
-
+        JPanel panel = new JPanel(new BorderLayout());
+        
+        // === Créer les 3 zones vides ===
+        categories = new JPanel(new GridLayout(1, 8));       // 8 colonnes pour 8 boutons
+        itemGrid = new JPanel(new GridLayout(HEIGHT_SLOTS, WIDTH_SLOTS, 10, 10)); // 5x4, espacement 10px
+        descriptionPanel = new JPanel(new FlowLayout());     // Texte fluide à droite
+        
+        // === Remplir les zones ===
+        buildItemGrid();      // Parcourir inventaire et créer les cases d'items
+        buildDescription();   // Ajouter le texte "Description des items ici"
+        buildCategories();    // Créer les 8 boutons de catégories
+        
+        // === Assembler: NORD (catégories) | CENTRE (grille) | EST (description) ===
+        panel.add(categories, BorderLayout.NORTH);
+        panel.add(itemGrid, BorderLayout.CENTER);
+        panel.add(descriptionPanel, BorderLayout.EAST);
+        
+        center.add(panel, BorderLayout.CENTER);
         this.add(center, BorderLayout.CENTER);
     }
 
-    /** Méthode pour construire la grille de droite qui affiche l'inventaire de la grange.
-     * Elle fonctionne de la même manière que buildLeftGrid(), mais elle affiche les items de l'inventaire de la grange et les boutons permettent de transférer les items vers le jardinier.
+    /**
+     * Remplit la grille avec les items de l'inventaire.
+     * Cycle: VIDER → REMPLIR → REDESSINER (utile pour les rafraîchissements après transferts).
      */
-    private void buildRightGrid() {
-        rightGrid.removeAll(); // vider la grille avant de la reconstruire
-        // Parcourir les cases de la grille (5x3) et ajouter les items de l'inventaire de la grange
+    private void buildItemGrid() {
+        itemGrid.setPreferredSize(new Dimension(this.width-DESCRIPTION_SIZE, this.height-20));
+        
+        // ÉTAPE 1: Vider la grille (enlever les anciens items)
+        itemGrid.removeAll();
+        
+        // ÉTAPE 2: Remplir la grille avec les items actuels
+        // Parcourir les 20 cases de la grille (4 colonnes x 5 lignes)
         for (int i = 0; i < WIDTH_SLOTS * HEIGHT_SLOTS; i++) {
-            if (i < barnInventory.getItems().size()) { // Si il y a un item à afficher pour cette case de la grille
-                Item item = barnInventory.getItems().get(i);
-                JButton b = createItemButton(item, barnInventory, gardenerInventory);
-                rightGrid.add(b);
-            } else { // Sinon ajouter une case vide pour garder la structure de la grille
-                rightGrid.add(new JLabel());
+            if (i < barn.getItems().size()) {
+                // Il y a un item à cet index
+                Item item = barn.getItems().get(i);
+                JPanel p = createPanelItem(item); // Crée la case visuelle
+                itemGrid.add(p);
+            } else {
+                // Pas d'item: ajouter une case vide pour garder la structure
+                itemGrid.add(new JLabel());
             }
         }
-        rightGrid.revalidate();
-        rightGrid.repaint();
+        
+        // ÉTAPE 3: Forcer Swing à recalculer et redessiner
+        itemGrid.revalidate();
+        itemGrid.repaint();
     }
 
-    /** Méthode pour créer un bouton d'item dans les grilles d'inventaire.
-     * @param item L'item à afficher sur le bouton, qui contient la quantité et l'icône à afficher.
-     * @param source L'inventaire source du transfert (soit le jardinier soit la grange).
-     * @param target L'inventaire cible du transfert (soit la grange soit le jardinier).
-     * Le bouton affiche la quantité de l'item (ex: "x3" pour 3 unités) et une icône de l'item.
-     * Un clic simple sur le bouton transfère une unité de l'item vers l'inventaire cible,
-     * tandis qu'un shift-clic transfère toute la pile de l'item. Après le transfert,
-     * le popup se rafraîchit pour afficher les quantités mises à jour, et un message
-     * temporaire de confirmation est affiché en bas du popup (ex: "Transféré 1 unité :
-     * Carotte" ou "Transféré toute la pile : Chou").
+    /**
+     * Crée la barre de boutons de catégories: 3 nommés (Toutes, Graines, Plantes) + 5 vides.
+     * Les vides sont désactivés pour maintenir l'alignement de la grille.
      */
-    private JButton createItemButton(Item item, Inventory source, Inventory target) {
-        // Créer un bouton pour afficher l'item, avec la quantité de l'item affichée sur le bouton (ex: "x3" pour 3 unités)
-        JButton itemButton = new JButton("x" + item.getQuantity());
-        itemButton.setIcon(new ImageIcon(item.getImage().getImage().getScaledInstance(35, 35, Image.SCALE_SMOOTH)));
-        itemButton.setFocusable(false);
-        itemButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        itemButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-
-
-        return itemButton;
+    private void buildCategories() {
+        String[] categoryNames = {"Toutes", "Graines", "Plantes"};
+        
+        // Remplir les 8 colonnes de la grille des catégories
+        for (int i = 0; i < 8; i++) {
+            if (i < categoryNames.length) {
+                // Bouton avec nom
+                JButton catButton = createCategoryButton(categoryNames[i]);
+                categories.add(catButton);
+            } else {
+                // Bouton vide et désactivé
+                JButton emptyButton = createCategoryButton("");
+                emptyButton.setEnabled(false);
+                emptyButton.setBorder(BorderFactory.createEmptyBorder()); // Pas de bordure
+                categories.add(emptyButton);
+            }
+        }
     }
 
-    /** Méthode pour afficher un message temporaire de confirmation après un transfert d'item.
-     * @param msg Le message à afficher, qui indique ce qui a été transféré (ex: "Transféré
-     * 1 unité : Carotte" ou "Transféré toute la pile : Chou").
-     * Le message est affiché dans le feedbackLabel en bas du popup, et il est automatiquement
-     * réinitialisé à une chaîne vide après 1 seconde grâce à un Timer Swing.
+    /**
+     * Panneau de description (droite): affiche les détails de l'item sélectionné.
+     * Pour l'instant juste un placeholder, à améliorer pour détails réels.
      */
-//    private void showTemporaryMessage(String msg) {
-//        feedbackLabel.setText(msg);
-//        // Timer Swing pour réinitialiser le message au bout d'une seconde
-//        javax.swing.Timer t = new javax.swing.Timer(1000, e -> {
-//            feedbackLabel.setText(" ");
-//        });
-//        t.setRepeats(false);
-//        t.start();
-//    }
-
-    /** Méthode pour effectuer le transfert d'items entre les inventaires du jardinier et de la grange.
-     * @param source L'inventaire source du transfert (soit le jardinier soit la grange).
-     * @param target L'inventaire cible du transfert (soit la grange soit le jardinier).
-     * @param item L'item à transférer, qui contient la quantité disponible dans l'inventaire source.
-     * @param qty La quantité à transférer, qui peut être 1 pour un transfert simple ou -1 pour transférer toute la pile de l'item.
-     * La méthode utilise la méthode transferTo() de l'inventaire source pour effectuer le transfert vers l'inventaire cible, en passant la quantité à transférer.
-     */
-    public void transfer(Inventory source, Inventory target, Item item, int qty) {
-        int toTransfer = qty;
-        if (qty == -1) toTransfer = item.getQuantity();
-        source.transferTo(target, item, toTransfer);
-        refresh();
-        display.repaint();
+    private void buildDescription() {
+        descriptionPanel.setPreferredSize(new Dimension(DESCRIPTION_SIZE, this.height-20));
+        JTextArea descr = new JTextArea("Description des items ici");
+        descr.setEditable(false);
+        descriptionPanel.add(descr);
     }
 
-    /** Méthode pour rafraîchir les grilles d'inventaire après un transfert d'item.
-     * Elle reconstruit les deux grilles (gauche et droite) en appelant buildLeftGrid() et buildRightGrid(),
-     * ce qui met à jour l'affichage des items et de leurs quantités dans les deux grilles.
+    /**
+     * Crée un bouton pour la barre de catégories.
+     * Propriétés: pas de focus border, texte centré sous l'icône.
      */
+    private JButton createCategoryButton(String text) {
+        JButton CButton = new JButton(text);
+        CButton.setFocusable(false); // Pas de bordure au clic
+        CButton.setHorizontalTextPosition(SwingConstants.CENTER); // Texte centré
+        CButton.setVerticalTextPosition(SwingConstants.BOTTOM);   // Texte sous l'icône
+
+        return CButton;
+    }
+
+    /**
+     * Crée une case d'item: carré icône à gauche + nom/description à droite.
+     * Le carré a un badge de quantité en bas à droite (superposé avec OverlayLayout).
+     */
+    private JPanel createPanelItem(Item item) {
+        // Calculer les dimensions de la case
+        int slotWidth = (this.width - DESCRIPTION_SIZE) / WIDTH_SLOTS;
+        int slotHeight = (this.height - 20) / HEIGHT_SLOTS;
+        int iconSize = Math.max(45, Math.min(slotHeight - 16, slotWidth / 3));
+
+        // === CONTENEUR PRINCIPAL ===
+        JPanel panel = new JPanel(new BorderLayout(10, 0)); // 10px espace horizontal entre gauche/droite
+        panel.setBackground(Color.getHSBColor(77, 52, 34));
+        panel.setPreferredSize(new Dimension(slotWidth, slotHeight));
+        panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8)); // Marges
+
+        // === BLOC GAUCHE: Carré avec icône + badge quantité ===
+        JPanel iconSquare = new JPanel(new BorderLayout());
+        iconSquare.setPreferredSize(new Dimension(iconSize, iconSize));
+        iconSquare.setBorder(BorderFactory.createLineBorder(new Color(120, 95, 70)));
+        iconSquare.setBackground(new Color(242, 231, 213));
+
+        // Superposer l'icône et le badge (OverlayLayout: alignement détermine la position)
+        JPanel overlay = new JPanel();
+        overlay.setLayout(new OverlayLayout(overlay));
+        overlay.setOpaque(false);
+
+        // Icône centrée (0.5f = centre)
+        JLabel iconLabel = new JLabel(new ImageIcon(item.getImage().getImage().getScaledInstance(iconSize - 40, iconSize - 40, Image.SCALE_SMOOTH)));
+        iconLabel.setAlignmentX(0.5f);
+        iconLabel.setAlignmentY(0.5f);
+
+        // Texte quantité en bas à droite (1.0f = droite/bas)
+        JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 1));
+        quantityPanel.setOpaque(true);
+        quantityPanel.setBackground(new Color(0, 0, 0, 170)); // Noir semi-transparent
+        quantityPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 120))); // Bordure blanche
+        quantityPanel.setAlignmentX(1.0f);
+        quantityPanel.setAlignmentY(1.0f);
+
+        JLabel quantityLabel = new JLabel("x" + item.getQuantity());
+        quantityLabel.setForeground(Color.WHITE);
+        quantityLabel.setFont(quantityLabel.getFont().deriveFont(Font.BOLD, 11f));
+        quantityPanel.add(quantityLabel);
+
+        overlay.add(iconLabel);
+        iconSquare.add(overlay, BorderLayout.CENTER);
+        iconSquare.add(quantityPanel, BorderLayout.SOUTH);
+
+        // === BLOC DROIT: infos en haut + actions en bas ===
+        JPanel textPanel = new JPanel(new BorderLayout());
+        textPanel.setOpaque(false);
+
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setOpaque(false);
+
+        JLabel nameLabel = new JLabel(buildItemTitle(item));
+        nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 14f));
+        
+        JLabel descriptionLabel = new JLabel(buildItemDescription(item));
+        descriptionLabel.setFont(descriptionLabel.getFont().deriveFont(Font.PLAIN, 11f));
+
+        infoPanel.add(nameLabel);
+        infoPanel.add(Box.createVerticalStrut(4)); // Petit espace
+        infoPanel.add(descriptionLabel);
+
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        actionsPanel.setOpaque(false);
+
+        JButton buyButton = new JButton("Acheter");
+        JButton sellButton = new JButton("Vendre");  
+        buyButton.setFocusable(false);
+        sellButton.setFocusable(false);
+
+        // Acheter/Vendre agit sur l'item de la ligne courante.
+        buyButton.addActionListener(new BarnController(barn, this, item, true));
+        sellButton.addActionListener(new BarnController(barn, this, item, false));
+        sellButton.setEnabled(item.getQuantity() > 0);
+
+        actionsPanel.add(buyButton);
+        actionsPanel.add(sellButton);
+
+        textPanel.add(infoPanel, BorderLayout.NORTH);
+        textPanel.add(actionsPanel, BorderLayout.SOUTH);
+
+        // === ASSEMBLER ===
+        panel.add(iconSquare, BorderLayout.WEST);
+        panel.add(textPanel, BorderLayout.CENTER);
+        return panel;
+    }
+
+
+    /**
+     * Génère le titre de l'item: "Graine - X" ou "Produit - X"
+     * @return Ex: "Graine - Carotte" ou "Produit - Fraise"
+     */
+    private String buildItemTitle(Item item) {
+        // Vérifier si c'est une graine (ItemSeed) ou un produit (ItemPlant)
+        return (item instanceof ItemSeed ? "Graine - " : "Produit - ") + item.getPlantType().getName();
+    }
+
+
+    /**
+     * Génère la mini-description: usage | croissance | eau | valeur
+     * @return Ex: "A planter | Croissance: 75t | Eau: 0.5/t | Valeur: 10"
+     */
+    private String buildItemDescription(Item item) {
+        PlantType plantType = item.getPlantType();
+        // Utilisation: si c'est une graine "A planter", sinon "Pret a vendre"
+        String usage = item instanceof ItemSeed ? "A planter" : "Pret a vendre";
+        return String.format("%s | Croissance: %dt | Eau: %.1f/t | Valeur: %d", 
+                usage, plantType.getGrowthDuration(), plantType.getWaterConsumption(), plantType.getValue());
+    }
+
+    /** Rafraîchit la grille après une action d'achat/vente. */
     public void refresh() {
-        buildRightGrid();
+        buildItemGrid();
     }
 }
