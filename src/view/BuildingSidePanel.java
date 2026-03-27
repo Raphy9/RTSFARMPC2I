@@ -195,17 +195,20 @@ public class BuildingSidePanel extends JPanel {
         List<Entry> out = new ArrayList<>();
         switch (category) {
             case "Bâtiments":
-                out.add(new Entry("Boîte aux lettres", "src/assets/Buildings/mailbox1.png", () -> new Mailbox1(), 50));
+                out.add(new Entry("Mailbox1", "src/assets/Buildings/mailbox1.png", () -> new Mailbox1(), 50));
                 out.add(new Entry("Well", "src/assets/Buildings/well.png", () -> new Well(), 50));
 
                 break;
             case "Décoration":
                 out.add(new Entry("Poto", "src/assets/Buildings/poto.png", () -> new Poto(), 30));
-                out.add(new Entry("Linge", "src/assets/Buildings/linge.png", () -> new Linge(), 120));
+                out.add(new Entry("Linge", "src/assets/Buildings/linge.png", () -> new Linge(), 30));
+                out.add(new Entry("Bigsign", "src/assets/Buildings/bigsign.png", () -> new Bigsign(), 20));
+                out.add(new Entry("Barrel2", "src/assets/Buildings/barrel2.png", () -> new Barrel2(), 20));
+                out.add(new Entry("Barrel1", "src/assets/Buildings/barrel1.png", () -> new Barrel1(), 20));
                 break;
             case "Nature":
-                out.add(new Entry("Tree", "src/assets/Buildings/tree1.png", () -> new Tree1(), 10));
-                out.add(new Entry("Trees", "src/assets/Buildings/tree2.png", () -> new Tree2(), 20));
+                out.add(new Entry("Tree1", "src/assets/Buildings/tree1.png", () -> new Tree1(), 10));
+                out.add(new Entry("Tree2", "src/assets/Buildings/tree2.png", () -> new Tree2(), 20));
                 out.add(new Entry("Rock1", "src/assets/Buildings/rock1.png", () -> new Rock1(), 20));
                 break;
             case "Chemin":
