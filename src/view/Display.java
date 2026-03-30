@@ -12,8 +12,7 @@ import src.model.actions.ActionBuilder;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
@@ -37,6 +36,7 @@ public class Display {
     private JLayeredPane layeredPane; // exposé pour manipulations (moveToFront)
     private JButton btnOpenMenu; // bouton construit devenu champ pour l'accès depuis onClose
     private JPanel controlPanel; // panel conteneur pour le bouton construire (toujours dans layeredPane)
+    private EdgeScroller edgeScroller; // délègue l'edge-scrolling à une classe dédiée
 
     /** Constructeur de la classe Display, qui initialise les différentes vues et contrôleurs, et configure la fenêtre principale du jeu.
      * @param frame la fenêtre principale du jeu, créée dans la classe Main, pour laquelle on va configurer le contenu et les dimensions
@@ -72,6 +72,26 @@ public class Display {
 
         layeredPane.add(popupView, JLayeredPane.MODAL_LAYER);   // au dessus de la vue globale
 
+        // ContainerListener pour surveiller l'ajout/suppression de composants sur le layeredPane
+        this.layeredPane.addContainerListener(new ContainerAdapter() {
+            @Override
+            public void componentAdded(ContainerEvent e) {
+                Component c = e.getChild();
+                // ajouter un HierarchyListener pour suivre visibility/showing changes
+                c.addHierarchyListener(evt -> {
+                    if ((evt.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+                        refreshEdgeScrollerState();
+                    }
+                });
+                refreshEdgeScrollerState();
+            }
+
+            @Override
+            public void componentRemoved(ContainerEvent e) {
+                refreshEdgeScrollerState();
+            }
+        });
+
         // Vue Selection
         this.selectionView = new Selection(this.world, this.camera);
         this.selectionView.setPreferredSize(gameSize);
@@ -103,6 +123,8 @@ public class Display {
         // Control panel : conteneur fixe pour le bouton (évite les problèmes de parent/re-add)
         this.controlPanel = new JPanel(null);
         this.controlPanel.setOpaque(false);
+        // Ne pas considérer ce panneau comme une overlay qui désactive le edge-scrolling
+        this.controlPanel.putClientProperty("edgeScrollIgnore", Boolean.TRUE);
         // position will be set after packing / when opening — set initial bounds now
         this.controlPanel.setBounds(gameSize.width - 160, 10, 100, 100);
         this.controlPanel.add(this.btnOpenMenu);
@@ -132,14 +154,38 @@ public class Display {
                 this.layeredPane.repaint();
                 this.controlPanel.requestFocusInWindow();
                 globalView.requestFocusInWindow();
-                System.out.println("[DEBUG] controlPanel visible=" + this.controlPanel.isVisible());
-            });
+                // inform edgeScroller that sidebar is closed: reset width and re-enable scrolling
+                try {
+                    if (this.edgeScroller == null) {
+                        // recreate the edge scroller
+                        this.edgeScroller = new EdgeScroller(this.frame, this.layeredPane, this.camera, this.globalView,
+                                Rendering.FPS, 72, 0.12f);
+                    }
+                    if (this.edgeScroller != null) {
+                        this.edgeScroller.setIgnoredRegion(null);
+                        this.edgeScroller.setRightSidebarWidth(0);
+                        this.edgeScroller.setEnabled(true);
+                    }
+                } catch (Exception ex) {}
+                });
         });
         int panelWidth = 380;
         // Position initial flush-right (will be adjusted on open using actual pane width)
         sidePanel.setBounds(gameSize.width - panelWidth, 0, panelWidth, gameSize.height);
         sidePanel.setVisible(false); // s'ouvre via le bouton
         layeredPane.add(sidePanel, JLayeredPane.PALETTE_LAYER);
+
+        // Keep edgeScroller in sync if sidePanel is shown/hidden by other code paths
+        sidePanel.addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+                if (sidePanel.isShowing()) {
+                    // an overlay (side panel) is visible -> notify scroller
+                    overlayOpened(panelWidth, sidePanel.getBounds());
+                } else {
+                    overlayClosed();
+                }
+            }
+        });
 
         // Action du bouton "Construire" : afficher le panneau et cacher le bouton
         this.btnOpenMenu.addActionListener(e -> {
@@ -150,6 +196,9 @@ public class Display {
                 sidePanel.setBounds(panelX, 0, panelWidth, gameSize.height);
                 // Hide control panel (button) while the side panel is open
                 this.controlPanel.setVisible(false);
+                // Notify scroller that a right sidebar overlay is opening
+                overlayOpened(panelWidth, sidePanel.getBounds());
+                // Finally show the side panel
                 sidePanel.setVisible(true);
                 // Bring panel to front
                 this.layeredPane.moveToFront(sidePanel);
@@ -189,8 +238,15 @@ public class Display {
 
         // On remet le LayeredPane comme fond principal
         this.frame.setContentPane(this.layeredPane);
+
+        // Nous packons et affichons la fenêtre avant de créer l'EdgeScroller
         this.frame.pack();
         this.frame.setVisible(true);
+
+        // Création de l'edgeScroller APRÈS le pack/visible pour que les dimensions de globalView soient correctes
+        // Utiliser une vitesse plus douce par défaut (0.12f) pour éviter un scrolling trop rapide en vue globale
+        this.edgeScroller = new EdgeScroller(this.frame, this.layeredPane, this.camera, this.globalView,
+                Rendering.FPS, 72, 0.12f);
 
         // Pour que la vue globale puisse bien recevoir les inputs au lancement du jeu
         globalView.requestFocusInWindow();
@@ -219,6 +275,8 @@ public class Display {
         globalView.removeKeyListener(cameraController); // ne fait rien si deja enleve
         // Afficher le popup
         popupView.showPopup(popup);
+        // Notify scroller that a popup overlay is active
+        overlayOpened(0, null);
     }
 
     /** Met la vue en mode global */
@@ -234,6 +292,8 @@ public class Display {
             globalView.addKeyListener(cameraController);
         }
         globalView.requestFocusInWindow(); // pour que la vue globale puisse recevoir les inputs apres le changement de vue
+        // Notify scroller that overlays are closed
+        overlayClosed();
     }
 
     /** Met la vue en mode selection, en affichant la vue selection et en cachant la vue globale
@@ -289,8 +349,59 @@ public class Display {
             this.controlPanel.revalidate();
             this.controlPanel.repaint();
             this.layeredPane.moveToFront(this.controlPanel);
-            this.frame.requestFocus();
+            // Ensure the global view regains keyboard/mouse focus so scrolling and camera keys work
+            this.globalView.requestFocusInWindow();
+            // Reset edgeScroller state to default when the building panel is closed
+            overlayClosed();
         });
     }
 
+    // L'edge-scrolling est exécuté dans un thread dédié (edgeScrollThread). La méthode update() n'est plus nécessaire
+    public void update() {
+        // Methode laissée pour compatibilité (ancienne Rendering) mais ne fait rien car le thread s'occupe du scrolling.
+    }
+
+    /** Met à jour l'état de l'EdgeScroller en fonction des composants visibles sur le layeredPane.
+     * Appelée automatiquement lors de l'ajout ou de la suppression de composants, ainsi que lors des changements de visibilité.
+     * */
+    public void refreshEdgeScrollerState() {
+        boolean hasVisibleOverlay = false;
+        for (Component comp : layeredPane.getComponents()) {
+            if (comp == globalView) continue;
+            int layer = layeredPane.getLayer(comp);
+            if (layer != JLayeredPane.DEFAULT_LAYER && comp.isVisible()) {
+                hasVisibleOverlay = true;
+                break;
+            }
+        }
+        try {
+            if (this.edgeScroller != null) {
+                this.edgeScroller.setEnabled(!hasVisibleOverlay);
+            }
+        } catch (Exception ex) {}
+    }
+
+    /**
+     * Notify the edge scroller that an overlay (popup, sidebar, etc.) is open.
+     * @param rightSidebarWidth width of the right sidebar (0 if not a sidebar)
+     * @param ignoredRegion region to ignore for edge scrolling (null if not applicable)
+     */
+    public void overlayOpened(int rightSidebarWidth, Rectangle ignoredRegion) {
+        if (this.edgeScroller != null) {
+            this.edgeScroller.setEnabled(false);
+            this.edgeScroller.setRightSidebarWidth(rightSidebarWidth);
+            this.edgeScroller.setIgnoredRegion(ignoredRegion);
+        }
+    }
+
+    /**
+     * Notify the edge scroller that overlays are closed and normal scrolling should resume.
+     */
+    public void overlayClosed() {
+        if (this.edgeScroller != null) {
+            this.edgeScroller.setIgnoredRegion(null);
+            this.edgeScroller.setRightSidebarWidth(0);
+            this.edgeScroller.setEnabled(true);
+        }
+    }
 }

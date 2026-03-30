@@ -16,6 +16,7 @@ public class Rendering extends TimerTask {
 
     @Override
     public void run() {
+        // Repaint only; edge-scrolling is handled by Display's background thread
         display.repaint();
     }
 }
