@@ -1,10 +1,13 @@
 package src.view;
 
+import src.control.CameraController;
+import src.control.popups.BarnCategoriesController;
 import src.control.popups.BarnController;
 import src.model.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * Popup d'inventaire de la grange: affiche les items stockés dans une grille 4x5.
@@ -20,8 +23,12 @@ public class PopupBarn extends PopupPanel {
 
     // Composants visuels
     private JPanel itemGrid;         // Grille 4x5 des items (20 cases)
-    private JPanel categories;       // Barre de 8 boutons: Toutes, Graines, Plantes, + vides
+    private JPanel categories;       // Barre de 4 boutons: Toutes, Graines, Plantes, Fertilisants
     private JPanel descriptionPanel; // Zone droite: détails de l'item sélectionné
+
+    // Filtre courant (nom de la catégorie sélectionnée)
+    private String selectedCategory = "Toutes";
+    private String[] categoryNames = {"Toutes", "Graines", "Plantes", "Fertilisants"};
 
     // Configuration
     private static final int WIDTH_SLOTS = 3;       // 4 colonnes
@@ -58,18 +65,26 @@ public class PopupBarn extends PopupPanel {
         JPanel panel = new JPanel(new BorderLayout());
         
         // === Créer les 3 zones vides ===
-        categories = new JPanel(new GridLayout(1, 8));       // 8 colonnes pour 8 boutons
+        categories = new JPanel(new GridLayout(1, 4));       // 8 colonnes pour 8 boutons
         itemGrid = new JPanel(new GridLayout(HEIGHT_SLOTS, WIDTH_SLOTS, 10, 10)); // 5x4, espacement 10px
         descriptionPanel = new JPanel(new FlowLayout());     // Texte fluide à droite
         
         // === Remplir les zones ===
         buildItemGrid();      // Parcourir inventaire et créer les cases d'items
         buildDescription();   // Ajouter le texte "Description des items ici"
-        buildCategories();    // Créer les 8 boutons de catégories
-        
-        // === Assembler: NORD (catégories) | CENTRE (grille) | EST (description) ===
-        panel.add(categories, BorderLayout.NORTH);
-        panel.add(itemGrid, BorderLayout.CENTER);
+
+        ArrayList<JButton> categoryButtons = buildCategories();    // Créer les 4 boutons de catégories
+        // Attacher un controller qui transmet la catégorie (nom) au popup
+        for (int i = 0; i < categoryButtons.size() && i < categoryNames.length; i++) {
+            JButton catButton = categoryButtons.get(i);
+            catButton.addActionListener(new BarnCategoriesController(catButton, this, categoryNames[i]));
+        }
+
+        // Panel contenant catégories et grille à gauche et description à droite
+        JPanel left = new JPanel(new BorderLayout());
+        left.add(categories, BorderLayout.NORTH);
+        left.add(itemGrid, BorderLayout.CENTER);
+        panel.add(left, BorderLayout.CENTER);
         panel.add(descriptionPanel, BorderLayout.EAST);
         
         center.add(panel, BorderLayout.CENTER);
@@ -83,15 +98,31 @@ public class PopupBarn extends PopupPanel {
     private void buildItemGrid() {
         itemGrid.setPreferredSize(new Dimension(this.width-DESCRIPTION_SIZE, this.height-20));
 
-        // ÉTAPE 1: Vider la grille (enlever les anciens items)
         itemGrid.removeAll();
 
-        // ÉTAPE 2: Remplir la grille avec les items actuels
-        // Parcourir les 20 cases de la grille (4 colonnes x 5 lignes)
+        // Préparer la liste filtrée selon la catégorie sélectionnée
+        ArrayList<Item> filtered = new ArrayList<>();
+        for (Item it : barn.getItems()) {
+            switch (selectedCategory) {
+                case "Graines":
+                    if (it instanceof ItemSeed) filtered.add(it);
+                    break;
+                case "Plantes":
+                    if (it instanceof ItemPlant) filtered.add(it);
+                    break;
+                case "Fertilisants":
+                    if (!(it instanceof ItemSeed) && !(it instanceof ItemPlant)) filtered.add(it);
+                    break;
+                default: // "Toutes"
+                    filtered.add(it);
+                    break;
+            }
+        }
+
+        // Remplir la grille avec les items filtrés
         for (int i = 0; i < WIDTH_SLOTS * HEIGHT_SLOTS; i++) {
-            if (i < barn.getItems().size()) {
-                // Il y a un item à cet index
-                Item item = barn.getItems().get(i);
+            if (i < filtered.size()) {
+                Item item = filtered.get(i);
                 JPanel p = createPanelItem(item); // Crée la case visuelle
                 itemGrid.add(p);
             } else {
@@ -106,18 +137,27 @@ public class PopupBarn extends PopupPanel {
     }
 
     /**
+     * Définit la catégorie filtrée et force le rafraîchissement de l'affichage.
+     * @param category nom de la catégorie ("Toutes", "Graines", "Plantes", "Fertilisants")
+     */
+    public void setCategory(String category) {
+        if (category == null) return;
+        this.selectedCategory = category;
+    }
+
+    /**
      * Crée la barre de boutons de catégories: 3 nommés (Toutes, Graines, Plantes) + 5 vides.
      * Les vides sont désactivés pour maintenir l'alignement de la grille.
      */
-    private void buildCategories() {
-        String[] categoryNames = {"Toutes", "Graines", "Plantes"};
-        
-        // Remplir les 8 colonnes de la grille des catégories
-        for (int i = 0; i < 8; i++) {
+    private ArrayList<JButton> buildCategories() {
+        ArrayList<JButton> categorieButtons = new ArrayList<>();
+        // Remplir les 4 colonnes de la grille des catégories
+        for (int i = 0; i < 4; i++) {
             if (i < categoryNames.length) {
                 // Bouton avec nom
                 JButton catButton = createCategoryButton(categoryNames[i]);
                 categories.add(catButton);
+                categorieButtons.add(catButton);
             } else {
                 // Bouton vide et désactivé
                 JButton emptyButton = createCategoryButton("");
@@ -126,6 +166,7 @@ public class PopupBarn extends PopupPanel {
                 categories.add(emptyButton);
             }
         }
+        return categorieButtons;
     }
 
     /**
