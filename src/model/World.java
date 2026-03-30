@@ -20,7 +20,8 @@ public class World {
 
     // Image principale d'herbe
     private ImageIcon grassSprite;
-    private Gardener testGardener;
+    private Gardener testGardener;  // seulement pour tester
+    private ArrayList<Gardener> gardeners = new ArrayList<>();
     private Barn barn;
 
     // Coordonnées de la grange (Option A : position fixe au démarrage)
@@ -47,7 +48,15 @@ public class World {
         initializeTiles();
         initalizeStats();
         computeParcels();
+
+        // Jardiniers
         this.testGardener = new Gardener(WIDTH/2, HEIGHT/2, this);
+        this.gardeners.add(testGardener);
+        this.gardeners.add(new Gardener(WIDTH/2+1, HEIGHT/2, this));
+        for (Gardener gardener : gardeners) {
+            Thread t = new Thread(gardener);
+            t.start();; // Lance le thread du jardinier
+        }
 
         // Création et lancement d'une poule pour tester les ennemis
         this.enemies = new ArrayList<>();
@@ -60,9 +69,6 @@ public class World {
         fstSetBarn();
 
         stats = new Stats(100);
-
-        Thread t = new Thread(this.testGardener);
-        t.start();
 
         // Création d'une horloge qui appelle la méthode tick() toutes les secondes (1000 ms)
         Timer gameTimer = new Timer(1000, e -> this.tick());
@@ -169,8 +175,13 @@ public class World {
         return this.tiles;
     }
 
+    /** Pour tester seulement */
     public Gardener getGardenerTest() {
         return this.testGardener;
+    }
+
+    public ArrayList<Gardener> getGardeners() {
+        return this.gardeners;
     }
 
     public Barn getBarn() {
@@ -270,8 +281,8 @@ public class World {
         System.out.println("Arrêt du monde : fermeture des Threads...");
 
         // Arrêter le jardinier
-        if (this.testGardener != null) {
-            this.testGardener.stopGardener();
+        for (Gardener gardener : gardeners) {
+             gardener.stopGardener();
         }
 
         // Arrêter tous les ennemis (poules)

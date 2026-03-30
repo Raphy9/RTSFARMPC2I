@@ -72,25 +72,25 @@ public class GlobalController implements MouseListener, MouseMotionListener{
         }
 
         // 2. Si on clique ailleurs : Déplacement (TEMPORAIRE)
-        src.model.Gardener gardener = world.getGardenerTest();
-        if (gardener != null && tile.isWalkable()) {
-            System.out.println("Clic sur case vide -> Envoi de l'ordre MoveAction vers (" + coords.x + ", " + coords.y + ")");
-
-            int dx = coords.x - gardener.getX();
-            int dy = coords.y - gardener.getY();
-            if (Math.abs(dx) > Math.abs(dy)) {
-                gardener.setFacingDirection(dx > 0 ? src.model.Entity.RIGHT : src.model.Entity.LEFT);
-            } else if (dy != 0) {
-                gardener.setFacingDirection(dy > 0 ? src.model.Entity.DOWN : src.model.Entity.UP);
-            }
-
-            gardener.interruptGardener();
-            display.getGlobalView().clearAllHighlights();
-            // Afficher un highlight sur la case cible pendant le déplacement et l'effacer à l'arrivée
-            display.getGlobalView().setHighlight(coords.x, coords.y);
-            Runnable clearHighlight = () -> SwingUtilities.invokeLater(() -> display.getGlobalView().clearHighlight(coords.x, coords.y));
-            gardener.addAction(new src.model.actions.MoveAction(coords.x, coords.y, clearHighlight));
-        }
+//        src.model.Gardener gardener = world.getGardenerTest();
+//        if (gardener != null && tile.isWalkable()) {
+//            System.out.println("Clic sur case vide -> Envoi de l'ordre MoveAction vers (" + coords.x + ", " + coords.y + ")");
+//
+//            int dx = coords.x - gardener.getX();
+//            int dy = coords.y - gardener.getY();
+//            if (Math.abs(dx) > Math.abs(dy)) {
+//                gardener.setFacingDirection(dx > 0 ? src.model.Entity.RIGHT : src.model.Entity.LEFT);
+//            } else if (dy != 0) {
+//                gardener.setFacingDirection(dy > 0 ? src.model.Entity.DOWN : src.model.Entity.UP);
+//            }
+//
+//            gardener.interruptGardener();
+//            display.getGlobalView().clearAllHighlights();
+//            // Afficher un highlight sur la case cible pendant le déplacement et l'effacer à l'arrivée
+//            display.getGlobalView().setHighlight(coords.x, coords.y);
+//            Runnable clearHighlight = () -> SwingUtilities.invokeLater(() -> display.getGlobalView().clearHighlight(coords.x, coords.y));
+//            gardener.addAction(new src.model.actions.MoveAction(coords.x, coords.y, clearHighlight));
+//        }
     }
     @Override
     public void mousePressed(MouseEvent e) {

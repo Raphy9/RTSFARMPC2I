@@ -36,7 +36,8 @@ public class Entity {
         this.x = x;
         this.y = y;
         this.world = world;
-        world.getTiles()[x][y].addEntity(this); // Ajoute l'entité à la tuile correspondante
+        System.out.println("Création de l'entité à la position (" + x + ", " + y + ")");
+        world.getTiles()[y][x].addEntity(this); // Ajoute l'entité à la tuile correspondante
     }
 
 /**     * Implémentation de l'algorithme A* pour trouver un chemin vers une cible

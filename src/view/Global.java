@@ -400,9 +400,7 @@ public class Global extends JPanel {
         long elapsedTime = System.currentTimeMillis() - startTime;
 
         //  Dessin du jardinier
-        Gardener gardener = world.getGardenerTest();
-
-        if (gardener != null) {
+        for (Gardener gardener : world.getGardeners()) {
             // Savoir s'il est à l'écran
             if (gardener.getX() >= fstTileX && gardener.getX() <= fstTileX + Camera.WIDTH &&
                     gardener.getY() >= fstTileY && gardener.getY() <= fstTileY + Camera.HEIGHT) {
