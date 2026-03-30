@@ -50,10 +50,9 @@ public class World {
         this.testGardener = new Gardener(WIDTH/2, HEIGHT/2, this);
 
         // Création et lancement d'une poule pour tester les ennemis
-        this.enemies = new ArrayList<>();
-        Chicken chicky = new Chicken((WIDTH/2)+1, (HEIGHT/2), this);
-        this.enemies.add(chicky);
-        chicky.start(); //Lance le thread de la poule
+        this.enemies = new java.util.concurrent.CopyOnWriteArrayList<>();
+        this.chickenSpawner = new ChickenSpawner(this);
+        this.chickenSpawner.start();
 
         // Initialisation de la grange et remplissage de départ pour les tests
         barn = new Barn(stats);
@@ -184,6 +183,7 @@ public class World {
 
     /** Retourne la liste des ennemis (poules) présents dans le monde */
     public List<Chicken> getEnemies() { return enemies; }
+    private ChickenSpawner chickenSpawner;
 
     /** Indique si les coordonnées données correspondent à la grange */
     public boolean isBarnAt(int x, int y) { return x == barnX && y == barnY; }
@@ -271,6 +271,11 @@ public class World {
     public void stopWorld() {
         System.out.println("Arrêt du monde : fermeture des Threads...");
 
+        // Arrêter le spawner de poules
+        if (this.chickenSpawner != null) {
+            this.chickenSpawner.stop();
+        }
+
         // Arrêter le jardinier
         if (this.testGardener != null) {
             this.testGardener.stopGardener();
@@ -283,7 +288,6 @@ public class World {
             }
         }
     }
-
     /** Méthode pour recalculer automatiquement les parcelles du monde en utilisant un algorithme de Flood Fill.
      * Parcourt toutes les cases du monde, et chaque fois qu'il trouve une PlantTile non visitée, il lance un
      * Flood Fill pour trouver toutes les PlantTile connectées orthogonalement
