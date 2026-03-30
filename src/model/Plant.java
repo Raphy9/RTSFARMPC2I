@@ -11,19 +11,18 @@ public class Plant {
 
     // --- Constantes ---
     private static final float MAX_WATER_LEVEL = 100.0f;
-    // private static final int TIME_BEFORE_ROT = 500;   // SUPPRIMÉ : la pourriture est fusionnée avec la mort
     private static final int TIME_BEFORE_DEATH = 300; // Temps (ticks) sans eau avant de mourir
 
     // --- Attributs ---
     private final PlantType type; // Le type de plante (Salade, Carotte, Tomate, etc.)
-    private PlantState state; // L'état actuel de la plante (GRAINE, POUSSE, CROISSANCE, MATURE, MORT)
+    private PlantState state; // L'état actuel de la plante (GRAINE, POUSSE, CROISSANCE, MATURE, MORT, EATEN)
 
     private float currentWaterLevel; // Niveau d'eau actuel (0 à MAX_WATER_LEVEL)
     private int age;             // Progression de la croissance
     private int ticksWithoutWater; // Compteur pour la mort de soif
     private boolean hasFertilizer; // Si de l'engrais a été mis
 
-    private ImageIcon sprite; //
+    private ImageIcon sprite; // Image actuelle de la plante
 
     // --- Constructeur ---
     public Plant(PlantType type) {
@@ -41,13 +40,13 @@ public class Plant {
      * Gère l'eau, la croissance et la mort.
      */
     public void tick() {
-        // Si la plante est morte, elle ne fait rien (mais l'eau s'évapore quand même)
-        if (state == PlantState.MORT) {
+        // Si la plante est morte ou mangée, elle ne fait rien (mais l'eau s'évapore quand même)
+        if (state == PlantState.MORT || state == PlantState.EATEN) {
             if (currentWaterLevel > 0) currentWaterLevel -= 0.5f; // Évaporation naturelle
             return;
         }
 
-        // 1. Gestion de l'Eau
+        // Gestion de l'Eau
         if (currentWaterLevel > 0) {
             currentWaterLevel -= type.getWaterConsumption();
             ticksWithoutWater = 0; // La plante boit, tout va bien
@@ -56,14 +55,14 @@ public class Plant {
             ticksWithoutWater++; // Le danger augmente (Sol sec)
         }
 
-        // 2. Vérification des conditions de Mort (Soif)
+        //  Vérification des conditions de Mort (Soif)
         if (ticksWithoutWater >= TIME_BEFORE_DEATH) {
             state = PlantState.MORT;
             updateSprite();
             return; // Fin de la mise à jour
         }
 
-        // 3. Gestion de la Croissance et des États
+        //  Gestion de la Croissance et des États
         // La plante ne grandit que si elle a de l'eau
         if (currentWaterLevel > 0) {
             int croissance = 1;
@@ -82,8 +81,8 @@ public class Plant {
         PlantState oldState = this.state;
         int duration = type.getGrowthDuration();
 
-        // On ne met à jour que si la plante n'est pas déjà mature ou morte
-        if (state != PlantState.MATURE && state != PlantState.MORT) {
+        // On ne met à jour que si la plante n'est pas déjà mature, morte ou mangée
+        if (state != PlantState.MATURE && state != PlantState.MORT && state != PlantState.EATEN) {
             if (age >= duration) {
                 state = PlantState.MATURE;
             } else if (age >= duration * 0.66f) { // 2/3 de la croissance
@@ -112,7 +111,7 @@ public class Plant {
             this.currentWaterLevel = MAX_WATER_LEVEL;
         }
         // Si on arrose, on reset le compteur de mort de soif (sauvetage in extremis)
-        if (state != PlantState.MORT) {
+        if (state != PlantState.MORT && state != PlantState.EATEN) {
             ticksWithoutWater = 0;
         }
     }
@@ -120,26 +119,32 @@ public class Plant {
     /**
      * Applique de l'engrais à la plante, ce qui accélère sa croissance.
      *
-     * @return true si l'engrais a été appliqué, false sinon (ex: déjà mature ou morte)
+     * @return true si l'engrais a été appliqué, false sinon (ex: déjà mature, morte ou mangée)
      */
     public boolean applyFertilizer() {
-        // On ne peut mettre de l'engrais que sur une plante en croissance, pas une plante mature ou morte
-        if (this.hasFertilizer || this.state == PlantState.MATURE || this.state == PlantState.MORT) {
+        // On ne peut mettre de l'engrais que sur une plante en croissance
+        if (this.hasFertilizer || this.state == PlantState.MATURE || this.state == PlantState.MORT || this.state == PlantState.EATEN) {
             return false;
         }
         this.hasFertilizer = true;
         return true;
     }
 
-    // NOUVELLES MÉTHODES POUR LES SPRITES
+    // méthodes pour les sprites et l'affichage
 
     /**
      * INDISPENSABLE POUR L'AFFICHAGE
      * Met à jour l'attribut 'sprite' en fonction de l'état actuel de la plante.
      */
     private void updateSprite() {
+        // Cas spécial : si la plante est mangée, on charge l'image générique
+        if (state == PlantState.EATEN) {
+            this.sprite = new ImageIcon("src/assets/CropSprites/eatenCrop.png");
+            return;
+        }
+
         String plantName = type.name().toLowerCase();
-        String stepFile;
+        String stepFile = "";
 
         switch (state) {
             case GRAINE:
@@ -168,6 +173,7 @@ public class Plant {
             default:
                 return; // Ne fait rien si l'état est inconnu
         }
+
         String path = "src/assets/CropSprites/" + plantName + "/" + stepFile;
         this.sprite = new ImageIcon(path);
     }
@@ -221,12 +227,12 @@ public class Plant {
 
     /**
      * Détruit la plante sur le coup (appelé lorsqu'un ennemi l'attaque).
-     * Passe l'état de la plante à MORT et met à jour son image.
+     * Passe l'état de la plante à EATEN et met à jour son image.
      */
     public void destroyByEnemy() {
-        if (this.state != PlantState.MORT) {
-            this.state = PlantState.MORT;
-            updateSprite(); // Change l'image pour afficher la plante pourrie (fstep)
+        if (this.state != PlantState.EATEN) {
+            this.state = PlantState.EATEN;
+            updateSprite(); // Change l'image pour afficher la souche grignotée
         }
     }
 }
