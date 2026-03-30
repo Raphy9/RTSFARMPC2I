@@ -24,7 +24,7 @@ public class PopupBarn extends PopupPanel {
     private JPanel descriptionPanel; // Zone droite: détails de l'item sélectionné
 
     // Configuration
-    private static final int WIDTH_SLOTS = 4;       // 4 colonnes
+    private static final int WIDTH_SLOTS = 3;       // 4 colonnes
     private static final int HEIGHT_SLOTS = 5;      // 5 lignes = 20 cases
     private static final int DESCRIPTION_SIZE = 400; // 400px de largeur pour la description
 
@@ -82,10 +82,10 @@ public class PopupBarn extends PopupPanel {
      */
     private void buildItemGrid() {
         itemGrid.setPreferredSize(new Dimension(this.width-DESCRIPTION_SIZE, this.height-20));
-        
+
         // ÉTAPE 1: Vider la grille (enlever les anciens items)
         itemGrid.removeAll();
-        
+
         // ÉTAPE 2: Remplir la grille avec les items actuels
         // Parcourir les 20 cases de la grille (4 colonnes x 5 lignes)
         for (int i = 0; i < WIDTH_SLOTS * HEIGHT_SLOTS; i++) {
@@ -164,7 +164,14 @@ public class PopupBarn extends PopupPanel {
 
         // === CONTENEUR PRINCIPAL ===
         JPanel panel = new JPanel(new BorderLayout(10, 0)); // 10px espace horizontal entre gauche/droite
-        panel.setBackground(Color.getHSBColor(77, 52, 34));
+
+        if (item.getQuantity() == 0) {
+            // Item en rupture de stock: fond noir clair
+            panel.setBackground(Color.getHSBColor(77, 52, 50));
+        } else {
+            // Item disponible: fond normal
+            panel.setBackground(Color.getHSBColor(77, 52, 34));
+        }
         panel.setPreferredSize(new Dimension(slotWidth, slotHeight));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8)); // Marges
 
@@ -211,7 +218,7 @@ public class PopupBarn extends PopupPanel {
 
         JLabel nameLabel = new JLabel(buildItemTitle(item));
         nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 14f));
-        
+
         JLabel descriptionLabel = new JLabel(buildItemDescription(item));
         descriptionLabel.setFont(descriptionLabel.getFont().deriveFont(Font.PLAIN, 11f));
 
@@ -258,6 +265,7 @@ public class PopupBarn extends PopupPanel {
         // === ASSEMBLER ===
         panel.add(iconSquare, BorderLayout.WEST);
         panel.add(textPanel, BorderLayout.CENTER);
+
         return panel;
     }
 
@@ -277,11 +285,7 @@ public class PopupBarn extends PopupPanel {
      * @return Ex: "A planter | Croissance: 75t | Eau: 0.5/t | Valeur: 10"
      */
     private String buildItemDescription(Item item) {
-        PlantType plantType = item.getPlantType();
-        // Utilisation: si c'est une graine "A planter", sinon "Pret a vendre"
-        String usage = item instanceof ItemSeed ? "A planter" : "Pret a vendre";
-        return String.format("%s | Croissance: %dt | Eau: %.1f/t | Valeur: %d", 
-                usage, plantType.getGrowthDuration(), plantType.getWaterConsumption(), plantType.getValue());
+        return "Prix achat: " + barn.buyItem(item, 0) + " | Prix vente: " + barn.sellItem(item,0);
     }
 
     /** Rafraîchit la grille après une action d'achat/vente. */

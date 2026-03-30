@@ -25,7 +25,7 @@ public class HarvestAction extends Action {
 
             if (plant != null) {
 
-                //  La plante est mûre (Récolte normale)
+                //  La plante est mûre (Récolte normale : Donne le légume)
                 if (plant.isHarvestable()) {
                     PlantType type = plant.getType();
 
@@ -36,10 +36,10 @@ public class HarvestAction extends Action {
                     System.out.println("Succès : Le jardinier a récolté " + type.getName() + " !");
                 }
 
-                //  La plante est morte (Nettoyage)
-                else if (plant.getState() == src.model.PlantState.MORT) {
-                    parcel.clean(); // Vide la case (votre méthode dans PlantTile)
-                    System.out.println("Le jardinier a arraché une plante morte. Rien n'a été ajouté à l'inventaire.");
+                //  La plante est morte ou mangée (Nettoyage : Ne donne rien)
+                else if (plant.getState() == src.model.PlantState.MORT || plant.getState() == src.model.PlantState.EATEN) {
+                    parcel.clean(); // Vide la case
+                    System.out.println("Le jardinier a nettoyé les restes de la plante. La case est prête pour une nouvelle graine !");
                 }
 
             } else {

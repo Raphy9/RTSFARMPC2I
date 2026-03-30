@@ -67,6 +67,19 @@ public class Tile {
 
 //    public boolean isPlantable() {return false;}
 
+    /**
+     * Vérifie si cette case contient déjà une poule.
+     * Utile pour gérer les collisions entre ennemis.
+     */
+    public boolean hasChicken() {
+        // On parcourt les entités présentes sur la case
+        for (Entity e : entities) {
+            if (e instanceof Chicken) {
+                return true;
+            }
+        }
+        return false;
+    }
     public int getX() { return x; }
     public int getY() { return y; }
     public ArrayList<Entity> getEntities() { return entities; }

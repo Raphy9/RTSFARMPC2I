@@ -8,5 +8,6 @@ public enum PlantState {
     POUSSE,     // Step 2
     CROISSANCE, // Step 3
     MATURE,     // Step 4
-    MORT        // fstep (état d'échec)
+    MORT,        // fstep (état d'échec)
+    EATEN // état spécial pour les plantes mangées par les poules
 }
