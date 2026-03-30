@@ -376,4 +376,8 @@ public class World {
         return false;
     }
 
+    public Stats getStats() {
+        return stats;
+    }
+
 }

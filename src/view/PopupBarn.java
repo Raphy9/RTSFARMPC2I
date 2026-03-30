@@ -119,16 +119,33 @@ public class PopupBarn extends PopupPanel {
             }
         }
 
+        ArrayList<Item> lockedItems = new ArrayList<>();
+
         // Remplir la grille avec les items filtrés
-        for (int i = 0; i < WIDTH_SLOTS * HEIGHT_SLOTS; i++) {
-            if (i < filtered.size()) {
-                Item item = filtered.get(i);
-                JPanel p = createPanelItem(item); // Crée la case visuelle
+        for (int i = 0; i < filtered.size(); i++) {
+            Item item = filtered.get(i);
+            if (item.getRequiredLevel() <= world.getStats().getLevel()) {
+                // L'item est accessible: créer la case visuelle
+                JPanel p = createPanelItem(item);
                 itemGrid.add(p);
             } else {
-                // Pas d'item: ajouter une case vide pour garder la structure
-                itemGrid.add(new JLabel());
+                lockedItems.add(item);
             }
+        }
+
+        for (Item item : lockedItems) {
+            // L'item n'est pas encore accessible: ajouter une case grisée (UI pour l'instant)
+            JPanel lockedPanel = new JPanel();
+            lockedPanel.setBackground(Color.GRAY);
+            lockedPanel.setPreferredSize(new Dimension((this.width - DESCRIPTION_SIZE) / WIDTH_SLOTS, (this.height - 20) / HEIGHT_SLOTS));
+            itemGrid.add(lockedPanel);
+        }
+
+        for (int i = filtered.size() + lockedItems.size(); i < WIDTH_SLOTS * HEIGHT_SLOTS; i++) {
+            // Cases vides restantes: ajouter des panneaux transparents pour maintenir la grille
+            JPanel emptyPanel = new JPanel();
+            emptyPanel.setOpaque(false);
+            itemGrid.add(emptyPanel);
         }
         
         // ÉTAPE 3: Forcer Swing à recalculer et redessiner

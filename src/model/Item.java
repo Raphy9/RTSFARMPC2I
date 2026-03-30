@@ -46,6 +46,13 @@ public abstract class Item {
     }
 
     /*
+    Méthode pour vérifier le niveau requis d'un certain item
+     */
+    public int getRequiredLevel() {
+        return plantType.getLevelRequirement();
+    }
+
+    /*
     Méthode pour récupérer le type de l'item
      */
     public PlantType getPlantType() {

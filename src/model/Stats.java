@@ -14,7 +14,7 @@ public class Stats {
     public Stats(int money) {
         this.money = money;
         this.exp = 0;
-        this.level = 1;
+        this.level = 2;
     }
 
     public int getMoney() {
