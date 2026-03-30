@@ -70,13 +70,8 @@ public class Inventory {
                 target.addItem(newItem);
             }
         }
-
         // Retirer la quantité du source
         sourceItem.removeQuantity(toTransfer);
-        if (sourceItem.getQuantity() <= 0) {
-            removeItem(sourceItem);
-        }
-
         return toTransfer;
     }
 }
