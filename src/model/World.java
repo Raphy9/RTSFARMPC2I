@@ -207,6 +207,8 @@ public class World {
         barn.addItem(new ItemPlant(PlantType.CAROTTE, 5));
         barn.addItem(new ItemPlant(PlantType.CHOUX, 5));
         barn.addItem(new ItemPlant(PlantType.FRAISE, 5));
+        barn.addItem(new ItemPlant(PlantType.CITROUILLE, 0));
+        barn.addItem(new ItemSeed(PlantType.CITROUILLE, 0));
         barn.addItem(new ItemSeed(PlantType.CAROTTE, 5));
         barn.addItem(new ItemSeed(PlantType.CHOUX, 5));
         barn.addItem(new ItemSeed(PlantType.FRAISE, 5));

@@ -24,7 +24,7 @@ public class PopupBarn extends PopupPanel {
     private JPanel descriptionPanel; // Zone droite: détails de l'item sélectionné
 
     // Configuration
-    private static final int WIDTH_SLOTS = 4;       // 4 colonnes
+    private static final int WIDTH_SLOTS = 3;       // 4 colonnes
     private static final int HEIGHT_SLOTS = 5;      // 5 lignes = 20 cases
     private static final int DESCRIPTION_SIZE = 400; // 400px de largeur pour la description
 
