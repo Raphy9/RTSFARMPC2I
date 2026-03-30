@@ -108,7 +108,6 @@ public class Chicken extends Entity implements Runnable {
                 }
             }
         }
-        System.out.println("La poule a définitivement quitté la ferme.");
     }
 
     private void handleFleeing() throws InterruptedException {

@@ -33,15 +33,17 @@ public class HarvestActionSelector implements ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        // Le critère : La case doit être plantable, avoir une plante, et être mûre (MATURE)
+        // Le critère : La case doit avoir une plante mûre (MATURE), morte (MORT), ou mangée (EATEN)
         Predicate<Tile> criteria = tile -> {
-             if (tile instanceof PlantTile) {
+            if (tile instanceof PlantTile) {
                 Plant p = ((PlantTile) tile).getPlant();
-                return p != null && (p.isHarvestable() || p.getState() == src.model.PlantState.MORT);            }
+                return p != null && (p.isHarvestable() || p.getState() == src.model.PlantState.MORT || p.getState() == src.model.PlantState.EATEN);
+            }
             return false;
         };
 
         // On lance directement la sélection sur le terrain !
-        display.switchToSelection(criteria, "Sélectionnez une plante à récolter", builder);
+        display.switchToSelection(criteria, "Sélectionnez une plante à récolter/nettoyer", builder);
     }
+
 }
