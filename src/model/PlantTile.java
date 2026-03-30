@@ -139,7 +139,7 @@ public class PlantTile extends Tile {
      */
     public void clean() {
         if (this.plant != null &&
-                (this.plant.getState() == PlantState.MORT)) {
+                (this.plant.getState() == PlantState.MORT || this.plant.getState() == PlantState.EATEN)) {
             this.plant = null;
         }
     }

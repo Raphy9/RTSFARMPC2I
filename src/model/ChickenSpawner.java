@@ -15,9 +15,9 @@ public class ChickenSpawner implements Runnable {
 
     //  Paramètres d'apparition
     // Temps entre chaque apparition (en millisecondes)
-    private static final int SPAWN_INTERVAL = 15000;
+    private static final int SPAWN_INTERVAL = 20000;
     // Nombre maximum de poules en même temps sur la carte (pour éviter de surcharger le jeu)
-    private static final int MAX_CHICKENS = 8;
+    private static final int MAX_CHICKENS = 3;
 
     public ChickenSpawner(World world) {
         this.world = world;
