@@ -151,15 +151,6 @@ public class Gardener extends Entity implements Runnable {
         synchronized (actionQueue) {
             actionQueue.clear(); // Vide les prochaines actions
 
-            // Si le jardinier transporte des choses, il doit aller les poser
-            if (inventory != null && !inventory.getItems().isEmpty()) {
-                java.awt.Point barnPos = world.findClosestWalkableAdjacent(world.getBarnX(), world.getBarnY(), this);
-                if (barnPos != null) {
-                    // On ajoute de force le retour à la grange
-                    actionQueue.add(new src.model.actions.MoveAction(barnPos.x, barnPos.y));
-                    actionQueue.add(new src.model.actions.StoreAction(barnPos.x, barnPos.y));
-                }
-            }
         }
         if (this.currentState != State.WAITING && gardenerThread != null && gardenerThread.isAlive()) {
             gardenerThread.interrupt();

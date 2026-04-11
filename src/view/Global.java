@@ -285,9 +285,7 @@ public class Global extends JPanel {
                 Plant plant = plantTile.getPlant();
 
                 // On affiche les jauges si la plante existe, qu'elle n'est pas morte et pas encore mûre
-                if (plant != null && plant.getState() != PlantState.MORT && !plant.isHarvestable()) {
-
-                    // 1. Calcul des coordonnées d'affichage
+                if (plant != null && plant.getState() != PlantState.MORT && plant.getState() != PlantState.EATEN && !plant.isHarvestable()) {                    // 1. Calcul des coordonnées d'affichage
                     int relX = hoveredX - fstTileX;
                     int relY = hoveredY - fstTileY;
 

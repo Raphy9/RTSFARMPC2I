@@ -68,9 +68,10 @@ public class Chicken extends Entity implements Runnable {
                         int newX = step.getX();
                         int newY = step.getY();
 
-                        // --- ANTICOLLISION ---
-                        // Si la case suivante est déjà occupée par une autre poule, on s'arrête !
-                        if (world.getTile(newX, newY).hasChicken()) {
+                        // anticollision de la poule avec les obstacles
+                        Tile nextTile = world.getTile(newX, newY);
+                        // Si la case est occupée par une poule OU si un obstacle vient d'être posé
+                        if (nextTile.hasChicken() || !nextTile.isWalkable()) {
                             break; // Coupe le déplacement, l'IA recalculera au prochain cycle
                         }
 
@@ -92,8 +93,7 @@ public class Chicken extends Entity implements Runnable {
                 if (this.currentState != State.FLEEING) {
                     Plant plant = targetPlant.getPlant();
                     // On vérifie qu'elle est bien arrivée sur la plante (et pas bloquée par une autre poule)
-                    if (this.x == targetX && this.y == targetY && plant != null && plant.getState() != PlantState.MORT) {
-                        System.out.println("La poule mange une plante en (" + targetX + "," + targetY + ")");
+                    if (this.x == targetX && this.y == targetY && plant != null && plant.getState() != PlantState.MORT && plant.getState() != PlantState.EATEN) {                        System.out.println("La poule mange une plante en (" + targetX + "," + targetY + ")");
                         this.currentState = State.EATING;
                         Thread.sleep(3000);
                         plant.destroyByEnemy();
@@ -173,9 +173,8 @@ public class Chicken extends Entity implements Runnable {
                     PlantTile pt = (PlantTile) tile;
                     Plant p = pt.getPlant();
 
-                    if (p != null && p.getState() != PlantState.MORT && !p.isHarvestable()) {
-
-                        // INTELLIGENCE : On ne cible pas une plante si une AUTRE poule est déjà dessus !
+                    if (p != null && p.getState() != PlantState.MORT && p.getState() != PlantState.EATEN && !p.isHarvestable()) {
+                        //  On ne cible pas une plante si une AUTRE poule est déjà dessus !
                         if (!pt.hasChicken() || (pt.getX() == this.x && pt.getY() == this.y)) {
                             int dist = Math.abs(x - getX()) + Math.abs(y - getY());
                             if (dist < minDistance) {
