@@ -35,8 +35,7 @@ public class Selection extends Global {
 
         messageLabel = new JLabel(message);
         messageLabel.setForeground(Color.WHITE);
-        messageLabel.setFont(new Font("Arial", Font.PLAIN, 32));
-
+        messageLabel.setFont(GameFonts.MINECRAFT_FONT.deriveFont(32f));
         bottomPanel.add(messageLabel);
         // add the panel to the bottom so it is painted above the game rendering
         add(bottomPanel, BorderLayout.NORTH);

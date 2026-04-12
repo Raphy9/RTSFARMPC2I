@@ -7,8 +7,7 @@ import java.awt.*;
 public class TextPopup extends PopupPanel {
 
     public static final int TEXT_PADDING = 12;
-    public static final Font TEXT_FONT = new Font("Arial", Font.BOLD, 14);
-    private String text;
+    public static final Font TEXT_FONT = GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 14f);    private String text;
 
     public TextPopup(Display display, int width, int height, String title, String text) {
         super(display, width, height, title);

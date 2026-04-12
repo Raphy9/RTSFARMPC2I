@@ -238,6 +238,7 @@ public class Global extends JPanel {
 
         // Highlight : on utilise un Graphics2D pour pouvoir dessiner des rectangles avec une bordure plus épaisse, et des couleurs semi-transparentes pour le remplissage
         Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setStroke(new BasicStroke(3));
 
         // Dessiner d'abord le surlignement BLEU (Sélection en cours de l'utilisateur)
@@ -371,8 +372,7 @@ public class Global extends JPanel {
         String text = "" + money;
 
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 18f));
-        FontMetrics metrics = g2.getFontMetrics();
+        g2.setFont(GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 18f));        FontMetrics metrics = g2.getFontMetrics();
 
         int iconSize = 25;
         int paddingX = 10;

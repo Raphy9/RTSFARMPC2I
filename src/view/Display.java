@@ -42,6 +42,9 @@ public class Display {
      * @param frame la fenêtre principale du jeu, créée dans la classe Main, pour laquelle on va configurer le contenu et les dimensions
      */
     public Display(JFrame frame) {
+        GameFonts.loadFonts();
+        GameFonts.applyGlobalFont(GameFonts.MINECRAFT_FONT.deriveFont(14f));
+
         this.frame = frame;
         this.newGame();
         Dimension gameSize = new Dimension(Camera.WIDTH * RATIO_X, Camera.HEIGHT * RATIO_Y);
@@ -190,21 +193,21 @@ public class Display {
         // Action du bouton "Construire" : afficher le panneau et cacher le bouton
         this.btnOpenMenu.addActionListener(e -> {
             SwingUtilities.invokeLater(() -> {
-                // Compute current content width so the panel is flush-right (as before)
-                int cw = Math.max(this.frame.getContentPane().getWidth(), gameSize.width);
-                int panelX = Math.max(0, cw - panelWidth);
-                sidePanel.setBounds(panelX, 0, panelWidth, gameSize.height);
-                // Hide control panel (button) while the side panel is open
+                // 1. CACHER COMPLÈTEMENT le panneau qui contient l'icône
                 this.controlPanel.setVisible(false);
-                // Notify scroller that a right sidebar overlay is opening
-                overlayOpened(panelWidth, sidePanel.getBounds());
-                // Finally show the side panel
+                this.controlPanel.setEnabled(false); // Sécurité supplémentaire
+
+                // 2. Positionner et afficher le sidePanel
+                int cw = Math.max(this.frame.getContentPane().getWidth(), gameSize.width);
+                sidePanel.setBounds(cw - 380, 0, 380, gameSize.height);
                 sidePanel.setVisible(true);
-                // Bring panel to front
+
                 this.layeredPane.moveToFront(sidePanel);
                 this.layeredPane.revalidate();
                 this.layeredPane.repaint();
-                globalView.requestFocusInWindow();
+
+                // Désactiver le scroll automatique pour ne pas bouger la caméra en cliquant dans le menu
+                overlayOpened(380, sidePanel.getBounds());
             });
         });
 
@@ -270,29 +273,39 @@ public class Display {
 
     /** Met la vue en mode popup, en affichant le popup passe en parametre */
     public void switchToPopup(PopupPanel popup) {
-        // Si on est en mode global, desactiver les contoles de la vue globale
-        globalView.removeMouseListener(globalController); // ne fait rien si deja enleve
-        globalView.removeKeyListener(cameraController); // ne fait rien si deja enleve
+        // Désactiver les contrôles du jeu
+        globalView.removeMouseListener(globalController);
+        globalView.removeKeyListener(cameraController);
+
+        if (this.controlPanel != null) {
+            this.controlPanel.setVisible(false);
+        }
+
         // Afficher le popup
         popupView.showPopup(popup);
-        // Notify scroller that a popup overlay is active
         overlayOpened(0, null);
     }
 
     /** Met la vue en mode global */
     public void switchToGlobal() {
-        popupView.hidePopup(); // cacher le popup si on vient d'un popup
-        selectionView.setVisible(false);    // si on vient du mode selection, cacher la vue selection
+        popupView.hidePopup();
+        selectionView.setVisible(false);
         globalView.setVisible(true);
-        // Re-activer les controles de la vue globale si besoin
-        if (! Arrays.asList(globalView.getMouseListeners()).contains(globalController)) {
+
+
+        if (this.controlPanel != null) {
+            this.controlPanel.setVisible(true);
+        }
+
+        // Réactiver les contrôles
+        if (!Arrays.asList(globalView.getMouseListeners()).contains(globalController)) {
             globalView.addMouseListener(globalController);
         }
-        if (! Arrays.asList(globalView.getKeyListeners()).contains(cameraController)) {
+        if (!Arrays.asList(globalView.getKeyListeners()).contains(cameraController)) {
             globalView.addKeyListener(cameraController);
         }
-        globalView.requestFocusInWindow(); // pour que la vue globale puisse recevoir les inputs apres le changement de vue
-        // Notify scroller that overlays are closed
+
+        globalView.requestFocusInWindow();
         overlayClosed();
     }
 
@@ -338,21 +351,13 @@ public class Display {
      */
     public void onBuildingPanelClose() {
         SwingUtilities.invokeLater(() -> {
-            int cw = Math.max(100, this.frame.getContentPane().getWidth());
-            int ctrlX = Math.max(8, cw - 160);
-            this.controlPanel.setBounds(ctrlX, 10, 100, 100);
-            if (this.controlPanel.getParent() == null) {
-                this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
-            }
-            this.layeredPane.setLayer(this.controlPanel, JLayeredPane.DRAG_LAYER);
             this.controlPanel.setVisible(true);
-            this.controlPanel.revalidate();
+            this.controlPanel.setEnabled(true);
             this.controlPanel.repaint();
-            this.layeredPane.moveToFront(this.controlPanel);
-            // Ensure the global view regains keyboard/mouse focus so scrolling and camera keys work
-            this.globalView.requestFocusInWindow();
-            // Reset edgeScroller state to default when the building panel is closed
+
+            // On réinitialise le scrolling caméra
             overlayClosed();
+            this.globalView.requestFocusInWindow();
         });
     }
 

@@ -6,19 +6,11 @@ import src.model.buildings.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-/**
- * Panneau latéral droit plus grand et esthétique pour choisir les bâtiments à poser.
- * - Catégories en haut
- * - Liste de cartes uniformes (image à gauche, titre + prix à droite)
- * - Bouton "Poser" qui déclenche le placement via BuildingManager
- * - Transparent et sans scroll (les éléments doivent tenir dans la hauteur disponible)
- */
 public class BuildingSidePanel extends JPanel {
 
     private final BuildingManager manager;
@@ -33,206 +25,201 @@ public class BuildingSidePanel extends JPanel {
         this.world = world;
         this.onClose = onClose;
 
-        this.setLayout(new BorderLayout(8, 8));
-        // Fond semi-transparent noir (plus lisible que 100% transparent)
-        this.setOpaque(true);
-        this.setBackground(new Color(20, 24, 30, 200));
-        // garder un léger contour pour la lisibilité
-        this.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(60, 70, 90, 200)),
-                BorderFactory.createEmptyBorder(6, 6, 6, 6)));
+        this.setLayout(new BorderLayout(0, 0));
+        this.setOpaque(false); // On dessine le fond nous-mêmes
 
-        // Top bar: categories à gauche + close à droite
+        // --- Barre du haut : Onglets + Fermeture ---
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
+        topBar.setBorder(new EmptyBorder(15, 15, 5, 15));
 
-        JPanel categories = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 6));
+        // Conteneur pour les catégories
+        JPanel categories = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         categories.setOpaque(false);
+
+        // RESTAURATION DES 4 ONGLETS ORIGINAUX
         String[] cats = new String[]{"Bâtiments", "Décoration", "Nature", "Chemin"};
         for (String c : cats) {
-            JButton b = new JButton(c);
-            b.setFocusable(false);
-            b.setBackground(new Color(60, 70, 85));
-            b.setForeground(Color.WHITE);
-            b.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
-            b.addActionListener(e -> showCategory(c));
-            categories.add(b);
+            categories.add(createTabButton(c));
         }
         topBar.add(categories, BorderLayout.WEST);
 
-        // Bouton fermer (icône) à droite
-        JButton btnClose = ImageButtonFactory.createImageButton(
-                "src/assets/UI/close_idle.png",
-                "src/assets/UI/close_hover.png",
-                "src/assets/UI/close_pressed.png"
-        );
-        btnClose.setPreferredSize(new Dimension(28, 28));
-        btnClose.setMaximumSize(new Dimension(28, 28));
-        btnClose.setToolTipText("Fermer");
+        // Bouton FERMER (le "X" rouge Stardew)
+        JButton btnClose = new JButton("X");
+        btnClose.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 16f) : new Font("Arial", Font.BOLD, 16));
+        btnClose.setBackground(new Color(210, 60, 50));
+        btnClose.setForeground(Color.WHITE);
+        btnClose.setFocusPainted(false);
+        btnClose.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 2),
+                BorderFactory.createEmptyBorder(2, 8, 2, 8)
+        ));
         btnClose.addActionListener(e -> {
             this.setVisible(false);
-            // Notify display directly to ensure the control button is restored
-            try {
-                display.onBuildingPanelClose();
-            } catch (Exception ex) {
-                // ignore if not implemented
-            }
-            if (onClose != null) onClose.run();
+            display.onBuildingPanelClose(); // Restaure l'icône de construction
+            if (this.onClose != null) this.onClose.run();
         });
+
         JPanel closeWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         closeWrap.setOpaque(false);
-        // Réduire le padding droit pour revenir à l'affichage précédent
-        closeWrap.setBorder(new EmptyBorder(0,0,0,12));
         closeWrap.add(btnClose);
         topBar.add(closeWrap, BorderLayout.EAST);
 
         this.add(topBar, BorderLayout.NORTH);
 
-        // Zone des items (directement, sans scroll)
+        // Zone des items
         itemsPanel = new JPanel();
         itemsPanel.setOpaque(false);
         itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
-        this.add(itemsPanel, BorderLayout.CENTER);
+        itemsPanel.setBorder(new EmptyBorder(10, 15, 10, 15));
 
-        // Footer: Open Barn (optionnel)
-        JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        footer.setOpaque(false);
-        JButton btnBarn = new JButton("Ouvrir la Grange");
-        btnBarn.setFocusable(false);
-        btnBarn.addActionListener(e -> {
-            // Fermer le panneau et s'assurer que le Display restaure le bouton Construire
-            this.setVisible(false);
-            try {
-                display.onBuildingPanelClose();
-            } catch (Exception ex) {
-            }
-            if (onClose != null) onClose.run();
-            // Ouvrir le popup Barn
-            PopupBarn popup = new PopupBarn(display, world);
-            display.switchToPopup(popup);
-        });
-        footer.add(btnBarn);
-        this.add(footer, BorderLayout.SOUTH);
+        // ScrollPane invisible pour gérer beaucoup de bâtiments
+        JScrollPane scroll = new JScrollPane(itemsPanel);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        this.add(scroll, BorderLayout.CENTER);
 
-        // Afficher la catégorie par défaut
+        // CORRECTION DE L'ACCENT : Ouvre bien l'onglet par défaut !
         showCategory("Bâtiments");
     }
 
-    // Permet d'assigner le callback onClose après création (utile pour éviter référence circulaire)
-    public void setOnClose(Runnable onClose) {
-        this.onClose = onClose;
+    private JButton createTabButton(String text) {
+        JButton b = new JButton(text);
+        b.setFocusable(false);
+        b.setBackground(PopupPanel.SDV_BORDER_LIGHT);
+        b.setForeground(PopupPanel.SDV_TEXT);
+        b.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 12f) : new Font("Arial", Font.BOLD, 12));
+        b.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 2),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        b.addActionListener(e -> showCategory(text));
+        return b;
     }
 
-    // Affiche les items pour une catégorie
     private void showCategory(String category) {
         itemsPanel.removeAll();
-
         List<Entry> list = getEntriesFor(category);
         for (Entry e : list) {
             itemsPanel.add(createCard(e));
-            itemsPanel.add(Box.createVerticalStrut(8));
+            itemsPanel.add(Box.createVerticalStrut(10));
         }
-
         itemsPanel.revalidate();
         itemsPanel.repaint();
     }
 
-    // Crée une carte uniforme: image gauche, titre + prix à droite + bouton Poser
-     private JComponent createCard(Entry e) {
-        JPanel card = new JPanel(new BorderLayout(8, 8));
-        card.setMaximumSize(new Dimension(360, 84));
-        card.setPreferredSize(new Dimension(360, 84));
-        // Fond transparent pour éviter les boîtes blanches sur les sprites
-        card.setOpaque(true);
-        card.setBackground(new Color(46, 52, 59, 220));
-        card.setBorder(BorderFactory.createLineBorder(new Color(80, 90, 105, 140)));
+    private JComponent createCard(Entry e) {
+        JPanel card = new JPanel(new BorderLayout(10, 10));
+        card.setMaximumSize(new Dimension(350, 80));
+        card.setBackground(new Color(235, 185, 120)); // Orange sable
+        card.setBorder(BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 2));
 
-         // Image
-         ImageIcon rawIcon = new ImageIcon(e.iconPath);
-         Image img = rawIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
-         JLabel imgLabel = new JLabel(new ImageIcon(img));
-        imgLabel.setBorder(new EmptyBorder(8, 8, 8, 8));
-        imgLabel.setOpaque(true);
-        imgLabel.setBackground(new Color(46, 52, 59, 220));
-         card.add(imgLabel, BorderLayout.WEST);
+        // Image à gauche
+        ImageIcon rawIcon = new ImageIcon(e.iconPath);
+        Image img = rawIcon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        JLabel imgLabel = new JLabel(new ImageIcon(img));
+        imgLabel.setBorder(new EmptyBorder(0, 10, 0, 0));
+        card.add(imgLabel, BorderLayout.WEST);
 
-         // Info (titre + prix)
-         JPanel info = new JPanel();
-         info.setOpaque(false);
-         info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
-         JLabel title = new JLabel(e.title);
-         title.setForeground(Color.WHITE);
-         title.setFont(title.getFont().deriveFont(Font.BOLD, 14f));
-         JLabel price = new JLabel(e.price + " coins");
-         price.setForeground(new Color(180, 190, 200));
-         price.setFont(price.getFont().deriveFont(Font.PLAIN, 12f));
-         info.add(Box.createVerticalGlue());
-         info.add(title);
-         info.add(Box.createVerticalStrut(6));
-         info.add(price);
-         info.add(Box.createVerticalGlue());
+        // Infos au centre
+        JPanel info = new JPanel(new GridLayout(2, 1));
+        info.setOpaque(false);
+        JLabel title = new JLabel(e.title);
+        title.setForeground(PopupPanel.SDV_TEXT);
+        title.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 14f) : new Font("Arial", Font.BOLD, 14));
+        JLabel price = new JLabel(e.price + " PO");
+        price.setForeground(new Color(110, 60, 20));
+        price.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(12f) : new Font("Arial", Font.PLAIN, 12));
+        info.add(title);
+        info.add(price);
+        card.add(info, BorderLayout.CENTER);
 
-         card.add(info, BorderLayout.CENTER);
+        // Bouton Poser à droite
+        JButton place = new JButton("Poser");
+        place.setFocusable(false);
+        Color selLight = new Color(160, 100, 60);
+        Color selDark = new Color(80, 40, 10);
+        place.setBackground(selLight);
+        place.setForeground(Color.WHITE);
+        place.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 12f) : new Font("Arial", Font.BOLD, 12));
+        place.setBorder(BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 1));
 
-         // Action: bouton Poser
-         JButton place = new JButton("Poser");
-         place.setFocusable(false);
-         place.addActionListener(a -> {
-             manager.startPlacement(e.creator.get());
-             display.getGlobalView().requestFocusInWindow();
-         });
-         JPanel right = new JPanel(new BorderLayout());
-         right.setOpaque(false);
-         right.add(place, BorderLayout.NORTH);
-         right.setBorder(new EmptyBorder(8,8,8,8));
-         card.add(right, BorderLayout.EAST);
+        place.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) { place.setBackground(selDark); }
+            public void mouseExited(java.awt.event.MouseEvent evt) { place.setBackground(selLight); }
+        });
 
-         return card;
-     }
+        place.addActionListener(a -> {
+            manager.startPlacement(e.creator.get());
+            display.getGlobalView().requestFocusInWindow();
+        });
 
-    // Retourne la liste d'entries pour une catégorie (simple et extensible)
+        JPanel btnWrap = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        btnWrap.setOpaque(false);
+        btnWrap.setBorder(new EmptyBorder(10, 0, 0, 10));
+        btnWrap.add(place);
+        card.add(btnWrap, BorderLayout.EAST);
+
+        return card;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g.create();
+        int w = getWidth();
+        int h = getHeight();
+        int b = 4;
+
+        g2.setColor(PopupPanel.SDV_BORDER_DARK);
+        g2.fillRect(0, 0, w, h);
+        g2.setColor(PopupPanel.SDV_BORDER_LIGHT);
+        g2.fillRect(b, b, w - b*2, h - b*2);
+        g2.setColor(PopupPanel.SDV_BG);
+        g2.fillRect(b*2, b*2, w - b*4, h - b*4);
+        g2.dispose();
+    }
+
+    // RESTAURATION INTÉGRALE DE TOUS LES OBJETS !
     private List<Entry> getEntriesFor(String category) {
         List<Entry> out = new ArrayList<>();
         switch (category) {
-            case "Bâtiments":
-                out.add(new Entry("Mailbox1", "src/assets/Buildings/mailbox1.png", () -> new Mailbox1(), 50));
-                out.add(new Entry("Well", "src/assets/Buildings/well.png", () -> new Well(), 50));
-                out.add(new Entry("Barrière (Face)", "src/assets/Obstacles/fence_face.png", () -> new FenceFace(), 15));
-                out.add(new Entry("Barrière (Côté)", "src/assets/Obstacles/fence_side.png", () -> new FenceSide(), 15));
+            case "Batiments":
+                out.add(new Entry("Barriere (Face)", "src/assets/Obstacles/fence_face.png", () -> new FenceFace(), 10));
+                out.add(new Entry("Barriere (Côté)", "src/assets/Obstacles/fence_side.png", () -> new FenceSide(), 10));
                 out.add(new Entry("Porte (Face)", "src/assets/Obstacles/fence_face.png", () -> new GateFace(), 15));
                 out.add(new Entry("Porte (Côté)", "src/assets/Obstacles/fence_side.png", () -> new GateSide(), 15));
+                out.add(new Entry("Mailbox", "src/assets/Buildings/mailbox1.png", () -> new Mailbox1(), 50));
                 break;
-            case "Décoration":
-                out.add(new Entry("Poto", "src/assets/Buildings/poto.png", () -> new Poto(), 30));
+            case "Decoration":
+                out.add(new Entry("Poteau", "src/assets/Buildings/poto.png", () -> new Poto(), 30));
                 out.add(new Entry("Linge", "src/assets/Buildings/linge.png", () -> new Linge(), 30));
-                out.add(new Entry("Bigsign", "src/assets/Buildings/bigsign.png", () -> new Bigsign(), 20));
-                out.add(new Entry("Barrel2", "src/assets/Buildings/barrel2.png", () -> new Barrel2(), 20));
-                out.add(new Entry("Barrel1", "src/assets/Buildings/barrel1.png", () -> new Barrel1(), 20));
+                out.add(new Entry("Big Sign", "src/assets/Buildings/bigsign.png", () -> new Bigsign(), 20));
+                out.add(new Entry("Tonneau 1", "src/assets/Buildings/barrel1.png", () -> new Barrel1(), 20));
+                out.add(new Entry("Tonneau 2", "src/assets/Buildings/barrel2.png", () -> new Barrel2(), 20));
                 break;
             case "Nature":
-                out.add(new Entry("Tree1", "src/assets/Buildings/tree1.png", () -> new Tree1(), 10));
-                out.add(new Entry("Tree2", "src/assets/Buildings/tree2.png", () -> new Tree2(), 20));
-                out.add(new Entry("Rock1", "src/assets/Buildings/rock1.png", () -> new Rock1(), 20));
+                out.add(new Entry("Arbre 1", "src/assets/Buildings/tree1.png", () -> new Tree1(), 10));
+                out.add(new Entry("Arbre 2", "src/assets/Buildings/tree2.png", () -> new Tree2(), 20));
+                out.add(new Entry("Rocher", "src/assets/Buildings/rock1.png", () -> new Rock1(), 20));
                 break;
             case "Chemin":
-                // Placeholder
+                // TODO
                 break;
         }
         return out;
     }
 
-    // Entrée décrivant un bâtiment affichable
     private static class Entry {
-        final String title;
-        final String iconPath;
+        final String title, iconPath;
         final Supplier<Building> creator;
         final int price;
-
-        Entry(String title, String iconPath, Supplier<Building> creator, int price) {
-            this.title = title;
-            this.iconPath = iconPath;
-            this.creator = creator;
-            this.price = price;
+        Entry(String t, String i, Supplier<Building> c, int p) {
+            this.title = t; this.iconPath = i; this.creator = c; this.price = p;
         }
     }
+
+    public void setOnClose(Runnable onClose) { this.onClose = onClose; }
 }
