@@ -41,5 +41,7 @@ public abstract class Building {
     public int getHeight() { return height; }
     public boolean isPassable() { return isPassable; }
     public PlacementRule getPlacementRule() { return placementRule; }
-    public ImageIcon getSprite() { return sprite; }
+    public ImageIcon getSprite(World world, int x, int y) {
+        return this.sprite; // Par défaut, un bâtiment normal garde son sprite fixe
+    }
 }

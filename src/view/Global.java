@@ -121,7 +121,8 @@ public class Global extends JPanel {
                 if (worldX >= 0 && worldX < World.WIDTH && worldY >= 0 && worldY < World.HEIGHT) {
                     Tile tile = world.getTile(worldX, worldY);
                     int paintX = (x * Display.RATIO_X) - pixelDiffX;
-                    int paintY = (y * Display.RATIO_Y) - pixelDiffY;
+                    int paintY =
+                            (y * Display.RATIO_Y) - pixelDiffY;
                     g.drawImage(tile.getSprite().getImage(), paintX, paintY, Display.RATIO_X, Display.RATIO_Y, this);
                     //On vérifie si c'est une case plantable et on dessine la plante
                     if (tile instanceof PlantTile) {
@@ -196,7 +197,9 @@ public class Global extends JPanel {
                 int px = (relX * Display.RATIO_X) - pixelDiffX;
                 int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                g3.drawImage(b.getSprite().getImage(), px, py,
+                // UTILISATION DE getSprite(world, x, y) POUR LE GHOST !
+                ImageIcon ghostSprite = b.getSprite(world, gx, gy);
+                g3.drawImage(ghostSprite.getImage(), px, py,
                         Display.RATIO_X * b.getWidth(),
                         Display.RATIO_Y * b.getHeight(), null);
             }
@@ -215,8 +218,9 @@ public class Global extends JPanel {
                     int px = (relX * Display.RATIO_X) - pixelDiffX;
                     int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                    // On dessine l'image étirée sur sa largeur/hauteur
-                    g.drawImage(b.getSprite().getImage(), px, py,
+                    // UTILISATION DE getSprite(world, x, y) POUR L'ACTUALISATION EN TEMPS RÉEL !
+                    ImageIcon actualSprite = b.getSprite(world, b.getX(), b.getY());
+                    g.drawImage(actualSprite.getImage(), px, py,
                             Display.RATIO_X * b.getWidth(),
                             Display.RATIO_Y * b.getHeight(), null);
                 }

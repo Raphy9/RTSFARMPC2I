@@ -376,6 +376,16 @@ public class World {
         return false;
     }
 
+    public Building getBuildingAt(int x, int y) {
+        for (Building b : buildings) {
+            if (x >= b.getX() && x < b.getX() + b.getWidth() &&
+                    y >= b.getY() && y < b.getY() + b.getHeight()) {
+                return b;
+            }
+        }
+        return null; // Rien sur cette case
+    }
+
     public Stats getStats() {
         return stats;
     }
