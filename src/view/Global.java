@@ -218,11 +218,20 @@ public class Global extends JPanel {
                     int px = (relX * Display.RATIO_X) - pixelDiffX;
                     int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                    // UTILISATION DE getSprite(world, x, y) POUR L'ACTUALISATION EN TEMPS RÉEL !
                     ImageIcon actualSprite = b.getSprite(world, b.getX(), b.getY());
-                    g.drawImage(actualSprite.getImage(), px, py,
-                            Display.RATIO_X * b.getWidth(),
-                            Display.RATIO_Y * b.getHeight(), null);
+                    if (b.isGate()) {
+                        Graphics2D g3 = (Graphics2D) g.create();
+                        g3.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f)); // 50% transparent
+                        g3.drawImage(actualSprite.getImage(), px, py,
+                                Display.RATIO_X * b.getWidth(),
+                                Display.RATIO_Y * b.getHeight(), null);
+                        g3.dispose();
+                    } else {
+                        // Dessin normal opaque
+                        g.drawImage(actualSprite.getImage(), px, py,
+                                Display.RATIO_X * b.getWidth(),
+                                Display.RATIO_Y * b.getHeight(), null);
+                    }
                 }
             }
         }

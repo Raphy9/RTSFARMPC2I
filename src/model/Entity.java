@@ -51,10 +51,15 @@ public class Entity {
         if (targetX < 0 || targetX >= World.WIDTH || targetY < 0 || targetY >= World.HEIGHT) {
             return null;
         }
-        if (!world.getTile(targetX, targetY).isWalkable()) {
+        boolean targetWalkable = world.getTile(targetX, targetY).isWalkable();
+        src.model.buildings.Building targetB = world.getBuildingAt(targetX, targetY);
+        // Si c'est une porte et que l'entité est un jardinier, on autorise le passage !
+        if (targetB != null && targetB.isGate() && this instanceof src.model.Gardener) {
+            targetWalkable = true;
+        }
+        if (!targetWalkable) {
             return null;
         }
-
         // Initialisation des Listes
         // liste ouverte, Les cases qu'on a repérées mais pas encore traitées
         List<Node> openList = new ArrayList<>();
@@ -102,8 +107,14 @@ public class Entity {
                     continue;
                 }
 
-                // Si c'est un mur ou si c'est déjà dans la liste fermée, on ignore
-                if (!world.getTile(neighborX, neighborY).isWalkable() || closedList[neighborX][neighborY]) {
+                boolean isWalkable = world.getTile(neighborX, neighborY).isWalkable();
+                src.model.buildings.Building b = world.getBuildingAt(neighborX, neighborY);
+                // Si c'est une porte et que l'entité est un jardinier, on autorise le passage !
+                if (b != null && b.isGate() && this instanceof src.model.Gardener) {
+                    isWalkable = true;
+                }
+
+                if (!isWalkable || closedList[neighborX][neighborY]) {
                     continue;
                 }
 

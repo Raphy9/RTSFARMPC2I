@@ -34,6 +34,10 @@ public abstract class Building {
 
     public abstract void applyEffect(World world);
 
+    public boolean isGate() {
+        return false; // Par défaut, un bâtiment n'est pas une porte
+    }
+
     // Getters
     public int getX() { return anchorX; }
     public int getY() { return anchorY; }

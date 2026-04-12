@@ -199,6 +199,8 @@ public class BuildingSidePanel extends JPanel {
                 out.add(new Entry("Well", "src/assets/Buildings/well.png", () -> new Well(), 50));
                 out.add(new Entry("Barrière (Face)", "src/assets/Obstacles/fence_face.png", () -> new FenceFace(), 15));
                 out.add(new Entry("Barrière (Côté)", "src/assets/Obstacles/fence_side.png", () -> new FenceSide(), 15));
+                out.add(new Entry("Porte (Face)", "src/assets/Obstacles/fence_face.png", () -> new GateFace(), 15));
+                out.add(new Entry("Porte (Côté)", "src/assets/Obstacles/fence_side.png", () -> new GateSide(), 15));
                 break;
             case "Décoration":
                 out.add(new Entry("Poto", "src/assets/Buildings/poto.png", () -> new Poto(), 30));
