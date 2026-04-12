@@ -157,7 +157,7 @@ public class PopupBarn extends PopupPanel {
 
         if (selectedItem == null) {
             // Écran par défaut
-            JTextArea descr = new JTextArea("\n\nBienvenue à la Grange !\n\nCliquez sur un objet à gauche pour voir ses détails et l'acheter ou le vendre.");
+            JTextArea descr = new JTextArea("\n\nBienvenue a la Grange !\n\nCliquez sur un objet a gauche pour voir ses details et l'acheter ou le vendre.");
             descr.setEditable(false);
             descr.setOpaque(false);
             descr.setForeground(SDV_TEXT);
@@ -218,7 +218,7 @@ public class PopupBarn extends PopupPanel {
                 sellBtn.addActionListener(new BarnController(barn, this, selectedItem, false, qtyInput));
                 sellBtn.setEnabled(selectedItem.getQuantity() > 0);
 
-                controlPanel.add(new JLabel("Qté:"));
+                controlPanel.add(new JLabel("Qte:"));
                 controlPanel.add(qtyInput);
                 controlPanel.add(buyBtn);
                 controlPanel.add(sellBtn);
