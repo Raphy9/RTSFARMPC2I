@@ -38,7 +38,7 @@ public class BuildingSidePanel extends JPanel {
         categories.setOpaque(false);
 
         // RESTAURATION DES 4 ONGLETS ORIGINAUX
-        String[] cats = new String[]{"Bâtiments", "Décoration", "Nature", "Chemin"};
+        String[] cats = new String[]{"Batiments", "Decoration", "Nature", "Chemin"};
         for (String c : cats) {
             categories.add(createTabButton(c));
         }
@@ -182,7 +182,6 @@ public class BuildingSidePanel extends JPanel {
         g2.dispose();
     }
 
-    // RESTAURATION INTÉGRALE DE TOUS LES OBJETS !
     private List<Entry> getEntriesFor(String category) {
         List<Entry> out = new ArrayList<>();
         switch (category) {
