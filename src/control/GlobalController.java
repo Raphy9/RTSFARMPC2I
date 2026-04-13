@@ -28,7 +28,6 @@ public class GlobalController implements MouseListener, MouseMotionListener{
         // --- Détection du clic sur la hotbar ---
         if (display.getGlobalView().isHotbarVisible() &&
                 world.getGardeners() != null && !world.getGardeners().isEmpty()) {
-            Gardener gardener = world.getGardeners().get(0);
             int nbSlots = 4;
             int slotSize = 52;
             int spacing = 8;
@@ -42,7 +41,10 @@ public class GlobalController implements MouseListener, MouseMotionListener{
                 for (int i = 0; i < nbSlots; i++) {
                     int slotX = startX + i * (slotSize + spacing);
                     if (e.getX() >= slotX && e.getX() <= slotX + slotSize) {
-                        gardener.setSelectedHotbarIndex(i);
+                        Gardener gardener = world.getAvailableGardener();
+                        if (gardener == null) return;
+                        // Indicateur visuel sur le jardinier 0
+                        world.getGardeners().get(0).setSelectedHotbarIndex(i);
                         display.getGlobalView().repaint();
                         display.triggerHotbarAction(i, gardener);
                         return;

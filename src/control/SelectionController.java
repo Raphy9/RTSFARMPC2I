@@ -1,6 +1,5 @@
 package src.control;
 
-import src.model.PlantTile;
 import src.model.Tile;
 import src.model.World;
 import src.model.actions.ActionBuilder;
@@ -21,10 +20,10 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
     private ActionBuilder builder;
     private Predicate<Tile> selectionCriteria = tile -> true;
 
-    /** true quand le bouton gauche est maintenu enfoncé avec CTRL */
-    private boolean ctrlDragging = false;
-    /** true si la souris a bougé pendant un ctrlDragging (= drag réel, pas un simple clic) */
-    private boolean movedDuringCtrl = false;
+    /** true quand le bouton gauche est maintenu enfoncé */
+    private boolean dragging = false;
+    /** true si la souris a bougé pendant le drag (= drag réel, pas un simple clic) */
+    private boolean movedDuringDrag = false;
     /** Dernière case traitée pendant un drag, pour éviter de retraiter la même case */
     private Point lastDragPoint = null;
 
@@ -58,43 +57,23 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // Si on vient d'un drag CTRL, ne pas retraiter ici
-        if (movedDuringCtrl) {
-            movedDuringCtrl = false;
+        // Si on vient d'un drag, ne pas retraiter ici
+        if (movedDuringDrag) {
+            movedDuringDrag = false;
             return;
         }
+        if (!SwingUtilities.isLeftMouseButton(e)) return;
 
         Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
         Tile tile = world.getTile(coords.x, coords.y);
         Point targetPoint = new Point(coords.x, coords.y);
 
         if (selectionCriteria.test(tile)) {
-            // SHIFT + Clic : sélectionne toute la parcelle
-            if (e.isShiftDown() && tile instanceof PlantTile) {
-                for (PlantTile pt : ((PlantTile) tile).getParcel().getTiles()) {
-                    if (selectionCriteria.test(pt)) {
-                        Point p = new Point(pt.getX(), pt.getY());
-                        builder.addTarget(p);
-                        display.getGlobalView().setHighlight(p.x, p.y);
-                    }
-                }
-            }
-            // CTRL + Clic simple : toggle (ajoute ou retire)
-            else if (e.isControlDown()) {
-                if (builder.getSelectedPoints().contains(targetPoint)) {
-                    builder.removeTarget(targetPoint);
-                    display.getGlobalView().clearHighlight(targetPoint.x, targetPoint.y);
-                } else {
-                    builder.addTarget(targetPoint);
-                    display.getGlobalView().setHighlight(targetPoint.x, targetPoint.y);
-                }
-            }
-            // Clic normal : sélection unique
-            else {
-                for (Point p : builder.getSelectedPoints()) {
-                    display.getGlobalView().clearHighlight(p.x, p.y);
-                }
-                builder.clearTargets();
+            // Clic simple : toggle (ajoute ou retire)
+            if (builder.getSelectedPoints().contains(targetPoint)) {
+                builder.removeTarget(targetPoint);
+                display.getGlobalView().clearHighlight(targetPoint.x, targetPoint.y);
+            } else {
                 builder.addTarget(targetPoint);
                 display.getGlobalView().setHighlight(targetPoint.x, targetPoint.y);
             }
@@ -106,16 +85,16 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (e.isControlDown() && SwingUtilities.isLeftMouseButton(e)) {
-            ctrlDragging = true;
-            movedDuringCtrl = false;
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            dragging = true;
+            movedDuringDrag = false;
             lastDragPoint = null;
         }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        ctrlDragging = false;
+        dragging = false;
         lastDragPoint = null;
     }
 
@@ -123,12 +102,12 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
     @Override public void mouseExited(MouseEvent e) {}
 
     // -------------------------------------------------------
-    // MouseMotionListener : CTRL maintenu = sélection par glissement
+    // MouseMotionListener : sélection par glissement (drag simple)
     // -------------------------------------------------------
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (!ctrlDragging || !e.isControlDown()) return;
+        if (!dragging) return;
 
         Point coords;
         try {
@@ -138,7 +117,7 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
         Point targetPoint = new Point(coords.x, coords.y);
         if (targetPoint.equals(lastDragPoint)) return; // même case, on ignore
         lastDragPoint = targetPoint;
-        movedDuringCtrl = true;
+        movedDuringDrag = true;
 
         try {
             Tile tile = world.getTile(coords.x, coords.y);

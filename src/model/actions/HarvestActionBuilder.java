@@ -14,7 +14,6 @@ public class HarvestActionBuilder extends ActionBuilder {
 
     @Override
     public void buildAction() {
-        getGardener().interruptGardener(); // On stoppe l'action en cours
 
         for (Point p : getSelectedPoints()) {
             if (getDisplay() != null) {

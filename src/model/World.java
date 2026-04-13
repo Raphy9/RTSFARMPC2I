@@ -121,7 +121,7 @@ public class World {
             for (int y = 0; y < HEIGHT; y++) {
 
                 // --- ZONE DE SÉCURITÉ ---
-                // On ne met pas d'obstacle sur la grange ou le jardinier au départ
+                // On ne met pas d'obstacle sur la grange ou le jardinier au démarrage
                 if ((x >= barnX - 2 && x <= barnX + 2 && y >= barnY - 2 && y <= barnY + 2) ||
                         (x == WIDTH/2 && y == HEIGHT/2)) {
                     tiles[y][x] = new Tile(x, y, grassSprite);
@@ -185,6 +185,47 @@ public class World {
         return this.gardeners;
     }
 
+    /** Index du dernier jardinier assigné, pour le round-robin. */
+    private int lastAssignedIndex = -1;
+
+    /**
+     * Retourne le prochain jardinier disponible en round-robin :
+     * - d'abord un jardinier complètement libre (WAITING + 0 actions en attente),
+     *   en commençant APRÈS le dernier assigné pour répartir équitablement la charge,
+     * - sinon celui qui a le moins d'actions en attente (toujours en round-robin si égalité).
+     * Fonctionne pour n jardiniers.
+     */
+    public Gardener getAvailableGardener() {
+        if (gardeners == null || gardeners.isEmpty()) return null;
+        int n = gardeners.size();
+
+        // 1. Chercher un jardinier complètement libre en round-robin
+        for (int i = 1; i <= n; i++) {
+            int idx = (lastAssignedIndex + i) % n;
+            Gardener g = gardeners.get(idx);
+            if (g.getCurrentState() == Gardener.State.WAITING && g.getPendingActionsCount() == 0) {
+                lastAssignedIndex = idx;
+                return g;
+            }
+        }
+
+        // 2. Aucun complètement libre : prendre le moins chargé (round-robin si égalité)
+        Gardener best = null;
+        int bestPending = Integer.MAX_VALUE;
+        int bestIdx = -1;
+        for (int i = 1; i <= n; i++) {
+            int idx = (lastAssignedIndex + i) % n;
+            int pending = gardeners.get(idx).getPendingActionsCount();
+            if (pending < bestPending) {
+                bestPending = pending;
+                best = gardeners.get(idx);
+                bestIdx = idx;
+            }
+        }
+        if (bestIdx >= 0) lastAssignedIndex = bestIdx;
+        return best;
+    }
+
     public Barn getBarn() {
         return this.barn;
     }
@@ -235,8 +276,10 @@ public class World {
             barn.addItem(new ItemPlant(plantType, 0));
         }
         for (PlantType plantType : PlantType.values()) {
-            barn.addItem(new ItemSeed(plantType, 5));
+            barn.addItem(new ItemSeed(plantType, 0));
         }
+        barn.addItem(new ItemSeed(PlantType.CAROTTE, 5));
+        barn.addItem(new ItemSeed(PlantType.CHOUX, 5));
 
     }
 
@@ -437,3 +480,4 @@ public class World {
     }
 
 }
+

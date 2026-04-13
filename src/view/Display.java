@@ -87,13 +87,14 @@ public class Display {
                 public void actionPerformed(ActionEvent e) {
                     // Ne rien faire si la hotbar est masquée (menu ouvert)
                     if (!globalView.isHotbarVisible()) return;
-                    if (world.getGardeners() != null && !world.getGardeners().isEmpty()) {
-                        Gardener g = world.getGardeners().get(0);
-                        g.setSelectedHotbarIndex(slotIndex);
-                        globalView.repaint();
-                        // Ouvrir directement le menu d'action
-                        triggerHotbarAction(slotIndex, g);
+                    Gardener g = world.getAvailableGardener();
+                    if (g == null) return;
+                    // Indicateur visuel sur le jardinier 0 (hotbar centrée sur le joueur 0)
+                    if (!world.getGardeners().isEmpty()) {
+                        world.getGardeners().get(0).setSelectedHotbarIndex(slotIndex);
                     }
+                    globalView.repaint();
+                    triggerHotbarAction(slotIndex, g);
                 }
             });
         }
@@ -197,8 +198,10 @@ public class Display {
         sidePanel.addHierarchyListener(e -> {
             if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
                 if (sidePanel.isVisible()) {
+                    globalView.setHotbarVisible(false);
                     overlayOpened(panelWidth, sidePanel.getBounds());
                 } else {
+                    globalView.setHotbarVisible(true);
                     overlayClosed();
                 }
             }
@@ -308,6 +311,8 @@ public class Display {
         selectionView.setMessage(message);
         selectionController.setSelectionCriteria(selectionCriteria);
         selectionController.setActionBuilder(builder);
+        globalView.setHotbarVisible(false); // bloque les touches hotbar pendant la sélection
+        controlPanel.setVisible(false);     // désactive les boutons build/destroy
         globalView.setVisible(false);
         selectionView.setVisible(true);
         selectionView.requestFocusInWindow();
@@ -366,18 +371,30 @@ public class Display {
     public void refreshEdgeScrollerState() {
         boolean hasVisibleOverlay = false;
         for (Component comp : layeredPane.getComponents()) {
+            // Ignorer la vue principale
             if (comp == globalView) continue;
+            // popupView est toujours présent sur MODAL_LAYER : ne compte comme overlay
+            // que si un popup est effectivement affiché (au moins un enfant)
+            if (comp == popupView) {
+                if (popupView.isVisible() && popupView.getComponentCount() > 0) {
+                    hasVisibleOverlay = true;
+                }
+                continue;
+            }
+            // Ignorer les composants marqués edgeScrollIgnore (ex: controlPanel)
+            if (comp instanceof JComponent) {
+                Object ignore = ((JComponent) comp).getClientProperty("edgeScrollIgnore");
+                if (Boolean.TRUE.equals(ignore)) continue;
+            }
             int layer = layeredPane.getLayer(comp);
             if (layer != JLayeredPane.DEFAULT_LAYER && comp.isVisible()) {
                 hasVisibleOverlay = true;
                 break;
             }
         }
-        try {
-            if (this.edgeScroller != null) {
-                this.edgeScroller.setEnabled(!hasVisibleOverlay);
-            }
-        } catch (Exception ex) {}
+        if (this.edgeScroller != null) {
+            this.edgeScroller.setEnabled(!hasVisibleOverlay);
+        }
     }
 
     public void overlayOpened(int rightSidebarWidth, Rectangle ignoredRegion) {

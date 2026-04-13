@@ -36,7 +36,6 @@ public class PlantActionBuilder extends ActionBuilder {
             }
 
             // 2. L'ACTION EST VALIDE
-            getGardener().interruptGardener();
 
             ItemSeed seedToFetch = new ItemSeed(type, totalSeedsNeeded);
             Point barnAdj = world.findClosestWalkableAdjacent(world.getBarnX(), world.getBarnY(), getGardener());

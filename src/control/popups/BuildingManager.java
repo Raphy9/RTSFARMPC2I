@@ -60,6 +60,7 @@ public class BuildingManager extends MouseAdapter {
     }
 
     public void cancelDeletionMode() {
+        if (!this.deletionMode) return; // rien à faire si le mode n'était pas actif
         this.deletionMode = false;
         display.getGlobalView().repaint();
         if (this.deletionModeListener != null) this.deletionModeListener.accept(false);

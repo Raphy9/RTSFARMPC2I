@@ -14,7 +14,6 @@ public class WaterActionBuilder extends ActionBuilder {
 
     @Override
     public void buildAction() {
-        getGardener().interruptGardener();
 
         for (Point p : getSelectedPoints()) {
             Point adjacent = world.findClosestWalkableAdjacent(p.x, p.y, getGardener());
