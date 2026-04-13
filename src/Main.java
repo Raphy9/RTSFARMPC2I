@@ -16,7 +16,7 @@ public class Main {
 
         Timer timer = new Timer();
 
-        // Initialisation de la vue
+        // Initialisation de la vuee
         Display display = new Display(f);
         Rendering renderer = new Rendering(display);
         timer.schedule(renderer, 0, 1000 / Rendering.FPS);
