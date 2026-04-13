@@ -1,5 +1,6 @@
 package src.control;
 
+import src.model.PlantTile;
 import src.model.Tile;
 import src.model.World;
 import src.model.actions.ActionBuilder;
@@ -69,8 +70,18 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
         Point targetPoint = new Point(coords.x, coords.y);
 
         if (selectionCriteria.test(tile)) {
+            // Shift + Clic : sélectionne toute la parcelle d'un coup
+            if (e.isShiftDown() && tile instanceof PlantTile) {
+                for (PlantTile pt : ((PlantTile) tile).getParcel().getTiles()) {
+                    if (selectionCriteria.test(pt)) {
+                        Point p = new Point(pt.getX(), pt.getY());
+                        builder.addTarget(p);
+                        display.getGlobalView().setHighlight(p.x, p.y);
+                    }
+                }
+            }
             // Clic simple : toggle (ajoute ou retire)
-            if (builder.getSelectedPoints().contains(targetPoint)) {
+            else if (builder.getSelectedPoints().contains(targetPoint)) {
                 builder.removeTarget(targetPoint);
                 display.getGlobalView().clearHighlight(targetPoint.x, targetPoint.y);
             } else {

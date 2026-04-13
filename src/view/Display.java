@@ -180,11 +180,13 @@ public class Display {
         btnDeleteActive.addActionListener(e -> buildingManager.cancelDeletionMode());
         this.controlPanel.add(btnDeleteActive);
 
-        buildingManager.setDeletionModeListener(active -> SwingUtilities.invokeLater(() -> {
+        buildingManager.setDeletionModeListener(active -> {
+            // Synchrone (pas d'invokeLater) : évite que setHotbarVisible(true) arrive après
+            // les appels directs à setHotbarVisible(false) lors du passage construction↔destruction
             btnDeleteIdle.setVisible(!active);
             btnDeleteActive.setVisible(active);
             globalView.setHotbarVisible(!active);
-        }));
+        });
 
         BuildingSidePanel sidePanel = new BuildingSidePanel(buildingManager, this, this.world, null);
         sidePanel.setOnClose(() -> SwingUtilities.invokeLater(() -> {
@@ -218,6 +220,24 @@ public class Display {
             this.layeredPane.revalidate();
             this.layeredPane.repaint();
         }));
+
+        // KEYBINDING ESCAPE : ferme le panel construction ou annule le mode destruction
+        // (placé ici car sidePanel et buildingManager sont maintenant en scope)
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape_overlay");
+        am.put("escape_overlay", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Ignoré si on est en mode sélection (géré par SelectionController/CloseController)
+                if (selectionView.isVisible()) return;
+                if (sidePanel.isVisible()) {
+                    sidePanel.setVisible(false);
+                    onBuildingPanelClose();
+                    buildingManager.cancelPlacement();
+                } else if (buildingManager.isDeletionMode()) {
+                    buildingManager.cancelDeletionMode();
+                }
+            }
+        });
 
         this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
 
