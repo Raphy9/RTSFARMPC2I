@@ -314,7 +314,6 @@ public class Global extends JPanel {
                         // 2ème JAUGE : L'EAU (BLEUE)
                         int waterBarY = growthBarY + barH + 3; // Placée juste en dessous de la barre verte (+2px d'écart)
 
-                        int waterBarY = growthBarY + barH + 3;
                         if (progressBarEmpty != null) {
                             g.drawImage(progressBarEmpty, barX, waterBarY, barW, barH, this);
                         } else {
