@@ -1,6 +1,7 @@
 package src.model;
 
 import src.model.buildings.Building;
+import src.model.buildings.Obstacle;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -28,7 +29,6 @@ public class World {
     private int barnX = 55;
     private int barnY = 55;
 
-    private src.control.BuildingManager ghostManager;
 
     private Stats stats;
 
@@ -55,7 +55,7 @@ public class World {
         this.gardeners.add(new Gardener(WIDTH/2+1, HEIGHT/2, this));
         for (Gardener gardener : gardeners) {
             Thread t = new Thread(gardener);
-            t.start();; // Lance le thread du jardinier
+            t.start(); // Lance le thread du jardinier
         }
 
         // Création et lancement d'une poule pour tester les ennemis
@@ -67,7 +67,6 @@ public class World {
         barn = new Barn(stats);
         fstSetBarn();
 
-        stats = new Stats(100);
 
         // Création d'une horloge qui appelle la méthode tick() toutes les secondes (1000 ms)
         Timer gameTimer = new Timer(1000, e -> this.tick());
@@ -75,9 +74,6 @@ public class World {
     }
 
 
-    public void setGhostBuilding(src.control.BuildingManager manager) {
-        this.ghostManager = manager;
-    }
 
     /**
      * Charge et découpe la Sprite Sheet du terrain.
@@ -137,10 +133,16 @@ public class World {
                     int randomIndex = (int)(Math.random() * obstacleSprites.size());
                     ImageIcon obsSprite = obstacleSprites.get(randomIndex);
 
-                    Tile obsTile = new Tile(x, y, obsSprite);
-                    obsTile.setWalkable(false); // Le jardinier ne peut pas marcher dessus
-                    obsTile.setPlowable(false); // On ne peut pas labourer un rocher !
-                    tiles[y][x] = obsTile;
+                    // On laisse la tuile comme une Tile d'herbe mais on marque qu'on ne peut pas y marcher ni labourer
+                    Tile base = new Tile(x, y, grassSprite);
+                    base.setWalkable(false);
+                    base.setPlowable(false);
+                    tiles[y][x] = base;
+
+                    // Créer un Obstacle (Building) et l'ajouter à la liste des bâtiments
+                    Obstacle obs = new Obstacle(obsSprite);
+                    obs.setPosition(x, y);
+                    buildings.add(obs);
                 }
                 else {
                     // Case d'herbe normale
@@ -360,6 +362,31 @@ public class World {
     // Récupère la liste des bâtiments (utile pour l'affichage)
     public List<Building> getBuildings() {
         return buildings;
+    }
+
+    /** Supprime un bâtiment du monde et restaure l'état des tuiles sous-jacentes (par défaut marchables et labourables).
+     * Note : implémentation simple — si tu veux des règles plus complexes (ex: retransformer en PlantTile), on peut affiner.
+     */
+    public void removeBuilding(Building b) {
+        if (b == null) return;
+        if (!buildings.remove(b)) return;
+
+        // Remettre les tuiles sous-jacentes en état marchable / labourable par défaut
+        for (int dx = 0; dx < b.getWidth(); dx++) {
+            for (int dy = 0; dy < b.getHeight(); dy++) {
+                int tx = b.getX() + dx;
+                int ty = b.getY() + dy;
+                if (tx >= 0 && tx < WIDTH && ty >= 0 && ty < HEIGHT) {
+                    try {
+                        Tile t = getTile(tx, ty);
+                        t.setWalkable(true);
+                        t.setPlowable(true);
+                    } catch (IndexOutOfBoundsException ex) {
+                        // ignore
+                    }
+                }
+            }
+        }
     }
 
     /**

@@ -6,7 +6,8 @@ import javax.swing.ImageIcon;
 public class Well extends Building {
 
     public Well() {
-        super(2, 2, false, PlacementRule.NORMAL_ONLY,  new ImageIcon("src/assets/Buildings/well.png"));
+        super(1, 1, false, PlacementRule.NORMAL_ONLY,  new ImageIcon("src/assets/Buildings/well.png"));
+        this.buyPrice = 80;
     }
 
     @Override

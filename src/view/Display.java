@@ -110,7 +110,7 @@ public class Display {
         selectionView.setVisible(false);
 
         // Contrôleur de placement des bâtiments
-        BuildingManager buildingManager = new BuildingManager(world, this);
+        final BuildingManager buildingManager = new BuildingManager(world, this);
         globalView.addMouseListener(buildingManager);
         globalView.addMouseMotionListener(buildingManager);
 
@@ -123,55 +123,64 @@ public class Display {
         this.btnOpenMenu.setFocusable(false);
         this.btnOpenMenu.setBounds(0, 0, 100, 100);
 
-        // Control panel : conteneur fixe pour le bouton (évite les problèmes de parent/re-add)
+        // Control panel : conteneur fixe pour le(s) boutons (évite les problèmes de parent/re-add)
         this.controlPanel = new JPanel(null);
         this.controlPanel.setOpaque(false);
         // Ne pas considérer ce panneau comme une overlay qui désactive le edge-scrolling
         this.controlPanel.putClientProperty("edgeScrollIgnore", Boolean.TRUE);
         // position will be set after packing / when opening — set initial bounds now
-        this.controlPanel.setBounds(gameSize.width - 160, 10, 100, 100);
+        // élargir pour contenir deux boutons côte à côte
+        int ctrlW = 200;
+        this.controlPanel.setBounds(gameSize.width - ctrlW, 10, ctrlW, 100);
         this.controlPanel.add(this.btnOpenMenu);
+
+        // Bouton Supprimer – état inactif (bulldozer rangé)
+        JButton btnDeleteIdle = ImageButtonFactory.createImageButton(
+                "src/assets/UI/bulldozer_idle.png",
+                "src/assets/UI/bulldozer_idle_hover.png",
+                "src/assets/UI/bulldozer_idle_pressed.png"
+        );
+        btnDeleteIdle.setFocusable(false);
+        btnDeleteIdle.setBounds(105, 5, 90, 90);
+        btnDeleteIdle.addActionListener(e -> buildingManager.startDeletionMode());
+        this.controlPanel.add(btnDeleteIdle);
+
+        // Bouton Supprimer – état actif (bulldozer en action)
+        JButton btnDeleteActive = ImageButtonFactory.createImageButton(
+                "src/assets/UI/bulldozer_active.png",
+                "src/assets/UI/bulldozer_active_hover.png",
+                "src/assets/UI/bulldozer_active_pressed.png"
+        );
+        btnDeleteActive.setFocusable(false);
+        btnDeleteActive.setBounds(105, 5, 90, 90);
+        btnDeleteActive.setVisible(false); // caché par défaut
+        btnDeleteActive.addActionListener(e -> buildingManager.cancelDeletionMode());
+        this.controlPanel.add(btnDeleteActive);
+
+        // Basculer entre les deux images selon le mode suppression
+        buildingManager.setDeletionModeListener(active -> SwingUtilities.invokeLater(() -> {
+            btnDeleteIdle.setVisible(!active);
+            btnDeleteActive.setVisible(active);
+        }));
 
         // Panneau latéral droit : catalogue des bâtiments (plus grand et esthétique)
         BuildingSidePanel sidePanel = new BuildingSidePanel(buildingManager, this, this.world, null);
         // Définir le callback onClose : simplement ré-afficher le bouton et annuler le placement
-        sidePanel.setOnClose(() -> {
-            System.out.println("[DEBUG] sidePanel.onClose called");
-            SwingUtilities.invokeLater(() -> {
-                // Reposition controlPanel according to current content width
-                int cw = Math.max(100, this.frame.getContentPane().getWidth());
-                int ctrlX = Math.max(8, cw - 160);
-                this.controlPanel.setBounds(ctrlX, 10, 100, 100);
-                // Ensure controlPanel is on top layer and visible
-                if (this.controlPanel.getParent() == null) {
-                    this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
-                }
-                this.layeredPane.setLayer(this.controlPanel, JLayeredPane.DRAG_LAYER);
-                this.controlPanel.setVisible(true);
-                this.controlPanel.revalidate();
-                this.controlPanel.repaint();
-                buildingManager.cancelPlacement();
-                sidePanel.setVisible(false);
-                this.layeredPane.moveToFront(this.controlPanel);
-                this.layeredPane.revalidate();
-                this.layeredPane.repaint();
-                this.controlPanel.requestFocusInWindow();
-                globalView.requestFocusInWindow();
-                // inform edgeScroller that sidebar is closed: reset width and re-enable scrolling
-                try {
-                    if (this.edgeScroller == null) {
-                        // recreate the edge scroller
-                        this.edgeScroller = new EdgeScroller(this.frame, this.layeredPane, this.camera, this.globalView,
-                                Rendering.FPS, 72, 0.12f);
-                    }
-                    if (this.edgeScroller != null) {
-                        this.edgeScroller.setIgnoredRegion(null);
-                        this.edgeScroller.setRightSidebarWidth(0);
-                        this.edgeScroller.setEnabled(true);
-                    }
-                } catch (Exception ex) {}
-                });
-        });
+        sidePanel.setOnClose(() -> SwingUtilities.invokeLater(() -> {
+            // Repositionner et réafficher le controlPanel
+            int cw = Math.max(100, this.frame.getContentPane().getWidth());
+            this.controlPanel.setBounds(cw - 200, 10, 200, 100);
+            this.layeredPane.setLayer(this.controlPanel, JLayeredPane.DRAG_LAYER);
+            this.controlPanel.setVisible(true);
+            this.controlPanel.setEnabled(true);
+            this.layeredPane.moveToFront(this.controlPanel);
+            buildingManager.cancelPlacement();
+            sidePanel.setVisible(false);
+            this.layeredPane.revalidate();
+            this.layeredPane.repaint();
+            globalView.requestFocusInWindow();
+            overlayClosed();
+        }));
         int panelWidth = 380;
         // Position initial flush-right (will be adjusted on open using actual pane width)
         sidePanel.setBounds(gameSize.width - panelWidth, 0, panelWidth, gameSize.height);
@@ -191,25 +200,21 @@ public class Display {
         });
 
         // Action du bouton "Construire" : afficher le panneau et cacher le bouton
-        this.btnOpenMenu.addActionListener(e -> {
-            SwingUtilities.invokeLater(() -> {
-                // 1. CACHER COMPLÈTEMENT le panneau qui contient l'icône
-                this.controlPanel.setVisible(false);
-                this.controlPanel.setEnabled(false); // Sécurité supplémentaire
-
-                // 2. Positionner et afficher le sidePanel
-                int cw = Math.max(this.frame.getContentPane().getWidth(), gameSize.width);
-                sidePanel.setBounds(cw - 380, 0, 380, gameSize.height);
-                sidePanel.setVisible(true);
-
-                this.layeredPane.moveToFront(sidePanel);
-                this.layeredPane.revalidate();
-                this.layeredPane.repaint();
-
-                // Désactiver le scroll automatique pour ne pas bouger la caméra en cliquant dans le menu
-                overlayOpened(380, sidePanel.getBounds());
-            });
-        });
+        this.btnOpenMenu.addActionListener(e -> SwingUtilities.invokeLater(() -> {
+            // Annuler le mode suppression s'il était actif (évite désynchronisation des boutons)
+            buildingManager.cancelDeletionMode();
+            // Cacher le panel de contrôle pendant que le sidePanel est ouvert
+            this.controlPanel.setVisible(false);
+            // Positionner le sidePanel flush-right selon la largeur courante
+            int cw = Math.max(this.frame.getContentPane().getWidth(), gameSize.width);
+            sidePanel.setBounds(cw - panelWidth, 0, panelWidth, gameSize.height);
+            sidePanel.setVisible(true);
+            this.layeredPane.moveToFront(sidePanel);
+            this.layeredPane.revalidate();
+            this.layeredPane.repaint();
+            // Désactiver le scroll automatique
+            overlayOpened(panelWidth, sidePanel.getBounds());
+        }));
 
         // Add controlPanel (contains the build button) on DRAG_LAYER so it remains above the side panel
         this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
@@ -220,8 +225,8 @@ public class Display {
             public void componentResized(ComponentEvent e) {
                 SwingUtilities.invokeLater(() -> {
                     int cw = Math.max(100, frame.getContentPane().getWidth());
-                    int ctrlX = Math.max(8, cw - 160);
-                    controlPanel.setBounds(ctrlX, 10, 100, 100);
+                    int ctrlX = Math.max(8, cw - 200);
+                    controlPanel.setBounds(ctrlX, 10, 200, 100);
                     layeredPane.revalidate();
                     layeredPane.repaint();
                 });
@@ -231,8 +236,8 @@ public class Display {
             public void componentShown(ComponentEvent e) {
                 SwingUtilities.invokeLater(() -> {
                     int cw = Math.max(100, frame.getContentPane().getWidth());
-                    int ctrlX = Math.max(8, cw - 160);
-                    controlPanel.setBounds(ctrlX, 10, 100, 100);
+                    int ctrlX = Math.max(8, cw - 200);
+                    controlPanel.setBounds(ctrlX, 10, 200, 100);
                     layeredPane.revalidate();
                     layeredPane.repaint();
                 });
@@ -273,14 +278,11 @@ public class Display {
 
     /** Met la vue en mode popup, en affichant le popup passe en parametre */
     public void switchToPopup(PopupPanel popup) {
-        // Désactiver les contrôles du jeu
-        globalView.removeMouseListener(globalController);
-        globalView.removeKeyListener(cameraController);
-
-        if (this.controlPanel != null) {
-            this.controlPanel.setVisible(false);
-        }
-
+        // Si on est en mode global, desactiver les contoles de la vue globale
+        globalView.removeMouseListener(globalController); // ne fait rien si deja enleve
+        globalView.removeKeyListener(cameraController); // ne fait rien si deja enleve
+        // Cacher les boutons de contrôle (construire / supprimer)
+        controlPanel.setVisible(false);
         // Afficher le popup
         popupView.showPopup(popup);
         overlayOpened(0, null);
@@ -291,20 +293,17 @@ public class Display {
         popupView.hidePopup();
         selectionView.setVisible(false);
         globalView.setVisible(true);
-
-
-        if (this.controlPanel != null) {
-            this.controlPanel.setVisible(true);
-        }
-
-        // Réactiver les contrôles
+        // Réactiver les contrôles de la vue globale si besoin
         if (!Arrays.asList(globalView.getMouseListeners()).contains(globalController)) {
             globalView.addMouseListener(globalController);
         }
         if (!Arrays.asList(globalView.getKeyListeners()).contains(cameraController)) {
             globalView.addKeyListener(cameraController);
         }
-
+        // Restaurer les boutons de contrôle (construire / supprimer)
+        controlPanel.setVisible(true);
+        controlPanel.setEnabled(true);
+        layeredPane.moveToFront(controlPanel);
         globalView.requestFocusInWindow();
         overlayClosed();
     }
@@ -351,6 +350,13 @@ public class Display {
      */
     public void onBuildingPanelClose() {
         SwingUtilities.invokeLater(() -> {
+            int cw = Math.max(100, this.frame.getContentPane().getWidth());
+            int ctrlX = Math.max(8, cw - 200);
+            this.controlPanel.setBounds(ctrlX, 10, 200, 100);
+            if (this.controlPanel.getParent() == null) {
+                this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
+            }
+            this.layeredPane.setLayer(this.controlPanel, JLayeredPane.DRAG_LAYER);
             this.controlPanel.setVisible(true);
             this.controlPanel.setEnabled(true);
             this.controlPanel.repaint();

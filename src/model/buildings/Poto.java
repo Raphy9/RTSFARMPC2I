@@ -7,6 +7,7 @@ public class Poto extends Building {
 
     public Poto() {
         super(1, 1, false, PlacementRule.NORMAL_ONLY, new ImageIcon("src/assets/Buildings/poto.png"));
+        this.buyPrice = 30;
     }
 
     @Override

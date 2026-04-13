@@ -3,10 +3,12 @@ package src.control;
 import src.model.World;
 import src.model.buildings.Building;
 import src.view.Display;
+import src.view.GameDialog;
 import src.model.Tile;
-import src.model.PlantTile; // Ou tout autre nom donné à tes cultures
+import src.model.PlantTile;
 
 import javax.swing.SwingUtilities;
+import java.util.function.Consumer;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
@@ -18,6 +20,15 @@ public class BuildingManager extends MouseAdapter {
     private Building ghostBuilding = null; // Le bâtiment en cours de placement
     private int ghostX = -1;
     private int ghostY = -1;
+    // Mode suppression : si true, un clic gauche supprime le bâtiment sous le curseur
+    private boolean deletionMode = false;
+    private Consumer<Boolean> deletionModeListener = null;
+
+    public void setDeletionModeListener(Consumer<Boolean> listener) {
+        this.deletionModeListener = listener;
+    }
+
+    public boolean isDeletionMode() { return deletionMode; }
 
     public BuildingManager(World world, Display display) {
         this.world = world;
@@ -38,18 +49,58 @@ public class BuildingManager extends MouseAdapter {
         display.getGlobalView().requestFocusInWindow();
     }
 
+    // Mode suppression simple
+    public void startDeletionMode() {
+        this.deletionMode = true;
+        this.ghostBuilding = null;
+        // Informer la vue globale pour qu'elle affiche le surlignage rouge
+        display.getGlobalView().setGhostBuilding(this);
+        display.getGlobalView().repaint();
+        if (this.deletionModeListener != null) this.deletionModeListener.accept(true);
+    }
+
+    public void cancelDeletionMode() {
+        this.deletionMode = false;
+        display.getGlobalView().repaint();
+        if (this.deletionModeListener != null) this.deletionModeListener.accept(false);
+        // Retirer la référence pour arrêter le rendu du ghost/highlight
+        display.getGlobalView().setGhostBuilding(null);
+    }
+
     @Override
     public void mouseMoved(MouseEvent e) {
-        if (ghostBuilding != null) {
+        // Mettre à jour la position du ghost quand on est en mode placement ou suppression
+        if (ghostBuilding != null || deletionMode) {
             Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
             ghostX = coords.x;
             ghostY = coords.y;
-            display.getGlobalView().repaint(); // Force le dessin du ghost
+            display.getGlobalView().repaint(); // Force le dessin du ghost / highlight
         }
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
+        // Si on est en mode suppression
+        if (deletionMode) {
+            if (SwingUtilities.isRightMouseButton(e)) {
+                cancelDeletionMode();
+                return;
+            }
+            Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
+            Building toRemove = world.getBuildingAt(coords.x, coords.y);
+            if (toRemove != null) {
+                int sell = toRemove.getSellPrice();
+                String msg = "Supprimer ce bâtiment ?\nRevente : " + sell + " PO";
+                if (GameDialog.showConfirm(display.getGlobalView(), "Confirmer suppression", msg)) {
+                    if (sell > 0) world.getStats().addMoney(sell);
+                    world.removeBuilding(toRemove);
+                    display.getGlobalView().repaint();
+                    System.out.println("Bâtiment supprimé -> +" + sell + " PO | Solde : " + world.getStats().getMoney());
+                }
+            }
+            return; // multi-suppression : on reste en mode suppression
+        }
+
         if (ghostBuilding != null) {
             if (SwingUtilities.isRightMouseButton(e)) {
                 cancelPlacement();
@@ -57,24 +108,29 @@ public class BuildingManager extends MouseAdapter {
             }
 
             if (SwingUtilities.isLeftMouseButton(e) && canPlace(ghostX, ghostY, ghostBuilding)) {
+                int cost = ghostBuilding.getBuyPrice();
+                if (cost > 0 && world.getStats().getMoney() < cost) {
+                    GameDialog.showMessage(display.getGlobalView(),
+                            "Fonds insuffisants",
+                            "Pas assez d'argent !\nCoût : " + cost + " PO\nSolde : " + world.getStats().getMoney() + " PO");
+                    return;
+                }
+
                 ghostBuilding.setPosition(ghostX, ghostY);
                 world.addBuilding(ghostBuilding);
 
-                // === MODIFICATION ICI : On bloque la case ===
-                for(int dx = 0; dx < ghostBuilding.getWidth(); dx++){
-                    for(int dy = 0; dy < ghostBuilding.getHeight(); dy++){
+                if (cost > 0) {
+                    world.getStats().removeMoney(cost);
+                    System.out.println("Bâtiment acheté : " + cost + " PO | Solde : " + world.getStats().getMoney());
+                }
+
+                for (int dx = 0; dx < ghostBuilding.getWidth(); dx++) {
+                    for (int dy = 0; dy < ghostBuilding.getHeight(); dy++) {
                         Tile tileUnder = world.getTile(ghostX + dx, ghostY + dy);
-
-                        // Empêcher le jardinier de labourer sous le bâtiment
                         tileUnder.setPlowable(false);
-
-                        // Empêcher de marcher si le bâtiment bloque le passage
-                        if (!ghostBuilding.isPassable()) {
-                            tileUnder.setWalkable(false);
-                        }
+                        if (!ghostBuilding.isPassable()) tileUnder.setWalkable(false);
                     }
                 }
-                System.out.println("Bâtiment construit !");
                 cancelPlacement();
             }
         }

@@ -206,6 +206,41 @@ public class Global extends JPanel {
             g3.dispose();
         }
 
+        // === DELETION HIGHLIGHT (si on est en mode suppression) ===
+        // On réutilise ghostManager pour obtenir les coordonnées du curseur
+        try {
+            if (ghostManager != null && ghostManager.isDeletionMode()) {
+                int gx = ghostManager.getGhostX();
+                int gy = ghostManager.getGhostY();
+
+                src.model.buildings.Building b = world.getBuildingAt(gx, gy);
+                if (b != null) {
+                    Graphics2D g4 = (Graphics2D) g.create();
+                    g4.setStroke(new BasicStroke(3));
+                    Color fill = new Color(255, 0, 0, 100);
+                    Color border = new Color(200, 0, 0);
+
+                    for (int dx = 0; dx < b.getWidth(); dx++) {
+                        for (int dy = 0; dy < b.getHeight(); dy++) {
+                            int relX = (gx + dx) - fstTileX;
+                            int relY = (gy + dy) - fstTileY;
+                            if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                                int px = (relX * Display.RATIO_X) - pixelDiffX;
+                                int py = (relY * Display.RATIO_Y) - pixelDiffY;
+                                g4.setColor(fill);
+                                g4.fillRect(px, py, Display.RATIO_X, Display.RATIO_Y);
+                                g4.setColor(border);
+                                g4.drawRect(px + 1, py + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
+                            }
+                        }
+                    }
+                    g4.dispose();
+                }
+            }
+        } catch (Throwable t) {
+            // ne pas échouer le rendu si quelque chose se passe mal
+        }
+
         // === DESSIN DES BÂTIMENTS DÉJÀ CONSTRUITS ===
         if (world.getBuildings() != null) {
             for (src.model.buildings.Building b : world.getBuildings()) {

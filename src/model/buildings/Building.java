@@ -18,6 +18,8 @@ public abstract class Building {
     protected boolean isPassable;
     protected PlacementRule placementRule;
     protected ImageIcon sprite;
+    /** Prix d'achat du bâtiment (0 = gratuit / obstacle naturel) */
+    protected int buyPrice = 0;
 
     public Building(int width, int height, boolean isPassable, PlacementRule rule, ImageIcon sprite) {
         this.width = width;
@@ -47,5 +49,14 @@ public abstract class Building {
     public PlacementRule getPlacementRule() { return placementRule; }
     public ImageIcon getSprite(World world, int x, int y) {
         return this.sprite; // Par défaut, un bâtiment normal garde son sprite fixe
+    }
+    public ImageIcon getSprite() { return sprite; }
+
+    /** Prix d'achat du bâtiment */
+    public int getBuyPrice() { return buyPrice; }
+
+    /** Prix de revente = 40 % du prix d'achat, arrondi au supérieur */
+    public int getSellPrice() {
+        return (int) Math.ceil(buyPrice * 0.7);
     }
 }

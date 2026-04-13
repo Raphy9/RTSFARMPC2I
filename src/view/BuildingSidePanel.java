@@ -17,6 +17,7 @@ public class BuildingSidePanel extends JPanel {
     private final Display display;
     private final World world;
     private final JPanel itemsPanel;
+    private JScrollPane scrollPane; // champ pour pouvoir revalider depuis showCategory
     private Runnable onClose;
 
     public BuildingSidePanel(BuildingManager manager, Display display, World world, Runnable onClose) {
@@ -37,8 +38,8 @@ public class BuildingSidePanel extends JPanel {
         JPanel categories = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         categories.setOpaque(false);
 
-        // RESTAURATION DES 4 ONGLETS ORIGINAUX
-        String[] cats = new String[]{"Batiments", "Decoration", "Nature", "Chemin"};
+        // Onglets — noms AVEC accents, cohérents avec getEntriesFor()
+        String[] cats = new String[]{"Bâtiments", "Décoration", "Nature", "Chemin"};
         for (String c : cats) {
             categories.add(createTabButton(c));
         }
@@ -67,19 +68,19 @@ public class BuildingSidePanel extends JPanel {
 
         this.add(topBar, BorderLayout.NORTH);
 
-        // Zone des items
+        // Zone des items — UN SEUL JScrollPane
         itemsPanel = new JPanel();
         itemsPanel.setOpaque(false);
         itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
-        itemsPanel.setBorder(new EmptyBorder(10, 15, 10, 15));
 
-        // ScrollPane invisible pour gérer beaucoup de bâtiments
-        JScrollPane scroll = new JScrollPane(itemsPanel);
-        scroll.setOpaque(false);
-        scroll.getViewport().setOpaque(false);
-        scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        this.add(scroll, BorderLayout.CENTER);
+        scrollPane = new JScrollPane(itemsPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBorder(null);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        this.add(scrollPane, BorderLayout.CENTER);
 
         // CORRECTION DE L'ACCENT : Ouvre bien l'onglet par défaut !
         showCategory("Bâtiments");
@@ -108,6 +109,11 @@ public class BuildingSidePanel extends JPanel {
         }
         itemsPanel.revalidate();
         itemsPanel.repaint();
+        // Revalide aussi le scroll pour éviter le bug "items qui disparaissent au 2e clic"
+        if (scrollPane != null) {
+            scrollPane.revalidate();
+            scrollPane.repaint();
+        }
     }
 
     private JComponent createCard(Entry e) {
@@ -185,27 +191,27 @@ public class BuildingSidePanel extends JPanel {
     private List<Entry> getEntriesFor(String category) {
         List<Entry> out = new ArrayList<>();
         switch (category) {
-            case "Batiments":
+            case "Bâtiments":
+                out.add(new Entry("Linge",           "src/assets/Buildings/linge.png",   () -> new Linge(),   120));
+                out.add(new Entry("Boîte aux lettres","src/assets/Buildings/mailbox1.png",() -> new Mailbox1(), 50));
+                out.add(new Entry("Puits",           "src/assets/Buildings/well.png",    () -> new Well(),     80));
+                out.add(new Entry("Grande enseigne", "src/assets/Buildings/bigsign.png", () -> new Bigsign(),  40));
+                break;
+            case "Décoration":
+                out.add(new Entry("Poteau",   "src/assets/Buildings/poto.png",   () -> new Poto(),    30));
+                out.add(new Entry("Tonneau 1","src/assets/Buildings/barrel1.png",() -> new Barrel1(), 20));
+                out.add(new Entry("Tonneau 2","src/assets/Buildings/barrel2.png",() -> new Barrel2(), 20));
+                break;
+            case "Nature":
+                out.add(new Entry("Arbre 1", "src/assets/Buildings/tree1.png", () -> new Tree1(), 25));
+                out.add(new Entry("Arbre 2", "src/assets/Buildings/tree2.png", () -> new Tree2(), 35));
+                out.add(new Entry("Rocher",  "src/assets/Buildings/rock1.png", () -> new Rock1(), 15));
+                break;
+            case "Chemin":
                 out.add(new Entry("Barriere (Face)", "src/assets/Obstacles/fence_face.png", () -> new FenceFace(), 10));
                 out.add(new Entry("Barriere (Cote)", "src/assets/Obstacles/fence_side.png", () -> new FenceSide(), 10));
                 out.add(new Entry("Porte (Face)", "src/assets/Obstacles/fence_face.png", () -> new GateFace(), 15));
                 out.add(new Entry("Porte (Cote)", "src/assets/Obstacles/fence_side.png", () -> new GateSide(), 15));
-                out.add(new Entry("Mailbox", "src/assets/Buildings/mailbox1.png", () -> new Mailbox1(), 50));
-                break;
-            case "Decoration":
-                out.add(new Entry("Poteau", "src/assets/Buildings/poto.png", () -> new Poto(), 30));
-                out.add(new Entry("Linge", "src/assets/Buildings/linge.png", () -> new Linge(), 30));
-                out.add(new Entry("Big Sign", "src/assets/Buildings/bigsign.png", () -> new Bigsign(), 20));
-                out.add(new Entry("Tonneau 1", "src/assets/Buildings/barrel1.png", () -> new Barrel1(), 20));
-                out.add(new Entry("Tonneau 2", "src/assets/Buildings/barrel2.png", () -> new Barrel2(), 20));
-                break;
-            case "Nature":
-                out.add(new Entry("Arbre 1", "src/assets/Buildings/tree1.png", () -> new Tree1(), 10));
-                out.add(new Entry("Arbre 2", "src/assets/Buildings/tree2.png", () -> new Tree2(), 20));
-                out.add(new Entry("Rocher", "src/assets/Buildings/rock1.png", () -> new Rock1(), 20));
-                break;
-            case "Chemin":
-                // TODO
                 break;
         }
         return out;

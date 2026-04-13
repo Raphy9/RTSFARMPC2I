@@ -45,6 +45,16 @@ public class EdgeScrollThread {
             int sleepMs = Math.max(1, 1000 / this.fps);
             while (!Thread.currentThread().isInterrupted()) {
                 if (enabled && camera != null && !overlayActive) {
+                    // Ne scroller que si la fenêtre contenant la vue a le focus
+                    try {
+                        java.awt.Window w = SwingUtilities.getWindowAncestor(globalView);
+                        if (w == null || !w.isFocused()) {
+                            Thread.sleep(sleepMs);
+                            continue; // ne fait rien si la fenêtre n'a pas le focus
+                        }
+                    } catch (Throwable t) {
+                        // en cas d'erreur lors de la récupération de la fenêtre, on continue normalement
+                    }
                     try {
                         PointerInfo pi = MouseInfo.getPointerInfo();
                         if (pi != null) {

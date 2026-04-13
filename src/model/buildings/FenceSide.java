@@ -12,6 +12,7 @@ public class FenceSide extends Building {
 
     public FenceSide() {
         super(1, 1, false, PlacementRule.NORMAL_ONLY, null);
+        this.buyPrice = 10;
         if (!loaded) loadSprites();
         this.sprite = baseSprite;
     }
