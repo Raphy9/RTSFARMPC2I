@@ -431,4 +431,9 @@ public class World {
         return stats;
     }
 
+    /** Enregistre un callback appelé à chaque montée de niveau, avec le nouveau niveau. */
+    public void setLevelUpCallback(java.util.function.IntConsumer callback) {
+        stats.setLevelUpCallback(callback);
+    }
+
 }

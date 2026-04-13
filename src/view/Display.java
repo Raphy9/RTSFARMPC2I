@@ -260,6 +260,10 @@ public class Display {
         // Pour que la vue globale puisse bien recevoir les inputs au lancement du jeu
         globalView.requestFocusInWindow();
 
+        // Callback level-up : affiche le popup de félicitations
+        this.world.setLevelUpCallback(newLevel -> SwingUtilities.invokeLater(() ->
+            LevelUpPopup.show(this.globalView, this.world, newLevel)
+        ));
     }
 
     /**

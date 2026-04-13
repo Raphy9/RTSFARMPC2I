@@ -383,6 +383,7 @@ public class Global extends JPanel {
 
         // argent visible en permanence sur l'affichage principal.
         drawMoney(g);
+        drawLevel(g);
 
 
     }
@@ -419,6 +420,41 @@ public class Global extends JPanel {
         int textX = x + paddingX + iconSize + 8;
         int textY = y + paddingY + metrics.getAscent() + (iconSize - metrics.getHeight()) / 2;
         g2.drawString(text, textX, textY);
+        g2.dispose();
+    }
+
+    private void drawLevel(Graphics g) {
+        src.model.Stats stats = world.getStats();
+        int level = stats.getLevel();
+        int exp   = stats.getExp();
+        int expMax = stats.getExpForNextLevel();
+        String text = "Niv." + level + "  " + exp + "/" + expMax + " XP";
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 18f));
+        FontMetrics metrics = g2.getFontMetrics();
+
+        int paddingX = 10;
+        int paddingY = 6;
+        int x = 12;
+        // Positionné juste sous le badge argent (y=12, hauteur ≈ max(25,h)+12 ≈ 37 → on part de 55)
+        int y = 55;
+        int textWidth = metrics.stringWidth(text);
+        int width  = textWidth + paddingX * 2;
+        int height = metrics.getHeight() + paddingY * 2;
+
+        // Fond semi-transparent
+        g2.setColor(new Color(0, 0, 0, 140));
+        g2.fillRoundRect(x, y, width, height, 12, 12);
+        // Bordure violette (couleur XP)
+        g2.setColor(new Color(200, 150, 255));
+        g2.drawRoundRect(x, y, width, height, 12, 12);
+
+        // Étoile + texte
+        g2.setColor(Color.WHITE);
+        int textY = y + paddingY + metrics.getAscent();
+        g2.drawString(text, x + paddingX, textY);
         g2.dispose();
     }
 

@@ -24,12 +24,14 @@ public class PopupBarn extends PopupPanel {
     private String selectedCategory = "Toutes";
     private String[] categoryNames = {"Toutes", "Graines", "Plantes", "Fertilisants"};
 
-    // NOUVEAU : On mémorise l'objet cliqué pour l'afficher à droite
     private Item selectedItem = null;
 
     private static final int WIDTH_SLOTS = 3;
     private static final int HEIGHT_SLOTS = 5;
-    private static final int DESCRIPTION_SIZE = 350; // Plus large pour le preview
+    private static final int DESCRIPTION_SIZE = 350;
+
+    /** Image cadenas chargée une seule fois */
+    private static ImageIcon LOCK_ICON = null;
 
     public PopupBarn(Display display, World world) {
         super(display, Camera.WIDTH * Display.RATIO_X - 2 * Display.RATIO_X, Camera.HEIGHT * Display.RATIO_Y - 2 * Display.RATIO_Y, "Grange");
@@ -84,18 +86,15 @@ public class PopupBarn extends PopupPanel {
     }
 
     private boolean isItemUnlocked(Item item) {
-        if (item == null || item.getPlantType() == null) return false;
+        if (item == null || item.getPlantType() == null) return true;
+        return world.getStats().getLevel() >= item.getPlantType().getLevelRequirement();
+    }
 
-        // On récupère le nom de la plante (en minuscules pour éviter les soucis de majuscules)
-        String plantName = item.getPlantType().getName().toLowerCase();
-
-        // On autorise uniquement les carottes et les choux pour le début du jeu
-        if (plantName.contains("carotte") || plantName.contains("chou")) {
-            return true;
+    private ImageIcon getLockIcon(int size) {
+        if (LOCK_ICON == null) {
+            LOCK_ICON = new ImageIcon("src/assets/lock.png");
         }
-
-        // Tout le reste sera grisé et bloqué
-        return false;
+        return new ImageIcon(LOCK_ICON.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH));
     }
 
     private void buildItemGrid() {
@@ -105,10 +104,10 @@ public class PopupBarn extends PopupPanel {
         ArrayList<Item> filtered = new ArrayList<>();
         for (Item it : barn.getItems()) {
             switch (selectedCategory) {
-                case "Graines": if (it instanceof ItemSeed) filtered.add(it); break;
-                case "Plantes": if (it instanceof ItemPlant) filtered.add(it); break;
+                case "Graines":      if (it instanceof ItemSeed)  filtered.add(it); break;
+                case "Plantes":      if (it instanceof ItemPlant) filtered.add(it); break;
                 case "Fertilisants": if (!(it instanceof ItemSeed) && !(it instanceof ItemPlant)) filtered.add(it); break;
-                default: filtered.add(it); break;
+                default:             filtered.add(it); break;
             }
         }
 
@@ -116,10 +115,10 @@ public class PopupBarn extends PopupPanel {
             itemGrid.add(createPanelItem(filtered.get(i)));
         }
 
+        // Slots vides : panneau transparent sans bordure ni fond
         for (int i = filtered.size(); i < WIDTH_SLOTS * HEIGHT_SLOTS; i++) {
             JPanel emptyPanel = new JPanel();
-            emptyPanel.setBackground(new Color(230, 180, 110, 150));
-            emptyPanel.setBorder(BorderFactory.createLineBorder(SDV_BORDER_DARK, 2));
+            emptyPanel.setOpaque(false);
             itemGrid.add(emptyPanel);
         }
 
@@ -173,20 +172,24 @@ public class PopupBarn extends PopupPanel {
             detailPanel.setOpaque(false);
 
             // 1. Titre
-            String typeName = unlocked ? ((selectedItem instanceof ItemSeed ? "Graine - " : "Plante - ") + selectedItem.getPlantType().getName()) : "???";
+            String typeName = unlocked
+                ? (selectedItem instanceof ItemSeed ? "Graine - " : "Plante - ") + selectedItem.getPlantType().getName()
+                : "???";
             JLabel title = new JLabel(typeName);
             title.setFont(getCustomFont(22f));
             title.setForeground(SDV_TEXT);
             title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // 2. Image en grand (Noire/Grisée si bloquée)
+            // 2. Image (cadenas si bloqué)
             int imgSize = 80;
-            JLabel imgLabel = new JLabel(new ImageIcon(selectedItem.getImage().getImage().getScaledInstance(imgSize, imgSize, Image.SCALE_SMOOTH)));
+            ImageIcon icon = unlocked
+                ? new ImageIcon(selectedItem.getImage().getImage().getScaledInstance(imgSize, imgSize, Image.SCALE_SMOOTH))
+                : getLockIcon(imgSize);
+            JLabel imgLabel = new JLabel(icon);
             imgLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             imgLabel.setBorder(new EmptyBorder(15, 0, 15, 0));
-            // Si bloqué, on pourrait assombrir l'image ici (facultatif)
 
-            // 3. Stats ou Message de blocage
+            // 3. Stats ou message de blocage
             JPanel statsPanel = new JPanel(new GridLayout(5, 1, 0, 8));
             statsPanel.setOpaque(false);
 
@@ -195,13 +198,15 @@ public class PopupBarn extends PopupPanel {
                 statsPanel.add(createStatLabel("Prix d'Achat : " + barn.buyItem(selectedItem, 0) + " PO"));
                 statsPanel.add(createStatLabel("Prix de Vente : " + barn.sellItem(selectedItem, 0) + " PO"));
             } else {
-                JLabel lockedMsg = new JLabel("<html><center>Cet objet est verrouille.<br>Continuez à progresser pour le débloquer !</center></html>");
+                int req = selectedItem.getPlantType().getLevelRequirement();
+                JLabel lockedMsg = new JLabel("<html><center>Cet objet se débloque<br>au <b>niveau " + req + "</b>.<br><br>Vendez des récoltes pour gagner de l'XP !</center></html>");
                 lockedMsg.setFont(getCustomFont(14f));
-                lockedMsg.setForeground(new Color(150, 50, 50)); // Rouge sombre
+                lockedMsg.setForeground(new Color(150, 50, 50));
+                lockedMsg.setAlignmentX(Component.CENTER_ALIGNMENT);
                 statsPanel.add(lockedMsg);
             }
 
-            // 4. Contrôles Achat/Vente (Uniquement si débloqué)
+            // 4. Contrôles Achat/Vente (uniquement si débloqué)
             JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
             controlPanel.setOpaque(false);
 
@@ -210,10 +215,9 @@ public class PopupBarn extends PopupPanel {
                 qtyInput.setBackground(new Color(255, 240, 210));
                 qtyInput.setBorder(BorderFactory.createLineBorder(SDV_BORDER_DARK, 1));
 
-                JButton buyBtn = createActionBtn("Acheter");
+                JButton buyBtn  = createActionBtn("Acheter");
                 JButton sellBtn = createActionBtn("Vendre");
 
-                // Les contrôleurs gèrent la transaction et appellent refresh() automatiquement
                 buyBtn.addActionListener(new BarnController(barn, this, selectedItem, true, qtyInput));
                 sellBtn.addActionListener(new BarnController(barn, this, selectedItem, false, qtyInput));
                 sellBtn.setEnabled(selectedItem.getQuantity() > 0);
@@ -225,7 +229,7 @@ public class PopupBarn extends PopupPanel {
             }
 
             // 5. Argent du joueur
-            JLabel moneyLabel = new JLabel("Votre Portefeuille : " + barn.getMoney() + " PO");
+            JLabel moneyLabel = new JLabel("Portefeuille : " + barn.getMoney() + " PO");
             moneyLabel.setFont(getCustomFont(16f));
             moneyLabel.setForeground(new Color(40, 100, 40));
             moneyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -262,7 +266,7 @@ public class PopupBarn extends PopupPanel {
         return btn;
     }
 
-    // --- CASE DE LA GRILLE (Plus de boutons ici, juste la sélection) ---
+    // --- CASE DE LA GRILLE ---
     private JPanel createPanelItem(Item item) {
         JPanel panel = new JPanel(new BorderLayout(8, 0));
         panel.setOpaque(true);
@@ -270,43 +274,39 @@ public class PopupBarn extends PopupPanel {
         boolean unlocked = isItemUnlocked(item);
         boolean isSelected = (selectedItem == item);
 
-        // Couleurs selon l'état (Débloqué / Bloqué / Sélectionné)
-        Color baseColor = unlocked ? new Color(235, 185, 120) : new Color(170, 160, 150); // Gris si bloqué
-        Color hoverColor = unlocked ? new Color(245, 195, 130) : new Color(180, 170, 160);
+        Color baseColor    = unlocked ? new Color(235, 185, 120) : new Color(170, 160, 150);
+        Color hoverColor   = unlocked ? new Color(245, 195, 130) : new Color(180, 170, 160);
         Color selectedColor = new Color(255, 210, 150);
 
         panel.setBackground(isSelected ? selectedColor : baseColor);
         panel.setBorder(BorderFactory.createLineBorder(isSelected ? Color.WHITE : SDV_BORDER_DARK, 2));
-        panel.setPreferredSize(new Dimension(0, 60)); // Hauteur fixe
+        panel.setPreferredSize(new Dimension(0, 60));
 
-        if (unlocked) {
-            panel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        }
+        if (unlocked) panel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // Clic sur la case -> Met à jour le panneau de droite
         panel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
+            @Override public void mousePressed(MouseEvent e) {
                 selectedItem = item;
-                refresh(); // Reconstruit la page pour afficher le preview
+                refresh();
             }
-            @Override
-            public void mouseEntered(MouseEvent e) {
+            @Override public void mouseEntered(MouseEvent e) {
                 if (!isSelected) panel.setBackground(hoverColor);
             }
-            @Override
-            public void mouseExited(MouseEvent e) {
+            @Override public void mouseExited(MouseEvent e) {
                 if (!isSelected) panel.setBackground(baseColor);
             }
         });
 
-        // Icône à gauche
+        // Icône : cadenas si bloqué, sprite sinon
         int iconSize = 35;
-        JLabel iconLabel = new JLabel(new ImageIcon(item.getImage().getImage().getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH)));
+        ImageIcon icon = unlocked
+            ? new ImageIcon(item.getImage().getImage().getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH))
+            : getLockIcon(iconSize);
+        JLabel iconLabel = new JLabel(icon);
         iconLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
         panel.add(iconLabel, BorderLayout.WEST);
 
-        // Nom et Quantité
+        // Nom et info droite
         JPanel infoPanel = new JPanel(new GridLayout(2, 1));
         infoPanel.setOpaque(false);
         infoPanel.setBorder(new EmptyBorder(10, 0, 5, 5));
@@ -316,13 +316,19 @@ public class PopupBarn extends PopupPanel {
         nameLabel.setForeground(SDV_TEXT);
         nameLabel.setFont(getCustomFont(14f));
 
-        String qty = unlocked ? "Stock: " + item.getQuantity() : "Verrouille";
-        JLabel qtyLabel = new JLabel(qty);
-        qtyLabel.setForeground(new Color(110, 60, 20));
-        qtyLabel.setFont(getCustomFont(12f));
+        // Ligne du bas : quantité si débloqué, "Niveau X" si bloqué
+        String subText;
+        if (unlocked) {
+            subText = "Stock: " + item.getQuantity();
+        } else {
+            subText = "Niv. " + item.getPlantType().getLevelRequirement();
+        }
+        JLabel subLabel = new JLabel(subText);
+        subLabel.setForeground(unlocked ? new Color(110, 60, 20) : new Color(100, 80, 150));
+        subLabel.setFont(getCustomFont(12f));
 
         infoPanel.add(nameLabel);
-        infoPanel.add(qtyLabel);
+        infoPanel.add(subLabel);
         panel.add(infoPanel, BorderLayout.CENTER);
 
         return panel;

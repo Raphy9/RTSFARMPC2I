@@ -6,10 +6,10 @@ package src.model;
  */
 public enum PlantType {
     // Nom, Temps croissance (ticks), Soif (eau/tick), Prix vente
-    CHOUX("Choux", 75, 0.5f, 6),
-    CAROTTE("Carotte", 75, 0.5f, 10),
-    CITROUILLE("Citrouille", 75, 0.5f, 25,5),
-    FRAISE("Fraise", 75, 0.5f, 8,5);
+    CHOUX("Choux",       75, 0.5f,  6),
+    CAROTTE("Carotte",   75, 0.5f, 10),
+    CITROUILLE("Citrouille", 75, 0.5f, 25, 3),
+    FRAISE("Fraise",     75, 0.5f,  8, 4);
 
     // --- Attributs ---
     private final String name;

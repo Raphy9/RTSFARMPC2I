@@ -13,6 +13,7 @@ public class FenceFace extends Building {
     public FenceFace() {
         super(1, 1, false, PlacementRule.NORMAL_ONLY, null);
         this.buyPrice = 10;
+        this.levelRequirement = 1;
         if (!loaded) loadSprites();
         this.sprite = baseSprite;
     }

@@ -19,6 +19,8 @@ public abstract class Building {
     protected PlacementRule placementRule;
     protected ImageIcon sprite;
     protected int buyPrice = 0;
+    /** Niveau requis pour débloquer ce bâtiment dans le shop (0 = disponible dès le départ) */
+    protected int levelRequirement = 0;
 
     public Building(int width, int height, boolean isPassable, PlacementRule rule, ImageIcon sprite) {
         this.width = width;
@@ -46,6 +48,7 @@ public abstract class Building {
     }
 
     public int getBuyPrice() { return buyPrice; }
+    public int getLevelRequirement() { return levelRequirement; }
 
     public int getSellPrice() { return (int) Math.ceil(buyPrice * 0.4); }
 

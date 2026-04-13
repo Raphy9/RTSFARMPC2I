@@ -3,7 +3,8 @@ package src.model.buildings;
 public class GateFace extends FenceFace {
     public GateFace() {
         super();
-        this.buyPrice = 15; // Porte plus chère que la simple barrière
+        this.buyPrice = 15;
+        this.levelRequirement = 4; // Porte plus chère que la simple barrière
     }
 
     @Override

@@ -47,7 +47,9 @@ public class Barn extends Inventory {
         // 2. Effectuer la transaction UNIQUEMENT si on vend vraiment (qty > 0)
         if (qty > 0 && getItems().contains(item) && item.getQuantity() >= qty) {
             item.removeQuantity(qty);
-            stats.addMoney(itemPrice * qty);
+            int earned = itemPrice * qty;
+            stats.addMoney(earned);
+            stats.addExp(earned); // XP = montant gagné à la vente
         }
 
         return itemPrice;

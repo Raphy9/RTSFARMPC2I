@@ -13,6 +13,7 @@ public class Obstacle extends Building {
     public Obstacle(ImageIcon sprite) {
         // Taille 1x1, non franchissable, règle de placement NORMAL_ONLY
         super(1, 1, false, PlacementRule.NORMAL_ONLY, sprite);
+        buyPrice = 5;
     }
 
     @Override
