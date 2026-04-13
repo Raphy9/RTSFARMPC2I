@@ -20,8 +20,8 @@ public class Gardener extends Entity implements Runnable {
     private transient Thread gardenerThread;
     private volatile boolean isRunning;
 
-    // --- NOUVEAU : Index de la barre d'action ---
-    private int selectedHotbarIndex = 0;
+    // --- NOUVEAU : Index de la barre d'action (-1 = rien sélectionné) ---
+    private int selectedHotbarIndex = -1;
 
     public Gardener(int x, int y, World world) {
         super(world, x, y);
@@ -37,7 +37,7 @@ public class Gardener extends Entity implements Runnable {
     }
 
     public void setSelectedHotbarIndex(int index) {
-        if (index >= 0 && index < 9) {
+        if (index >= -1 && index < 4) {
             this.selectedHotbarIndex = index;
         }
     }

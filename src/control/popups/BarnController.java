@@ -2,9 +2,9 @@ package src.control.popups;
 
 import src.model.Barn;
 import src.model.Item;
+import src.view.GameDialog;
 import src.view.PopupBarn;
 
-import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,14 +35,16 @@ public class BarnController implements ActionListener {
             if (currentMoney >= unitPrice * qty) {
                 barn.buyItem(item, qty);
             } else {
-                JOptionPane.showMessageDialog(popupBarn, "Vous n'avez pas assez d'argent !", "Achat impossible", JOptionPane.WARNING_MESSAGE);
+                GameDialog.showMessage(popupBarn, "Achat impossible",
+                        "Vous n'avez pas assez d'argent !\nCoût : " + (unitPrice * qty) + " PO\nPortefeuille : " + currentMoney + " PO");
             }
         } else {
             // On vérifie d'abord si le joueur a assez de stock
             if (item.getQuantity() >= qty) {
                 barn.sellItem(item, qty);
             } else {
-                JOptionPane.showMessageDialog(popupBarn, "Vous n'avez pas assez de cet objet en stock !", "Vente impossible", JOptionPane.WARNING_MESSAGE);
+                GameDialog.showMessage(popupBarn, "Vente impossible",
+                        "Vous n'avez pas assez de cet objet en stock !\nEn stock : " + item.getQuantity() + "\nQuantité demandée : " + qty);
             }
         }
 

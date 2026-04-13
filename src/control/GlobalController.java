@@ -25,6 +25,32 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        // --- Détection du clic sur la hotbar ---
+        if (display.getGlobalView().isHotbarVisible() &&
+                world.getGardeners() != null && !world.getGardeners().isEmpty()) {
+            Gardener gardener = world.getGardeners().get(0);
+            int nbSlots = 4;
+            int slotSize = 52;
+            int spacing = 8;
+            int totalWidth = (slotSize * nbSlots) + (spacing * (nbSlots - 1));
+            int panelWidth = display.getGlobalView().getWidth();
+            int panelHeight = display.getGlobalView().getHeight();
+            int startX = (panelWidth - totalWidth) / 2;
+            int startY = panelHeight - slotSize - 50;
+
+            if (e.getY() >= startY && e.getY() <= startY + slotSize) {
+                for (int i = 0; i < nbSlots; i++) {
+                    int slotX = startX + i * (slotSize + spacing);
+                    if (e.getX() >= slotX && e.getX() <= slotX + slotSize) {
+                        gardener.setSelectedHotbarIndex(i);
+                        display.getGlobalView().repaint();
+                        display.triggerHotbarAction(i, gardener);
+                        return;
+                    }
+                }
+            }
+        }
+
         Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
 
         // Vérifier que les coordonnées sont dans les limites du monde
@@ -55,26 +81,8 @@ public class GlobalController implements MouseListener, MouseMotionListener{
             }
         }
 
-        if (world.getGardeners() != null && !world.getGardeners().isEmpty()) {
-            Gardener gardener = world.getGardeners().get(0);
-            int hotbarIndex = gardener.getSelectedHotbarIndex();
-            java.awt.event.ActionEvent fakeEvent = new java.awt.event.ActionEvent(this, java.awt.event.ActionEvent.ACTION_PERFORMED, "");
-
-            if (hotbarIndex == 0) { // Case 1 : LABOURER
-                new src.control.popups.PlowActionSelector(display, world, gardener).actionPerformed(fakeEvent);
-            }
-            else if (hotbarIndex == 1) { // Case 2 : ARROSER
-                new src.control.popups.WaterActionSelector(display, world, gardener).actionPerformed(fakeEvent);
-            }
-            else if (hotbarIndex == 2) { // Case 3 : PLANTER
-                System.out.println("Mode Plantation activé via Hotbar");
-                new src.control.popups.PlantActionSelector(display, world, gardener).actionPerformed(fakeEvent);
-            }
-            else if (hotbarIndex == 3) { // Case 4 : RÉCOLTER
-                System.out.println("Mode Récolte activé via Hotbar");
-                new src.control.popups.HarvestActionSelector(display, gardener, world).actionPerformed(fakeEvent);
-            }
-        }
+        // Le clic sur le monde sans entité ne déclenche plus d'action automatiquement.
+        // Les actions sont déclenchées par clic direct sur la hotbar ou via les touches 1-4.
     }
 
     @Override

@@ -6,6 +6,7 @@ import src.control.GlobalController;
 import src.control.SelectionController;
 import src.control.popups.CloseController;
 import src.model.Camera;
+import src.model.Gardener;
 import src.model.Tile;
 import src.model.World;
 import src.model.actions.ActionBuilder;
@@ -68,11 +69,11 @@ public class Display {
 
         layeredPane.add(globalView, JLayeredPane.DEFAULT_LAYER);
 
-        // KEYBINDINGS POUR LA HOTBAR (Touches 1 à 9) ---
+        // KEYBINDINGS POUR LA HOTBAR (Touches 1 à 4) ---
         InputMap im = globalView.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = globalView.getActionMap();
 
-        for (int i = 1; i <= 9; i++) {
+        for (int i = 1; i <= 4; i++) {
             final int slotIndex = i - 1;
             String keyStr = String.valueOf(i);
 
@@ -84,9 +85,14 @@ public class Display {
             am.put("hotbar_" + i, new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    // Ne rien faire si la hotbar est masquée (menu ouvert)
+                    if (!globalView.isHotbarVisible()) return;
                     if (world.getGardeners() != null && !world.getGardeners().isEmpty()) {
-                        world.getGardeners().get(0).setSelectedHotbarIndex(slotIndex);
-                        globalView.repaint(); // Redessine pour montrer la sélection
+                        Gardener g = world.getGardeners().get(0);
+                        g.setSelectedHotbarIndex(slotIndex);
+                        globalView.repaint();
+                        // Ouvrir directement le menu d'action
+                        triggerHotbarAction(slotIndex, g);
                     }
                 }
             });
@@ -176,22 +182,12 @@ public class Display {
         buildingManager.setDeletionModeListener(active -> SwingUtilities.invokeLater(() -> {
             btnDeleteIdle.setVisible(!active);
             btnDeleteActive.setVisible(active);
+            globalView.setHotbarVisible(!active);
         }));
 
         BuildingSidePanel sidePanel = new BuildingSidePanel(buildingManager, this, this.world, null);
         sidePanel.setOnClose(() -> SwingUtilities.invokeLater(() -> {
-            int cw = Math.max(100, this.frame.getContentPane().getWidth());
-            this.controlPanel.setBounds(cw - 200, 10, 200, 100);
-            this.layeredPane.setLayer(this.controlPanel, JLayeredPane.DRAG_LAYER);
-            this.controlPanel.setVisible(true);
-            this.controlPanel.setEnabled(true);
-            this.layeredPane.moveToFront(this.controlPanel);
             buildingManager.cancelPlacement();
-            sidePanel.setVisible(false);
-            this.layeredPane.revalidate();
-            this.layeredPane.repaint();
-            globalView.requestFocusInWindow();
-            overlayClosed();
         }));
         int panelWidth = 380;
         sidePanel.setBounds(gameSize.width - panelWidth, 0, panelWidth, gameSize.height);
@@ -200,7 +196,7 @@ public class Display {
 
         sidePanel.addHierarchyListener(e -> {
             if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
-                if (sidePanel.isShowing()) {
+                if (sidePanel.isVisible()) {
                     overlayOpened(panelWidth, sidePanel.getBounds());
                 } else {
                     overlayClosed();
@@ -213,11 +209,11 @@ public class Display {
             this.controlPanel.setVisible(false);
             int cw = Math.max(this.frame.getContentPane().getWidth(), gameSize.width);
             sidePanel.setBounds(cw - panelWidth, 0, panelWidth, gameSize.height);
+            globalView.setHotbarVisible(false);
             sidePanel.setVisible(true);
             this.layeredPane.moveToFront(sidePanel);
             this.layeredPane.revalidate();
             this.layeredPane.repaint();
-            overlayOpened(panelWidth, sidePanel.getBounds());
         }));
 
         this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
@@ -280,12 +276,19 @@ public class Display {
         controlPanel.setVisible(false);
         popupView.showPopup(popup);
         overlayOpened(0, null);
+        globalView.setHotbarVisible(false);
     }
 
     public void switchToGlobal() {
         popupView.hidePopup();
         selectionView.setVisible(false);
         globalView.setVisible(true);
+        // Effacer toutes les surbrillances jaunes résiduelles
+        globalView.clearAllHighlights();
+        // Désélectionner le slot hotbar
+        if (world.getGardeners() != null && !world.getGardeners().isEmpty()) {
+            world.getGardeners().get(0).setSelectedHotbarIndex(-1);
+        }
         if (!Arrays.asList(globalView.getMouseListeners()).contains(globalController)) {
             globalView.addMouseListener(globalController);
         }
@@ -296,6 +299,7 @@ public class Display {
         controlPanel.setEnabled(true);
         layeredPane.moveToFront(controlPanel);
         globalView.requestFocusInWindow();
+        globalView.setHotbarVisible(true);
         overlayClosed();
     }
 
@@ -338,13 +342,26 @@ public class Display {
             this.controlPanel.setVisible(true);
             this.controlPanel.setEnabled(true);
             this.controlPanel.repaint();
-
-            overlayClosed();
+            globalView.setHotbarVisible(true);
             this.globalView.requestFocusInWindow();
         });
     }
 
     public void update() { }
+
+    /** Déclenche l'action correspondant à un slot de hotbar */
+    public void triggerHotbarAction(int slotIndex, Gardener gardener) {
+        java.awt.event.ActionEvent fakeEvent = new java.awt.event.ActionEvent(this, java.awt.event.ActionEvent.ACTION_PERFORMED, "");
+        if (slotIndex == 0) {
+            new src.control.popups.PlowActionSelector(this, world, gardener).actionPerformed(fakeEvent);
+        } else if (slotIndex == 1) {
+            new src.control.popups.WaterActionSelector(this, world, gardener).actionPerformed(fakeEvent);
+        } else if (slotIndex == 2) {
+            new src.control.popups.PlantActionSelector(this, world, gardener).actionPerformed(fakeEvent);
+        } else if (slotIndex == 3) {
+            new src.control.popups.HarvestActionSelector(this, gardener, world).actionPerformed(fakeEvent);
+        }
+    }
 
     public void refreshEdgeScrollerState() {
         boolean hasVisibleOverlay = false;

@@ -21,8 +21,6 @@ public class LevelUpPopup {
     private static final Color SDV_BORDER_LIGHT = PopupPanel.SDV_BORDER_LIGHT;
     private static final Color SDV_TEXT         = PopupPanel.SDV_TEXT;
 
-    private static ImageIcon NEW_BADGE = null;
-
     /** Affiche le popup de level-up (bloquant). */
     public static void show(Component parent, World world, int newLevel) {
         JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(parent), "", Dialog.ModalityType.APPLICATION_MODAL);
@@ -113,8 +111,8 @@ public class LevelUpPopup {
         card.setBorder(BorderFactory.createLineBorder(SDV_BORDER_DARK, 2));
         card.setPreferredSize(new Dimension(110, 120));
 
-        // Image + badge "new" superposé
-        JLabel imgLabel = new JLabel(buildBadgedIcon(entry.icon, 64)) {
+        // Image chargée de façon synchrone + badge "new" superposé
+        JLabel imgLabel = new JLabel(buildBadgedIcon(entry.iconPath, 64)) {
             @Override public Dimension getPreferredSize() { return new Dimension(80, 80); }
         };
         imgLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -129,17 +127,39 @@ public class LevelUpPopup {
         return card;
     }
 
-    /** Crée une icône avec le badge "new.png" en haut à droite. */
-    private static ImageIcon buildBadgedIcon(ImageIcon base, int size) {
-        Image baseImg = base.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);
-        if (NEW_BADGE == null) NEW_BADGE = new ImageIcon("src/assets/new.png");
-        int badgeSize = size / 3;
-        Image badgeImg = NEW_BADGE.getImage().getScaledInstance(badgeSize, badgeSize, Image.SCALE_SMOOTH);
+    /** Charge une image de façon SYNCHRONE via ImageIO (évite les artefacts asynchrones de ImageIcon). */
+    private static java.awt.image.BufferedImage loadSync(String path) {
+        try {
+            java.io.File f = new java.io.File(path);
+            if (f.exists()) return javax.imageio.ImageIO.read(f);
+        } catch (Exception ignored) {}
+        return null;
+    }
 
-        BufferedImage out = new java.awt.image.BufferedImage(size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+    /** Crée une icône avec le badge "new.png" en haut à droite. */
+    private static ImageIcon buildBadgedIcon(String imagePath, int size) {
+        java.awt.image.BufferedImage baseImg = loadSync(imagePath);
+        java.awt.image.BufferedImage badgeImg = loadSync("src/assets/new.png");
+
+        BufferedImage out = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = out.createGraphics();
-        g2.drawImage(baseImg, 0, 0, null);
-        g2.drawImage(badgeImg, size - badgeSize, 0, null);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        if (baseImg != null) {
+            g2.drawImage(baseImg, 0, 0, size, size, null);
+        } else {
+            // Fallback : carré gris avec "?"
+            g2.setColor(new Color(180, 140, 80));
+            g2.fillRect(0, 0, size, size);
+            g2.setColor(new Color(110, 45, 15));
+            g2.setFont(new Font("Arial", Font.BOLD, size / 2));
+            g2.drawString("?", size / 3, size * 2 / 3);
+        }
+        if (badgeImg != null) {
+            int badgeSize = size / 3;
+            g2.drawImage(badgeImg, size - badgeSize, 0, badgeSize, badgeSize, null);
+        }
         g2.dispose();
         return new ImageIcon(out);
     }
@@ -155,17 +175,16 @@ public class LevelUpPopup {
         for (PlantType pt : PlantType.values()) {
             if (pt.getLevelRequirement() == level) {
                 String seedPath  = "src/assets/CropSprites/" + pt.getName().toLowerCase() + "/seedpack.png";
-                list.add(new UnlockEntry(pt.getName() + "\n(Graine)", new ImageIcon(seedPath)));
-                // Plante mature : premier sprite
-                String plantPath = "src/assets/CropSprites/" + pt.getName().toLowerCase() + "/stage4.png";
-                list.add(new UnlockEntry(pt.getName() + "\n(Plante)", new ImageIcon(plantPath)));
+                String plantPath = "src/assets/CropSprites/" + pt.getName().toLowerCase() + "/step4.png";
+                list.add(new UnlockEntry(pt.getName() + " (Graine)", seedPath));
+                list.add(new UnlockEntry(pt.getName() + " (Plante)", plantPath));
             }
         }
 
         // Bâtiments
         for (BuildingEntry b : ALL_BUILDINGS) {
-            if (b.levelRequirement == level) {
-                list.add(new UnlockEntry(b.name, new ImageIcon(b.iconPath)));
+            if (b.levelRequirement() == level) {
+                list.add(new UnlockEntry(b.name(), b.iconPath()));
             }
         }
         return list;
@@ -194,7 +213,5 @@ public class LevelUpPopup {
         new BuildingEntry("Linge",            "src/assets/Buildings/linge.png",      5)
     );
 
-    public record UnlockEntry(String name, ImageIcon icon) {}
+    public record UnlockEntry(String name, String iconPath) {}
 }
-
-

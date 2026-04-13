@@ -29,6 +29,8 @@ public class Global extends JPanel {
     private int hoveredX = -1;
     private int hoveredY = -1;
 
+    private boolean hotbarVisible = true;
+
     private src.control.popups.BuildingManager ghostManager;
 
     private final Set<Point> highlights = new HashSet<>();
@@ -70,6 +72,15 @@ public class Global extends JPanel {
 
     public void setGhostBuilding(src.control.popups.BuildingManager manager) {
         this.ghostManager = manager;
+    }
+
+    public void setHotbarVisible(boolean visible) {
+        this.hotbarVisible = visible;
+        repaint();
+    }
+
+    public boolean isHotbarVisible() {
+        return hotbarVisible;
     }
 
     public boolean isHighlighted(int wx, int wy) {
@@ -348,9 +359,11 @@ public class Global extends JPanel {
 
     // --- Méthode pour dessiner la Hotbar ---
     private void drawHotbar(Graphics g) {
+        if (!hotbarVisible) return;
+
         Graphics2D g2 = (Graphics2D) g.create();
 
-        int nbSlots = 9;
+        int nbSlots = 4;
         int slotSize = 52; // Taille d'une case
         int spacing = 8;   // Espacement entre les cases
 
@@ -363,7 +376,7 @@ public class Global extends JPanel {
         if (world.getGardeners() != null && !world.getGardeners().isEmpty()) {
             player = world.getGardeners().get(0);
         }
-        int selectedIndex = (player != null) ? player.getSelectedHotbarIndex() : 0;
+        int selectedIndex = (player != null) ? player.getSelectedHotbarIndex() : -1;
 
         // Couleurs de style Stardew Valley
         Color slotBg = new Color(235, 185, 120, 230); // Sable semi-transparent
@@ -376,7 +389,7 @@ public class Global extends JPanel {
             g2.setColor(slotBg);
             g2.fillRect(x, startY, slotSize, slotSize);
 
-            // 2. Contenu de la case (Outils ou Items)
+            // 2. Contenu de la case (Outils)
             if (i == 0) {
                 // Emplacement 1 : La Houe
                 if (houeImg != null) g2.drawImage(houeImg, x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
@@ -389,30 +402,10 @@ public class Global extends JPanel {
             } else if (i == 3) {
                 // Emplacement 4 : Récolter
                 if (recolterImg != null) g2.drawImage(recolterImg, x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
-            } else {
-                // Emplacement 5 à 9 : Les objets de l'inventaire
-                if (player != null && player.getInventory() != null) {
-                    int invIndex = i - 4; // On décale de 4 à cause des 4 outils de base
-                    if (invIndex >= 0 && invIndex < player.getInventory().getItems().size()) {
-                        Item item = player.getInventory().getItems().get(invIndex);
-                        if (item.getImage() != null && item.getQuantity() > 0) {
-                            g2.drawImage(item.getImage().getImage(), x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
-
-                            // Afficher la quantité (Noir, en bas à gauche)
-                            g2.setColor(Color.BLACK);
-                            if (GameFonts.MINECRAFT_FONT != null) {
-                                g2.setFont(GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 14f));
-                            } else {
-                                g2.setFont(new Font("Arial", Font.BOLD, 14));
-                            }
-                            g2.drawString(String.valueOf(item.getQuantity()), x + 5, startY + slotSize - 5);
-                        }
-                    }
-                }
             }
 
             // 3. Dessiner la bordure
-            if (i == selectedIndex) {
+            if (selectedIndex >= 0 && i == selectedIndex) {
                 // Case sélectionnée : Gros contour Blanc (Style Minecraft)
                 g2.setColor(Color.WHITE);
                 g2.setStroke(new BasicStroke(5));
@@ -423,7 +416,7 @@ public class Global extends JPanel {
             }
             g2.drawRect(x, startY, slotSize, slotSize);
 
-            // 4. Dessiner le chiffre de raccourci (1 à 9) en haut à gauche
+            // 4. Dessiner le chiffre de raccourci (1 à 4) en haut à gauche
             g2.setColor(new Color(255, 255, 255, 180));
             if (GameFonts.MINECRAFT_FONT != null) {
                 g2.setFont(GameFonts.MINECRAFT_FONT.deriveFont(12f));
