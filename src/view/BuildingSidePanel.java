@@ -1,6 +1,6 @@
 package src.view;
 
-import src.control.BuildingManager;
+import src.control.popups.BuildingManager;
 import src.model.World;
 import src.model.buildings.*;
 

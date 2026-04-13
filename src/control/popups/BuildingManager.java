@@ -1,4 +1,4 @@
-package src.control;
+package src.control.popups;
 
 import src.model.World;
 import src.model.buildings.Building;
@@ -96,6 +96,15 @@ public class BuildingManager extends MouseAdapter {
                     world.removeBuilding(toRemove);
                     display.getGlobalView().repaint();
                     System.out.println("Bâtiment supprimé -> +" + sell + " PO | Solde : " + world.getStats().getMoney());
+                }
+            } else {
+                // Pas de bâtiment : vérifier si c'est une terre labourée vide
+                Tile tile = world.getTile(coords.x, coords.y);
+                if (tile instanceof PlantTile && ((PlantTile) tile).getPlant() == null) {
+                    if (GameDialog.showConfirm(display.getGlobalView(), "Confirmer", "Retransformer cette terre en herbe ?")) {
+                        world.toNormalTile(coords.x, coords.y);
+                        display.getGlobalView().repaint();
+                    }
                 }
             }
             return; // multi-suppression : on reste en mode suppression

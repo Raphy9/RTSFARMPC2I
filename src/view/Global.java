@@ -29,7 +29,7 @@ public class Global extends JPanel {
     private int hoveredX = -1; // -1 veut dire qu'aucune case n'est survolée
     private int hoveredY = -1;
 
-    private src.control.BuildingManager ghostManager;
+    private src.control.popups.BuildingManager ghostManager;
 
     // Highlight: maintenant plusieurs tuiles peuvent être surlignées
     private final Set<Point> highlights = new HashSet<>();
@@ -72,7 +72,7 @@ public class Global extends JPanel {
         repaint();
     }
 
-    public void setGhostBuilding(src.control.BuildingManager manager) {
+    public void setGhostBuilding(src.control.popups.BuildingManager manager) {
         this.ghostManager = manager;
     }
 
@@ -121,8 +121,7 @@ public class Global extends JPanel {
                 if (worldX >= 0 && worldX < World.WIDTH && worldY >= 0 && worldY < World.HEIGHT) {
                     Tile tile = world.getTile(worldX, worldY);
                     int paintX = (x * Display.RATIO_X) - pixelDiffX;
-                    int paintY =
-                            (y * Display.RATIO_Y) - pixelDiffY;
+                    int paintY = (y * Display.RATIO_Y) - pixelDiffY;
                     g.drawImage(tile.getSprite().getImage(), paintX, paintY, Display.RATIO_X, Display.RATIO_Y, this);
                     //On vérifie si c'est une case plantable et on dessine la plante
                     if (tile instanceof PlantTile) {
@@ -197,9 +196,7 @@ public class Global extends JPanel {
                 int px = (relX * Display.RATIO_X) - pixelDiffX;
                 int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                // UTILISATION DE getSprite(world, x, y) POUR LE GHOST !
-                ImageIcon ghostSprite = b.getSprite(world, gx, gy);
-                g3.drawImage(ghostSprite.getImage(), px, py,
+                g3.drawImage(b.getSprite().getImage(), px, py,
                         Display.RATIO_X * b.getWidth(),
                         Display.RATIO_Y * b.getHeight(), null);
             }
@@ -253,27 +250,16 @@ public class Global extends JPanel {
                     int px = (relX * Display.RATIO_X) - pixelDiffX;
                     int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                    ImageIcon actualSprite = b.getSprite(world, b.getX(), b.getY());
-                    if (b.isGate()) {
-                        Graphics2D g3 = (Graphics2D) g.create();
-                        g3.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f)); // 50% transparent
-                        g3.drawImage(actualSprite.getImage(), px, py,
-                                Display.RATIO_X * b.getWidth(),
-                                Display.RATIO_Y * b.getHeight(), null);
-                        g3.dispose();
-                    } else {
-                        // Dessin normal opaque
-                        g.drawImage(actualSprite.getImage(), px, py,
-                                Display.RATIO_X * b.getWidth(),
-                                Display.RATIO_Y * b.getHeight(), null);
-                    }
+                    // On dessine l'image étirée sur sa largeur/hauteur
+                    g.drawImage(b.getSprite().getImage(), px, py,
+                            Display.RATIO_X * b.getWidth(),
+                            Display.RATIO_Y * b.getHeight(), null);
                 }
             }
         }
 
         // Highlight : on utilise un Graphics2D pour pouvoir dessiner des rectangles avec une bordure plus épaisse, et des couleurs semi-transparentes pour le remplissage
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setStroke(new BasicStroke(3));
 
         // Dessiner d'abord le surlignement BLEU (Sélection en cours de l'utilisateur)
@@ -407,7 +393,8 @@ public class Global extends JPanel {
         String text = "" + money;
 
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setFont(GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 18f));        FontMetrics metrics = g2.getFontMetrics();
+        g2.setFont(g2.getFont().deriveFont(Font.BOLD, 18f));
+        FontMetrics metrics = g2.getFontMetrics();
 
         int iconSize = 25;
         int paddingX = 10;
@@ -519,3 +506,4 @@ public class Global extends JPanel {
         }
     }
 }
+

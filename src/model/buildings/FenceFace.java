@@ -59,4 +59,5 @@ public class FenceFace extends Building {
 
     @Override
     public void applyEffect(World world) {}
+
 }

@@ -212,6 +212,20 @@ public class World {
         this.tiles[y][x] = plantTile;
     }
 
+    /** Retransforme une PlantTile vide en case d'herbe normale. */
+    public void toNormalTile(int x, int y) {
+        Tile current = this.tiles[y][x];
+        if (!(current instanceof PlantTile)) return;
+        if (((PlantTile) current).getPlant() != null) return;
+
+        Tile normal = new Tile(x, y, grassSprite);
+        for (Entity entity : current.getEntities()) {
+            normal.addEntity(entity);
+        }
+        this.tiles[y][x] = normal;
+        computeParcels();
+    }
+
     /*
      Méthode pour remplir la grange de départ avec quelques items, à appeler dans le constructeur du monde.
      On peut la modifier pour tester différents items dans la grange.
