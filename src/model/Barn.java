@@ -3,7 +3,6 @@ package src.model;
 /**
  * La classe Barn représente une grange dans le jeu, qui peut stocker des items (plantes et graines).
  * Elle hérite de Inventory et ajoute des fonctionnalités spécifiques à la gestion d'une grange.
- * L'inventaire de la grange est séparé de ceux des jardiniers, elle ne contient pas ce qui est dans l'inventaire des jardiniers.
  */
 public class Barn extends Inventory {
 
@@ -14,135 +13,80 @@ public class Barn extends Inventory {
         this.stats = stats;
     }
 
-    /** Retourne la monnaie courante du joueur liee a la grange. */
     public int getMoney() {
         return stats.getMoney();
     }
 
-    /**
-     * Transfère jusqu'à qty unités de sourceItem depuis cette grange vers target.
-     */
     public int transferToInventory(Inventory target, Item sourceItem, int qty) {
         return super.transferTo(target, sourceItem, qty);
     }
 
     /**
-     * Vend une certaine quantité d'un item de la grange, en retirant les items vendus de l'inventaire de la grange.
+     * Vend une certaine quantité d'un item de la grange.
      */
     public int sellItem(Item item, int qty) {
         int itemPrice = 0;
-        if (qty >= 0 && getItems().contains(item) && item.getQuantity() - qty >= 0) {
-            item.removeQuantity(qty);
-            // Met à jour l'argent gagné du joueur en fonction de la vente
-            // Si l'item est une plante
-            if (item instanceof ItemPlant) {
-                ItemPlant itemPlant = (ItemPlant) item;
-                switch (itemPlant.getPlantType()) {
-                    case CHOUX -> {
-                        stats.addMoney(4 * qty);
-                        itemPrice = 4;
-                    }
-                    case CAROTTE -> {
-                        stats.addMoney(3 * qty);
-                        itemPrice = 3;
-                    }
-                    case CITROUILLE -> {
-                        stats.addMoney(7 * qty);
-                        itemPrice = 7;
-                    }
-                    case FRAISE -> {
-                        stats.addMoney(9 * qty);
-                        itemPrice = 9;
-                    }
-                }
+
+        // 1. Déterminer le prix unitaire
+        if (item instanceof ItemPlant) {
+            switch (((ItemPlant) item).getPlantType()) {
+                case CHOUX -> itemPrice = 4;
+                case CAROTTE -> itemPrice = 3;
+                case CITROUILLE -> itemPrice = 7;
+                case FRAISE -> itemPrice = 9;
             }
-            // Si l'item est une graine
-            else if (item instanceof ItemSeed) {
-                ItemSeed itemSeed = (ItemSeed) item;
-                switch (itemSeed.getPlantType()) {
-                    case CHOUX -> {
-                        stats.addMoney(2 * qty);
-                        itemPrice = 2;
-                    }
-                    case CAROTTE -> {
-                        stats.addMoney(1 * qty);
-                        itemPrice = 1;
-                    }
-                    case CITROUILLE -> {
-                        stats.addMoney(3 * qty);
-                        itemPrice = 3;
-                    }
-                    case FRAISE -> {
-                        stats.addMoney(4 * qty);
-                        itemPrice = 4;
-                    }
-                }
+        } else if (item instanceof ItemSeed) {
+            switch (((ItemSeed) item).getPlantType()) {
+                case CHOUX -> itemPrice = 2;
+                case CAROTTE -> itemPrice = 1;
+                case CITROUILLE -> itemPrice = 3;
+                case FRAISE -> itemPrice = 4;
             }
         }
+
+        // 2. Effectuer la transaction UNIQUEMENT si on vend vraiment (qty > 0)
+        if (qty > 0 && getItems().contains(item) && item.getQuantity() >= qty) {
+            item.removeQuantity(qty);
+            stats.addMoney(itemPrice * qty);
+        }
+
         return itemPrice;
     }
 
     /**
-     * Achète une certaine quantité d'un item, en ajoutant les items achetés à l'inventaire de la grange.
-     * Le prix d'achat est défini en fonction du type de graine
+     * Achète une certaine quantité d'un item.
      */
     public int buyItem(Item item, int qty) {
         int itemPrice = 0;
-        if (qty >= 0) {
-            int cost = 0;
-            // On définit le coût d'achat en fonction du type de graine
-            if (item instanceof ItemSeed) {
-                ItemSeed itemSeed = (ItemSeed) item;
-                switch (itemSeed.getPlantType()) {
-                    case CHOUX -> {
-                        cost = 3 * qty;
-                        itemPrice = 3;
-                    }
-                    case CAROTTE -> {
-                        cost = 2 * qty;
-                        itemPrice = 2;
-                    }
-                    case CITROUILLE -> {
-                        cost = 4 * qty;
-                        itemPrice = 4;
-                    }
-                    case FRAISE -> {
-                        cost = 5 * qty;
-                        itemPrice = 5;
-                    }
-                }
-                // Vérifie que le joueur a assez d'argent pour l'achat
-                if (stats.getMoney() >= cost) {
-                    // Le joueur a assez d'argent, on effectue l'achat en retirant l'argent
-                    stats.removeMoney(cost);
-                    // On ajoute les graines à l'inventaire de la grange
-                    ItemSeed itemNew = new ItemSeed(itemSeed.getPlantType(), qty);
-                    super.addItem(itemNew);
-                }
-            } else if (item instanceof ItemPlant) {
-                ItemPlant itemPlant = (ItemPlant) item;
-                switch (itemPlant.getPlantType()) {
-                    case CHOUX -> {
-                        cost = 5 * qty;
-                        itemPrice = 5;
-                    }
-                    case CAROTTE -> {
-                        cost = 4 * qty;
-                        itemPrice = 4;
-                    }
-                    case CITROUILLE -> {
-                        cost = 8 * qty;
-                        itemPrice = 8;
-                    }
-                    case FRAISE -> {
-                        cost = 10 * qty;
-                        itemPrice = 10;
-                    }
-                }
-                if (stats.getMoney() >= cost) {
-                    stats.removeMoney(cost);
-                    ItemPlant itemNew = new ItemPlant(itemPlant.getPlantType(), qty);
-                    super.addItem(itemNew);
+
+        // 1. Déterminer le prix unitaire
+        if (item instanceof ItemSeed) {
+            switch (((ItemSeed) item).getPlantType()) {
+                case CHOUX -> itemPrice = 3;
+                case CAROTTE -> itemPrice = 2;
+                case CITROUILLE -> itemPrice = 4;
+                case FRAISE -> itemPrice = 5;
+            }
+        } else if (item instanceof ItemPlant) {
+            switch (((ItemPlant) item).getPlantType()) {
+                case CHOUX -> itemPrice = 5;
+                case CAROTTE -> itemPrice = 4;
+                case CITROUILLE -> itemPrice = 8;
+                case FRAISE -> itemPrice = 10;
+            }
+        }
+
+        // 2. Effectuer la transaction UNIQUEMENT si on achète vraiment (qty > 0)
+        if (qty > 0) {
+            int cost = itemPrice * qty;
+
+            if (stats.getMoney() >= cost) {
+                stats.removeMoney(cost);
+
+                if (item instanceof ItemSeed) {
+                    super.addItem(new ItemSeed(((ItemSeed) item).getPlantType(), qty));
+                } else if (item instanceof ItemPlant) {
+                    super.addItem(new ItemPlant(((ItemPlant) item).getPlantType(), qty));
                 }
             }
         }

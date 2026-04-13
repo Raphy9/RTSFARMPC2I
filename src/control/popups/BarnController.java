@@ -4,6 +4,7 @@ import src.model.Barn;
 import src.model.Item;
 import src.view.PopupBarn;
 
+import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,19 +27,29 @@ public class BarnController implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         int qty = parseQuantity();
+        int currentMoney = barn.getMoney();
 
-        // Acheter = ajoute la quantite demandee.
         if (isBuyAction) {
-            barn.buyItem(item, qty);
+            // On vérifie d'abord si le joueur a assez d'argent
+            int unitPrice = barn.buyItem(item, 0);
+            if (currentMoney >= unitPrice * qty) {
+                barn.buyItem(item, qty);
+            } else {
+                JOptionPane.showMessageDialog(popupBarn, "Vous n'avez pas assez d'argent !", "Achat impossible", JOptionPane.WARNING_MESSAGE);
+            }
         } else {
-            // Vendre = retire la quantite demandee de l'item affiche.
-            barn.sellItem(item, qty);
+            // On vérifie d'abord si le joueur a assez de stock
+            if (item.getQuantity() >= qty) {
+                barn.sellItem(item, qty);
+            } else {
+                JOptionPane.showMessageDialog(popupBarn, "Vous n'avez pas assez de cet objet en stock !", "Vente impossible", JOptionPane.WARNING_MESSAGE);
+            }
         }
 
-        // Apres validation, on vide la saisie.
-        quantityInput.setText("");
+        // Après validation, on remet le champ à "1" par défaut (plus agréable pour le joueur)
+        quantityInput.setText("1");
 
-        // Recharger la grille pour refléter les quantités après action.
+        // Recharger la grille pour refléter les quantités et l'argent mis à jour
         popupBarn.refresh();
     }
 
@@ -50,7 +61,7 @@ public class BarnController implements ActionListener {
 
         try {
             int parsed = Integer.parseInt(raw.trim());
-            return parsed > 0 ? parsed : 1;
+            return Math.max(parsed, 1); // Force à au moins 1 (empêche de rentrer 0 ou un nombre négatif)
         } catch (NumberFormatException ex) {
             return 1;
         }
