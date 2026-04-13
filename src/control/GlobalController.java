@@ -13,16 +13,9 @@ import java.awt.event.MouseMotionListener;
  * comme les clics de souris pour sélectionner des cases ou des entités */
 public class GlobalController implements MouseListener, MouseMotionListener{
 
-    // Références à la display et au monde pour pouvoir interagir avec eux
     private final Display display;
     private final World world;
 
-    /** Le constructeur reçoit la display pour pouvoir ajouter le MouseListener et interagir avec la vue globale,
-     * et le monde pour pouvoir interagir avec les entités et les tuiles du monde en fonction des clics de l'utilisateur
-     * @param display la display pour ajouter le MouseListener et interagir avec la vue globale
-     * @param globalView la vue globale pour ajouter le MouseListener
-     * @param world le monde pour interagir avec les entités et les tuiles du monde en fonction des clics de l'utilisateur
-     */
     public GlobalController(Display display, Global globalView, World world) {
         globalView.addMouseListener(this);
         globalView.addMouseMotionListener(this);
@@ -30,14 +23,6 @@ public class GlobalController implements MouseListener, MouseMotionListener{
         this.world = world;
     }
 
-    /** Lorsque l'utilisateur clique sur la vue globale, cette méthode est appelée.
-     * Elle doit déterminer ce qui a été cliqué (une tuile vide, un jardinier, la grange, etc.) et réagir en conséquence :
-     * - Si on clique sur un jardinier : Ouvre le menu d'actions pour ce jardinier
-     * - Si on clique sur la grange : Ouvre le menu de la grange si le jardinier est à côté, sinon déplace le jardinier vers la grange
-     * - Si on clique sur une tuile vide : Envoie une MoveAction au jardinier pour se déplacer vers cette tuile
-     * Note : les déplacements vers la grange doivent utiliser la méthode utilitaire du world pour trouver la meilleure tuile adjacente marchable à la grange
-     * et planifier le déplacement du jardinier vers cette tuile avant d'ouvrir le menu de la grange une fois arrivé
-     */
     @Override
     public void mouseClicked(MouseEvent e) {
         Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
@@ -49,20 +34,19 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
         Tile tile = world.getTile(coords.x, coords.y);
 
-        // 0. Si on clique sur la tuile de la grange -> Ouvrir PopupBarn
+        // 0. Si on clique sur la grange -> Ouvrir PopupBarn
         if (world.isBarnAt(coords.x, coords.y)) {
             System.out.println("Clic sur la grange -> Ouverture PopupBarn");
             display.switchToPopup(new src.view.PopupBarn(display, world));
             return;
         }
 
-        // 1. Si on clique sur le jardinier : Ouvre le Menu
+        // 1. Si on clique sur une entité (Poule ou Jardinier)
         for (src.model.Entity entity : tile.getEntities()) {
-            // Si on clique sur une poule, on la chasse (sans ouvrir de menu)
             if (entity instanceof src.model.Chicken) {
                 src.model.Chicken chicken = (src.model.Chicken) entity;
-                chicken.flee(); // Arrête le thread de la poule
-                return; // On arrête l'interaction ici
+                chicken.flee();
+                return;
             }
             if (entity instanceof src.model.Gardener) {
                 System.out.println("Clic sur le jardinier -> Ouverture du menu");
@@ -71,63 +55,49 @@ public class GlobalController implements MouseListener, MouseMotionListener{
             }
         }
 
-        // 2. Si on clique ailleurs : Déplacement (TEMPORAIRE)
-//        src.model.Gardener gardener = world.getGardenerTest();
-//        if (gardener != null && tile.isWalkable()) {
-//            System.out.println("Clic sur case vide -> Envoi de l'ordre MoveAction vers (" + coords.x + ", " + coords.y + ")");
-//
-//            int dx = coords.x - gardener.getX();
-//            int dy = coords.y - gardener.getY();
-//            if (Math.abs(dx) > Math.abs(dy)) {
-//                gardener.setFacingDirection(dx > 0 ? src.model.Entity.RIGHT : src.model.Entity.LEFT);
-//            } else if (dy != 0) {
-//                gardener.setFacingDirection(dy > 0 ? src.model.Entity.DOWN : src.model.Entity.UP);
-//            }
-//
-//            gardener.interruptGardener();
-//            display.getGlobalView().clearAllHighlights();
-//            // Afficher un highlight sur la case cible pendant le déplacement et l'effacer à l'arrivée
-//            display.getGlobalView().setHighlight(coords.x, coords.y);
-//            Runnable clearHighlight = () -> SwingUtilities.invokeLater(() -> display.getGlobalView().clearHighlight(coords.x, coords.y));
-//            gardener.addAction(new src.model.actions.MoveAction(coords.x, coords.y, clearHighlight));
-//        }
-    }
-    @Override
-    public void mousePressed(MouseEvent e) {
+        if (world.getGardeners() != null && !world.getGardeners().isEmpty()) {
+            Gardener gardener = world.getGardeners().get(0);
+            int hotbarIndex = gardener.getSelectedHotbarIndex();
+            java.awt.event.ActionEvent fakeEvent = new java.awt.event.ActionEvent(this, java.awt.event.ActionEvent.ACTION_PERFORMED, "");
 
+            if (hotbarIndex == 0) { // Case 1 : LABOURER
+                new src.control.popups.PlowActionSelector(display, world, gardener).actionPerformed(fakeEvent);
+            }
+            else if (hotbarIndex == 1) { // Case 2 : ARROSER
+                new src.control.popups.WaterActionSelector(display, world, gardener).actionPerformed(fakeEvent);
+            }
+            else if (hotbarIndex == 2) { // Case 3 : PLANTER
+                System.out.println("Mode Plantation activé via Hotbar");
+                new src.control.popups.PlantActionSelector(display, world, gardener).actionPerformed(fakeEvent);
+            }
+            else if (hotbarIndex == 3) { // Case 4 : RÉCOLTER
+                System.out.println("Mode Récolte activé via Hotbar");
+                new src.control.popups.HarvestActionSelector(display, gardener, world).actionPerformed(fakeEvent);
+            }
+        }
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
+    public void mousePressed(MouseEvent e) {}
 
     @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
+    public void mouseReleased(MouseEvent e) {}
 
     @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
+    public void mouseEntered(MouseEvent e) {}
 
     @Override
-    public void mouseDragged(MouseEvent e) {
+    public void mouseExited(MouseEvent e) {}
 
-    }
+    @Override
+    public void mouseDragged(MouseEvent e) {}
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        // On utilise votre méthode existante pour trouver la case survolée
         Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
-
-        //  On vérifie qu'on ne sort pas de la carte
         if (coords.x >= 0 && coords.x < World.WIDTH && coords.y >= 0 && coords.y < World.HEIGHT) {
-            // On envoie la coordonnée à la vue
             display.getGlobalView().setHoveredTile(coords.x, coords.y);
         } else {
-            // Si on sort de la carte, on efface la jauge (-1, -1)
             display.getGlobalView().setHoveredTile(-1, -1);
         }
     }
