@@ -12,9 +12,10 @@ import java.util.function.Consumer;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
-import src.model.buildings.BarnBuilding;
 
 public class BuildingManager extends MouseAdapter {
+    private static final long JUST_ACTED_WINDOW_MS = 200L;
+
     private World world;
     private Display display;
 
@@ -24,46 +25,38 @@ public class BuildingManager extends MouseAdapter {
     // Mode suppression : si true, un clic gauche supprime le bâtiment sous le curseur
     private boolean deletionMode = false;
     private Consumer<Boolean> deletionModeListener = null;
+    private Runnable onPlacementComplete = null;
+    private long lastActionTimestampMs = 0L;
 
     public void setDeletionModeListener(Consumer<Boolean> listener) {
         this.deletionModeListener = listener;
     }
 
     public boolean isDeletionMode() { return deletionMode; }
+    public boolean isPlacing() { return ghostBuilding != null; }
+    public boolean hasJustActed() {
+        return (System.currentTimeMillis() - lastActionTimestampMs) < JUST_ACTED_WINDOW_MS;
+    }
 
     public BuildingManager(World world, Display display) {
         this.world = world;
         this.display = display;
     }
 
-    // Dans BuildingManager.java
-    private long lastActionTime = 0; // Chronomètre
-    private Runnable onPlacementComplete = null;
-
-    // Nouvelle méthode pour le GlobalController
-    public boolean hasJustActed() {
-        // Renvoie true si le manager a agi il y a moins de 200 millisecondes
-        return (System.currentTimeMillis() - lastActionTime) < 200;
-    }
-
-    public void startPlacement(Building buildingTemplate) {
-        // Appelle la nouvelle méthode en lui disant qu'il n'y a pas d'action de fin (null)
-        startPlacement(buildingTemplate, null);
-    }
-
     // Active le mode construction
-    public void startPlacement(Building buildingTemplate, Runnable callback) {
+    public void startPlacement(Building buildingTemplate) {
         this.ghostBuilding = buildingTemplate;
-        this.onPlacementComplete = callback; // On sauvegarde l'action
-        display.getGlobalView().setGhostBuilding(this);
-    }
-    // Dans BuildingManager.java
-    public boolean isPlacing() {
-        return ghostBuilding != null;
+        display.getGlobalView().setGhostBuilding(this); // On informe la vue
     }
 
-    public void setOnPlacementComplete(Runnable callback) {
-        this.onPlacementComplete = callback;
+    // Active le mode construction et mémorise un callback de refresh UI
+    public void startPlacement(Building buildingTemplate, Runnable onComplete) {
+        this.onPlacementComplete = onComplete;
+        startPlacement(buildingTemplate);
+    }
+
+    public void setOnPlacementComplete(Runnable onPlacementComplete) {
+        this.onPlacementComplete = onPlacementComplete;
     }
 
     // Annule le mode construction
@@ -120,11 +113,8 @@ public class BuildingManager extends MouseAdapter {
                 if (GameDialog.showConfirm(display.getGlobalView(), "Confirmer suppression", msg)) {
                     if (sell > 0) world.getStats().addMoney(sell);
                     world.removeBuilding(toRemove);
-                    this.lastActionTime = System.currentTimeMillis();
-                    if (onPlacementComplete != null) {
-                        onPlacementComplete.run();
-                    }
                     display.getGlobalView().repaint();
+                    notifyPlacementComplete();
                     System.out.println("Bâtiment supprimé -> +" + sell + " PO | Solde : " + world.getStats().getMoney());
                 }
             } else {
@@ -134,6 +124,7 @@ public class BuildingManager extends MouseAdapter {
                     if (GameDialog.showConfirm(display.getGlobalView(), "Confirmer", "Retransformer cette terre en herbe ?")) {
                         world.toNormalTile(coords.x, coords.y);
                         display.getGlobalView().repaint();
+                        notifyPlacementComplete();
                     }
                 }
             }
@@ -157,11 +148,6 @@ public class BuildingManager extends MouseAdapter {
 
                 ghostBuilding.setPosition(ghostX, ghostY);
                 world.addBuilding(ghostBuilding);
-                this.lastActionTime = System.currentTimeMillis();
-
-                if (onPlacementComplete != null) {
-                    onPlacementComplete.run();
-                }
 
                 if (cost > 0) {
                     world.getStats().removeMoney(cost);
@@ -176,17 +162,20 @@ public class BuildingManager extends MouseAdapter {
                     }
                 }
                 cancelPlacement();
+                notifyPlacementComplete();
             }
+        }
+    }
+
+    private void notifyPlacementComplete() {
+        lastActionTimestampMs = System.currentTimeMillis();
+        if (this.onPlacementComplete != null) {
+            this.onPlacementComplete.run();
         }
     }
 
     // === MOTEUR DE VALIDATION MIS À JOUR ===
     public boolean canPlace(int startX, int startY, Building b) {
-
-        if (b instanceof BarnBuilding && world.hasBarn()) {
-            return false;
-        }
-
         for (int dx = 0; dx < b.getWidth(); dx++) {
             for (int dy = 0; dy < b.getHeight(); dy++) {
                 int checkX = startX + dx;

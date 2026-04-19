@@ -198,8 +198,8 @@ public class Global extends JPanel {
                     Color border = new Color(200, 0, 0);
                     for (int dx = 0; dx < b.getWidth(); dx++) {
                         for (int dy = 0; dy < b.getHeight(); dy++) {
-                            int relX = (gx + dx) - fstTileX;
-                            int relY = (gy + dy) - fstTileY;
+                            int relX = (b.getX() + dx) - fstTileX;
+                            int relY = (b.getY() + dy) - fstTileY;
                             if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                                 int px = (relX * Display.RATIO_X) - pixelDiffX;
                                 int py = (relY * Display.RATIO_Y) - pixelDiffY;
@@ -246,12 +246,12 @@ public class Global extends JPanel {
                     int hx = (relX * Display.RATIO_X) - pixelDiffX;
                     int hy = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                    // Remplissage bleu semi-transparent
-                    g2.setColor(new Color(0, 150, 255, 100));
+                    // Remplissage marron semi-transparent
+                    g2.setColor(new Color(110, 45, 15, 100));
                     g2.fillRect(hx, hy, Display.RATIO_X, Display.RATIO_Y);
 
-                    // Bordure bleue opaque
-                    g2.setColor(new Color(0, 100, 255));
+                    // Bordure marron foncé opaque
+                    g2.setColor(new Color(110, 45, 15));
                     g2.drawRect(hx + 1, hy + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
                 }
             }
@@ -582,3 +582,4 @@ public class Global extends JPanel {
         }
     }
 }
+
