@@ -187,6 +187,7 @@ public class LevelUpPopup {
                 list.add(new UnlockEntry(b.name(), b.iconPath()));
             }
         }
+
         return list;
     }
 
@@ -210,7 +211,11 @@ public class LevelUpPopup {
         new BuildingEntry("Boite aux lettres","src/assets/Buildings/mailbox1.png",   4),
         new BuildingEntry("Porte (Face)",     "src/assets/Obstacles/fence_face.png", 4),
         new BuildingEntry("Porte (Côté)",     "src/assets/Obstacles/fence_side.png", 4),
-        new BuildingEntry("Linge",            "src/assets/Buildings/linge.png",      5)
+        new BuildingEntry("Linge",            "src/assets/Buildings/linge.png",      5),
+        new BuildingEntry("Enseigne carrote",  "src/assets/Buildings/carrotsign.png",   2),
+        new BuildingEntry("Enseigne fraise",  "src/assets/Buildings/strawberrysign.png",   4),
+        new BuildingEntry("Enseigne choux",  "src/assets/Buildings/chouxsign.png",  2),
+        new BuildingEntry("Enseigne citrouille",  "src/assets/Buildings/pumpkinsign.png",  3)
     );
 
     public record UnlockEntry(String name, String iconPath) {}

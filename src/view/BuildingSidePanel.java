@@ -19,6 +19,7 @@ public class BuildingSidePanel extends JPanel {
     private final JPanel itemsPanel;
     private JScrollPane scrollPane; // champ pour pouvoir revalider depuis showCategory
     private Runnable onClose;
+    private String currentCategory = "Bâtiments";
 
     public BuildingSidePanel(BuildingManager manager, Display display, World world, Runnable onClose) {
         this.manager = manager;
@@ -100,18 +101,34 @@ public class BuildingSidePanel extends JPanel {
         return b;
     }
 
+    public void refresh() {
+        // SwingUtilities assure que l'UI se met à jour sans lag ni glitch
+        SwingUtilities.invokeLater(() -> {
+            if (currentCategory != null) {
+                showCategory(currentCategory);
+            }
+            // On force le panneau entier à recalculer ses dimensions et à se repeindre
+            this.revalidate();
+            this.repaint();
+        });
+    }
+
     private void showCategory(String category) {
+        this.currentCategory = category;
         itemsPanel.removeAll();
         List<Entry> list = getEntriesFor(category);
         for (Entry e : list) {
             itemsPanel.add(createCard(e));
             itemsPanel.add(Box.createVerticalStrut(10));
         }
+
+        // On force la mise à jour en cascade
         itemsPanel.revalidate();
         itemsPanel.repaint();
-        // Revalide aussi le scroll pour éviter le bug "items qui disparaissent au 2e clic"
+
         if (scrollPane != null) {
             scrollPane.revalidate();
+            scrollPane.getViewport().revalidate(); // On force le rafraîchissement de la vue interne
             scrollPane.repaint();
         }
     }
@@ -128,10 +145,27 @@ public class BuildingSidePanel extends JPanel {
         }
     }
 
+    private int countBuiltInstances(Entry e) {
+        int count = 0;
+        // Vérifiez que getBuildings() correspond bien à la méthode de votre classe World
+        if (world.getBuildings() != null) {
+            for (Building b : world.getBuildings()) {
+                if (b.getClass().equals(e.creator.get().getClass())) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+
     private JComponent createCard(Entry e) {
         int currentLevel = world.getStats().getLevel();
         boolean locked = e.levelRequirement > currentLevel;
         boolean isNew  = e.levelRequirement == currentLevel;
+
+        int builtCount = countBuiltInstances(e);
+        String countText = (e.maxCount != -1) ? " (" + builtCount + "/" + e.maxCount + ")" : " (" + builtCount + ")";
 
         JPanel card = new JPanel(new BorderLayout(10, 10));
         card.setMaximumSize(new Dimension(350, 80));
@@ -171,7 +205,7 @@ public class BuildingSidePanel extends JPanel {
         // Infos au centre
         JPanel info = new JPanel(new GridLayout(2, 1));
         info.setOpaque(false);
-        JLabel title = new JLabel(locked ? "???" : e.title);
+        JLabel title = new JLabel(locked ? "???" : e.title + countText);
         title.setForeground(PopupPanel.SDV_TEXT);
         title.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 14f) : new Font("Arial", Font.BOLD, 14));
         JLabel sub = new JLabel(locked ? "Niveau " + e.levelRequirement : e.price + " PO");
@@ -191,7 +225,14 @@ public class BuildingSidePanel extends JPanel {
             place.setEnabled(false);
             place.setBackground(new Color(150, 145, 140));
             place.setForeground(new Color(100, 95, 90));
+        } else if (e.maxCount != -1 && builtCount >= e.maxCount) {
+            // Le bâtiment est débloqué mais la limite est atteinte
+            place.setEnabled(false);
+            place.setText("Max atteint");
+            place.setBackground(new Color(150, 145, 140));
+            place.setForeground(new Color(100, 95, 90));
         } else {
+            // Comportement normal
             Color selLight = new Color(160, 100, 60);
             Color selDark  = new Color(80, 40, 10);
             place.setBackground(selLight);
@@ -201,7 +242,7 @@ public class BuildingSidePanel extends JPanel {
                 public void mouseExited (java.awt.event.MouseEvent evt) { place.setBackground(selLight); }
             });
             place.addActionListener(a -> {
-                manager.startPlacement(e.creator.get());
+                manager.startPlacement(e.creator.get(), () -> this.refresh());
                 display.getGlobalView().requestFocusInWindow();
             });
         }
@@ -236,20 +277,27 @@ public class BuildingSidePanel extends JPanel {
         List<Entry> out = new ArrayList<>();
         switch (category) {
             case "Bâtiments":
-                out.add(new Entry("Linge",            "src/assets/Buildings/linge.png",    () -> new Linge(),    120, 5));
-                out.add(new Entry("Boîte aux lettres","src/assets/Buildings/mailbox1.png",  () -> new Mailbox1(),  50, 4));
-                out.add(new Entry("Puits",            "src/assets/Buildings/well.png",      () -> new Well(),      80, 3));
-                out.add(new Entry("Grande enseigne",  "src/assets/Buildings/bigsign.png",   () -> new Bigsign(),   40, 3));
+                out.add(new Entry("Grange", "src/assets/Buildings/barn.png", () -> new BarnBuilding(), 0, 1, 1));
+                out.add(new Entry("Puits",            "src/assets/Buildings/well.png",      () -> new Well(),      40, 3, 2));
+                out.add(new Entry("Boîte aux lettres","src/assets/Buildings/mailbox1.png",  () -> new Mailbox1(),  30, 4, 1));
+                out.add(new Entry("Linge",            "src/assets/Buildings/linge.png",    () -> new Linge(),    50, 5,2));
+
                 break;
             case "Décoration":
-                out.add(new Entry("Poteau",    "src/assets/Buildings/poto.png",    () -> new Poto(),    30, 2));
-                out.add(new Entry("Tonneau 1", "src/assets/Buildings/barrel1.png", () -> new Barrel1(), 20, 1));
-                out.add(new Entry("Tonneau 2", "src/assets/Buildings/barrel2.png", () -> new Barrel2(), 20, 1));
+
+                out.add(new Entry("Tonneau 1", "src/assets/Buildings/barrel1.png", () -> new Barrel1(), 10, 1,30));
+                out.add(new Entry("Tonneau 2", "src/assets/Buildings/barrel2.png", () -> new Barrel2(), 10, 1,30));
+                out.add(new Entry("Enseigne carrote",  "src/assets/Buildings/carrotsign.png",   () -> new carrotsign(),   10, 2,3));
+                out.add(new Entry("Poteau",    "src/assets/Buildings/poto.png",    () -> new Poto(),    20, 2,30));
+                out.add(new Entry("Enseigne choux",  "src/assets/Buildings/chouxsign.png",   () -> new chouxsign(),   10, 2,3));
+                out.add(new Entry("Grande enseigne",  "src/assets/Buildings/bigsign.png",   () -> new Bigsign(),   20, 3,3));
+                out.add(new Entry("Enseigne citrouille",  "src/assets/Buildings/pumpkinsign.png",   () -> new pumpkinsign(),   10, 3,3));
+                out.add(new Entry("Enseigne fraise",  "src/assets/Buildings/strawberrysign.png",   () -> new strawberrysign(),   10, 4,3));
                 break;
             case "Nature":
-                out.add(new Entry("Arbre 1", "src/assets/Buildings/tree1.png", () -> new Tree1(), 25, 1));
-                out.add(new Entry("Arbre 2", "src/assets/Buildings/tree2.png", () -> new Tree2(), 35, 3));
-                out.add(new Entry("Rocher",  "src/assets/Buildings/rock1.png", () -> new Rock1(), 15, 1));
+                out.add(new Entry("Rocher",  "src/assets/Buildings/rock1.png", () -> new Rock1(), 10, 1,30));
+                out.add(new Entry("Arbre 1", "src/assets/Buildings/tree1.png", () -> new Tree1(), 10, 2,30));
+                out.add(new Entry("Arbre 2", "src/assets/Buildings/tree2.png", () -> new Tree2(), 25, 3,15));
                 break;
             case "Chemin":
                 out.add(new Entry("Barrière (Face)", "src/assets/Obstacles/fence_face.png", () -> new FenceFace(), 10, 1));
@@ -264,10 +312,13 @@ public class BuildingSidePanel extends JPanel {
     private static class Entry {
         final String title, iconPath;
         final Supplier<Building> creator;
-        final int price;
-        final int levelRequirement;
+        final int price, levelRequirement, maxCount;;
         Entry(String t, String i, Supplier<Building> c, int p, int lvl) {
-            this.title = t; this.iconPath = i; this.creator = c; this.price = p; this.levelRequirement = lvl;
+            this.title = t; this.iconPath = i; this.creator = c; this.price = p; this.levelRequirement = lvl; maxCount = -1;;
+        }
+
+        Entry(String t, String i, Supplier<Building> c, int p, int lvl, int maxCount) {
+            this.title = t; this.iconPath = i; this.creator = c; this.price = p; this.levelRequirement = lvl; this.maxCount = maxCount;
         }
     }
 

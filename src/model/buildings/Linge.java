@@ -7,7 +7,7 @@ public class Linge extends Building {
 
     public Linge() {
         super(2, 1, true, PlacementRule.NORMAL_ONLY, new ImageIcon("src/assets/Buildings/linge.png"));
-        this.buyPrice = 120;
+        this.buyPrice = 50;
     }
 
     @Override

@@ -2,6 +2,7 @@ package src.model;
 
 import src.model.buildings.Building;
 import src.model.buildings.Obstacle;
+import src.model.buildings.BarnBuilding;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -24,10 +25,6 @@ public class World {
     private Gardener testGardener;  // seulement pour tester
     private ArrayList<Gardener> gardeners = new ArrayList<>();
     private Barn barn;
-
-    // Coordonnées de la grange (Option A : position fixe au démarrage)
-    private int barnX = 55;
-    private int barnY = 55;
 
 
     private Stats stats;
@@ -107,12 +104,10 @@ public class World {
      * Initialise les statistiques du monde
      */
     private void initalizeStats() {
-        stats = new Stats(100); // Commence avec 100 pièces d'argent
+        stats = new Stats(10000); // Commence avec 100 pièces d'argent
     }
 
-    /**
-     * Initialise les cases du monde avec l'herbe choisie.
-     */
+    /** Initialise les cases du monde, en créant une zone de sécurité autour du point (55, 55) et en générant aléatoirement des obstacles sur le reste du terrain. */
     private void initializeTiles() {
         loadObstacleSprites();
         this.tiles = new Tile[HEIGHT][WIDTH];
@@ -121,8 +116,8 @@ public class World {
             for (int y = 0; y < HEIGHT; y++) {
 
                 // --- ZONE DE SÉCURITÉ ---
-                // On ne met pas d'obstacle sur la grange ou le jardinier au démarrage
-                if ((x >= barnX - 2 && x <= barnX + 2 && y >= barnY - 2 && y <= barnY + 2) ||
+                // On garde une zone de sécurité fixe (autour de 55, 55) pour le démarrage
+                if ((x >= 55 - 2 && x <= 55 + 2 && y >= 55 - 2 && y <= 55 + 2) ||
                         (x == WIDTH/2 && y == HEIGHT/2)) {
                     tiles[y][x] = new Tile(x, y, grassSprite);
                     continue;
@@ -151,16 +146,6 @@ public class World {
             }
         }
 
-
-        // Marquer la tuile de la grange avec un sprite chest et la rendre non franchissable
-        try {
-            ImageIcon chest = new ImageIcon("src/assets/chest.png");
-            this.tiles[barnY][barnX].setSprite(chest);
-            this.tiles[barnY][barnX].setWalkable(false);
-            this.tiles[barnY][barnX].setPlowable(false);
-        } catch (Exception e) {
-            System.err.println("Warning: impossible de charger src/assets/chest.png: " + e.getMessage());
-        }
 
         computeParcels();
     }
@@ -230,17 +215,37 @@ public class World {
         return this.barn;
     }
 
-    /** Retourne la coordonnée X de la grange */
-    public int getBarnX() { return barnX; }
-    /** Retourne la coordonnée Y de la grange */
-    public int getBarnY() { return barnY; }
+    /** Vérifie si une grange est déjà posée sur la carte */
+    public boolean hasBarn() {
+        return buildings.stream().anyMatch(b -> b instanceof BarnBuilding);
+    }
+
+    public int getBarnX() {
+        for (Building b : buildings) {
+            if (b instanceof BarnBuilding) {
+                return b.getX();
+            }
+        }
+        return 55; // Fallback de sécurité si la grange a été supprimée
+    }
+
+    public int getBarnY() {
+        for (Building b : buildings) {
+            if (b instanceof BarnBuilding) {
+                return b.getY();
+            }
+        }
+        return 55; // Fallback de sécurité
+    }
+
+    public boolean isBarnAt(int x, int y) {
+        Building b = getBuildingAt(x, y);
+        return b instanceof BarnBuilding;
+    }
 
     /** Retourne la liste des ennemis (poules) présents dans le monde */
     public List<Chicken> getEnemies() { return enemies; }
     private ChickenSpawner chickenSpawner;
-
-    /** Indique si les coordonnées données correspondent à la grange */
-    public boolean isBarnAt(int x, int y) { return x == barnX && y == barnY; }
 
     public void toPlantTile(int x, int y) {
         ArrayList<Entity> entities = this.tiles[y][x].getEntities();
@@ -421,27 +426,15 @@ public class World {
         return buildings;
     }
 
-    /** Supprime un bâtiment du monde et restaure l'état des tuiles sous-jacentes (par défaut marchables et labourables).
-     * Note : implémentation simple — si tu veux des règles plus complexes (ex: retransformer en PlantTile), on peut affiner.
-     */
     public void removeBuilding(Building b) {
-        if (b == null) return;
-        if (!buildings.remove(b)) return;
+        this.buildings.remove(b); // Doit être la même liste que celle utilisée par getBuildings()
 
-        // Remettre les tuiles sous-jacentes en état marchable / labourable par défaut
-        for (int dx = 0; dx < b.getWidth(); dx++) {
-            for (int dy = 0; dy < b.getHeight(); dy++) {
-                int tx = b.getX() + dx;
-                int ty = b.getY() + dy;
-                if (tx >= 0 && tx < WIDTH && ty >= 0 && ty < HEIGHT) {
-                    try {
-                        Tile t = getTile(tx, ty);
-                        t.setWalkable(true);
-                        t.setPlowable(true);
-                    } catch (IndexOutOfBoundsException ex) {
-                        // ignore
-                    }
-                }
+        // IMPORTANT : Remettre les cases en mode "marchable"
+        for (int x = b.getX(); x < b.getX() + b.getWidth(); x++) {
+            for (int y = b.getY(); y < b.getY() + b.getHeight(); y++) {
+                Tile t = getTile(x, y);
+                t.setWalkable(true);
+                t.setPlowable(true);
             }
         }
     }

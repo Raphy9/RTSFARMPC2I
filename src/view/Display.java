@@ -38,6 +38,7 @@ public class Display {
     private JButton btnOpenMenu;
     private JPanel controlPanel;
     private EdgeScroller edgeScroller;
+    private BuildingManager buildingManager;
 
     /** Constructeur de la classe Display, qui initialise les différentes vues et contrôleurs, et configure la fenêtre principale du jeu.
      * @param frame la fenêtre principale du jeu, créée dans la classe Main, pour laquelle on va configurer le contenu et les dimensions
@@ -140,9 +141,21 @@ public class Display {
         layeredPane.add(selectionView, JLayeredPane.PALETTE_LAYER);
         selectionView.setVisible(false);
 
-        final BuildingManager buildingManager = new BuildingManager(world, this);
+        this.buildingManager = new BuildingManager(world, this);
+        final BuildingManager buildingManager = this.buildingManager;
         globalView.addMouseListener(buildingManager);
         globalView.addMouseMotionListener(buildingManager);
+
+        BuildingSidePanel sidePanel = new BuildingSidePanel(buildingManager, this, this.world, null);
+        sidePanel.setOnClose(() -> SwingUtilities.invokeLater(() -> {
+            buildingManager.cancelPlacement();
+        }));
+        int panelWidth = 380;
+        sidePanel.setBounds(gameSize.width - panelWidth, 0, panelWidth, gameSize.height);
+        sidePanel.setVisible(false);
+        layeredPane.add(sidePanel, JLayeredPane.PALETTE_LAYER);
+        buildingManager.setOnPlacementComplete(sidePanel::refresh);
+
 
         this.btnOpenMenu = ImageButtonFactory.createImageButton(
                 "src/assets/UI/build_idle.png",
@@ -166,7 +179,10 @@ public class Display {
         );
         btnDeleteIdle.setFocusable(false);
         btnDeleteIdle.setBounds(105, 5, 90, 90);
-        btnDeleteIdle.addActionListener(e -> buildingManager.startDeletionMode());
+        btnDeleteIdle.addActionListener(e -> {
+            buildingManager.setOnPlacementComplete(sidePanel::refresh);
+            buildingManager.startDeletionMode();
+        });
         this.controlPanel.add(btnDeleteIdle);
 
         JButton btnDeleteActive = ImageButtonFactory.createImageButton(
@@ -188,14 +204,7 @@ public class Display {
             globalView.setHotbarVisible(!active);
         });
 
-        BuildingSidePanel sidePanel = new BuildingSidePanel(buildingManager, this, this.world, null);
-        sidePanel.setOnClose(() -> SwingUtilities.invokeLater(() -> {
-            buildingManager.cancelPlacement();
-        }));
-        int panelWidth = 380;
-        sidePanel.setBounds(gameSize.width - panelWidth, 0, panelWidth, gameSize.height);
-        sidePanel.setVisible(false);
-        layeredPane.add(sidePanel, JLayeredPane.PALETTE_LAYER);
+
 
         sidePanel.addHierarchyListener(e -> {
             if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
@@ -326,10 +335,17 @@ public class Display {
         overlayClosed();
     }
 
+
+
+    // Ajoute ce getter s'il n'existe pas
+    public BuildingManager getBuildingManager() {
+        return this.buildingManager;
+    }
+
     public void switchToSelection(Predicate<Tile> selectionCriteria, String message, ActionBuilder builder) {
+
         popupView.hidePopup();
-        selectionView.setMessage(message);
-        selectionController.setSelectionCriteria(selectionCriteria);
+        selectionView.setMessage(message);selectionController.setSelectionCriteria(selectionCriteria);
         selectionController.setActionBuilder(builder);
         globalView.setHotbarVisible(false); // bloque les touches hotbar pendant la sélection
         controlPanel.setVisible(false);     // désactive les boutons build/destroy

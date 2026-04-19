@@ -15,6 +15,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
     private final Display display;
     private final World world;
+    private boolean ignoreNextClick = false;
 
     public GlobalController(Display display, Global globalView, World world) {
         globalView.addMouseListener(this);
@@ -25,6 +26,22 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
     @Override
     public void mouseClicked(MouseEvent e) {
+
+        if (display.getBuildingManager() != null) {
+            // Si on a le bâtiment au bout de la souris, on ignore le clic
+            if (display.getBuildingManager().isPlacing() || display.getBuildingManager().isDeletionMode()) {
+                return;
+            }
+            // Si le manager vient TOUT JUSTE de poser/supprimer un bâtiment (il y a moins de 200ms)
+            if (display.getBuildingManager().hasJustActed()) {
+                return;
+            }
+        }
+
+        if (!display.getGlobalView().isHotbarVisible()) {
+            return;
+        }
+
         // --- Détection du clic sur la hotbar ---
         if (display.getGlobalView().isHotbarVisible() &&
                 world.getGardeners() != null && !world.getGardeners().isEmpty()) {
@@ -62,7 +79,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
         Tile tile = world.getTile(coords.x, coords.y);
 
-        // 0. Si on clique sur la grange -> Ouvrir PopupBarn
+        // 0. Si on clique sur la grange Ouvrir PopupBarn
         if (world.isBarnAt(coords.x, coords.y)) {
             System.out.println("Clic sur la grange -> Ouverture PopupBarn");
             display.switchToPopup(new src.view.PopupBarn(display, world));

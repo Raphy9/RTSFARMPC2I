@@ -7,7 +7,7 @@ public class Tree1 extends Building {
 
     public Tree1() {
         super(1, 1, false, PlacementRule.NORMAL_ONLY,  new ImageIcon("src/assets/Buildings/tree1.png"));
-        this.buyPrice = 25;
+        this.buyPrice = 10;
     }
 
     @Override

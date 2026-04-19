@@ -7,7 +7,7 @@ public class Well extends Building {
 
     public Well() {
         super(1, 1, false, PlacementRule.NORMAL_ONLY,  new ImageIcon("src/assets/Buildings/well.png"));
-        this.buyPrice = 80;
+        this.buyPrice = 40;
     }
 
     @Override

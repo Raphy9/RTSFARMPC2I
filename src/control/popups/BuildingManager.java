@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
+import src.model.buildings.BarnBuilding;
 
 public class BuildingManager extends MouseAdapter {
     private World world;
@@ -35,10 +36,34 @@ public class BuildingManager extends MouseAdapter {
         this.display = display;
     }
 
-    // Active le mode construction
+    // Dans BuildingManager.java
+    private long lastActionTime = 0; // Chronomètre
+    private Runnable onPlacementComplete = null;
+
+    // Nouvelle méthode pour le GlobalController
+    public boolean hasJustActed() {
+        // Renvoie true si le manager a agi il y a moins de 200 millisecondes
+        return (System.currentTimeMillis() - lastActionTime) < 200;
+    }
+
     public void startPlacement(Building buildingTemplate) {
+        // Appelle la nouvelle méthode en lui disant qu'il n'y a pas d'action de fin (null)
+        startPlacement(buildingTemplate, null);
+    }
+
+    // Active le mode construction
+    public void startPlacement(Building buildingTemplate, Runnable callback) {
         this.ghostBuilding = buildingTemplate;
-        display.getGlobalView().setGhostBuilding(this); // On informe la vue
+        this.onPlacementComplete = callback; // On sauvegarde l'action
+        display.getGlobalView().setGhostBuilding(this);
+    }
+    // Dans BuildingManager.java
+    public boolean isPlacing() {
+        return ghostBuilding != null;
+    }
+
+    public void setOnPlacementComplete(Runnable callback) {
+        this.onPlacementComplete = callback;
     }
 
     // Annule le mode construction
@@ -95,6 +120,10 @@ public class BuildingManager extends MouseAdapter {
                 if (GameDialog.showConfirm(display.getGlobalView(), "Confirmer suppression", msg)) {
                     if (sell > 0) world.getStats().addMoney(sell);
                     world.removeBuilding(toRemove);
+                    this.lastActionTime = System.currentTimeMillis();
+                    if (onPlacementComplete != null) {
+                        onPlacementComplete.run();
+                    }
                     display.getGlobalView().repaint();
                     System.out.println("Bâtiment supprimé -> +" + sell + " PO | Solde : " + world.getStats().getMoney());
                 }
@@ -128,6 +157,11 @@ public class BuildingManager extends MouseAdapter {
 
                 ghostBuilding.setPosition(ghostX, ghostY);
                 world.addBuilding(ghostBuilding);
+                this.lastActionTime = System.currentTimeMillis();
+
+                if (onPlacementComplete != null) {
+                    onPlacementComplete.run();
+                }
 
                 if (cost > 0) {
                     world.getStats().removeMoney(cost);
@@ -148,6 +182,11 @@ public class BuildingManager extends MouseAdapter {
 
     // === MOTEUR DE VALIDATION MIS À JOUR ===
     public boolean canPlace(int startX, int startY, Building b) {
+
+        if (b instanceof BarnBuilding && world.hasBarn()) {
+            return false;
+        }
+
         for (int dx = 0; dx < b.getWidth(); dx++) {
             for (int dy = 0; dy < b.getHeight(); dy++) {
                 int checkX = startX + dx;
