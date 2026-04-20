@@ -102,4 +102,15 @@ class CasePlantableTest {
 
         assertTrue(tuile.harvest() > 0);
     }
+
+    @Test
+    void testCaseBloqueeParBatimentNePeutPasPlanter() {
+        tuile.setPlantingBlocked(true);
+
+        assertFalse(tuile.isFarmable(), "Une case plantable occupée par un bâtiment ne doit plus être farmable");
+        assertFalse(tuile.plant(PlantType.CAROTTE), "La plantation doit être refusée si la case est bloquée");
+
+        tuile.setPlantingBlocked(false);
+        assertTrue(tuile.plant(PlantType.CAROTTE), "La plantation doit redevenir possible après retrait du bâtiment");
+    }
 }

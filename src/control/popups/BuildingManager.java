@@ -35,6 +35,7 @@ public class BuildingManager extends MouseAdapter {
     private int lastPlacedY = Integer.MIN_VALUE;
     private boolean deletionDragActive = false;
     private final Set<Building> pendingDeletionBuildings = new LinkedHashSet<>();
+    private int placementMaxCount = -1;
 
     public void setDeletionModeListener(Consumer<Boolean> listener) {
         this.deletionModeListener = listener;
@@ -56,16 +57,22 @@ public class BuildingManager extends MouseAdapter {
 
     // Active le mode construction
     public void startPlacement(Building buildingTemplate) {
-        this.ghostBuilding = buildingTemplate;
-        this.lastPlacedX = Integer.MIN_VALUE;
-        this.lastPlacedY = Integer.MIN_VALUE;
-        display.getGlobalView().setGhostBuilding(this); // On informe la vue
+        startPlacement(buildingTemplate, -1, null);
     }
 
     // Active le mode construction et mémorise un callback de refresh UI
     public void startPlacement(Building buildingTemplate, Runnable onComplete) {
+        startPlacement(buildingTemplate, -1, onComplete);
+    }
+
+    // Active le mode construction avec une limite de quantité maximale pour ce type de bâtiment
+    public void startPlacement(Building buildingTemplate, int maxCount, Runnable onComplete) {
+        this.placementMaxCount = maxCount;
         this.onPlacementComplete = onComplete;
-        startPlacement(buildingTemplate);
+        this.ghostBuilding = buildingTemplate;
+        this.lastPlacedX = Integer.MIN_VALUE;
+        this.lastPlacedY = Integer.MIN_VALUE;
+        display.getGlobalView().setGhostBuilding(this); // On informe la vue
     }
 
     public void setOnPlacementComplete(Runnable onPlacementComplete) {
@@ -179,6 +186,16 @@ public class BuildingManager extends MouseAdapter {
     private void tryPlaceCurrentGhost() {
         if (ghostBuilding == null) return;
         if (ghostX == lastPlacedX && ghostY == lastPlacedY) return;
+
+        if (placementMaxCount != -1 && countPlacedInstances(ghostBuilding.getClass()) >= placementMaxCount) {
+            leftMousePressed = false;
+            GameDialog.showMessage(display.getGlobalView(),
+                    "Limite atteinte",
+                    "Vous avez déjà construit le nombre maximum de ce bâtiment.");
+            cancelPlacement();
+            return;
+        }
+
         if (!canPlace(ghostX, ghostY, ghostBuilding)) return;
 
         int cost = ghostBuilding.getBuyPrice();
@@ -209,6 +226,9 @@ public class BuildingManager extends MouseAdapter {
                 Tile tileUnder = world.getTile(ghostX + dx, ghostY + dy);
                 tileUnder.setPlowable(false);
                 if (!placedBuilding.isPassable()) tileUnder.setWalkable(false);
+                if (tileUnder instanceof PlantTile) {
+                    ((PlantTile) tileUnder).setPlantingBlocked(true);
+                }
             }
         }
 
@@ -216,6 +236,16 @@ public class BuildingManager extends MouseAdapter {
         lastPlacedY = ghostY;
         display.getGlobalView().repaint();
         notifyPlacementComplete();
+    }
+
+    private int countPlacedInstances(Class<?> buildingClass) {
+        int count = 0;
+        for (Building b : world.getBuildings()) {
+            if (b != null && b.getClass().equals(buildingClass)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private Building createBuildingLikeGhost() {
@@ -301,6 +331,12 @@ public class BuildingManager extends MouseAdapter {
                 }
                 if (b.getPlacementRule() == Building.PlacementRule.PLANTABLE_ONLY && !isPlantTile) {
                     return false; // On refuse de poser sur de l'herbe normale
+                }
+                if (b.getPlacementRule() == Building.PlacementRule.PLANTABLE_ONLY && isPlantTile) {
+                    PlantTile pt = (PlantTile) t;
+                    if (pt.getPlant() != null) {
+                        return false; // Evite de recouvrir une plante existante
+                    }
                 }
 
                 // (Optionnel) Refuser si le jardinier est exactement sur cette case

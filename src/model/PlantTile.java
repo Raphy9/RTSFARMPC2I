@@ -2,7 +2,6 @@ package src.model;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -15,6 +14,7 @@ public class PlantTile extends Tile {
     private static final ImageIcon WET_SPRITE = new ImageIcon("src/assets/parcel_wet.jpg");
     // --- Attributs spécifiques à l'agriculture ---
     private Plant plant;// La plante (null si vide)
+    private boolean plantingBlocked = false;
 
     // La parcelle à laquelle cette case appartient
     private Parcel parcel = new Parcel(new ArrayList<>(List.of(this))); // Init avec une parcelle singleton
@@ -40,7 +40,7 @@ public class PlantTile extends Tile {
     @Override
     public boolean isFarmable() {
         // On peut planter SEULEMENT s'il n'y a pas déjà une plante
-        return this.plant == null;
+        return this.plant == null && !this.plantingBlocked;
     }
 
     /**
@@ -88,7 +88,7 @@ public class PlantTile extends Tile {
      * @return true si la plantation a réussi, false si la case est déjà occupée
      */
     public boolean plant(PlantType type) {
-        if (this.plant != null) {
+        if (this.plant != null || this.plantingBlocked) {
             return false;
         }
         this.plant = new Plant(type);
@@ -158,5 +158,14 @@ public class PlantTile extends Tile {
 
     public Plant getPlant() {
         return plant;
+    }
+
+    /** Bloque/débloque la possibilité de planter sur cette case (ex: bâtiment posé dessus). */
+    public void setPlantingBlocked(boolean plantingBlocked) {
+        this.plantingBlocked = plantingBlocked;
+    }
+
+    public boolean isPlantingBlocked() {
+        return plantingBlocked;
     }
 }

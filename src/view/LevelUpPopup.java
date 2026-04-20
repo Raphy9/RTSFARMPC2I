@@ -208,6 +208,7 @@ public class LevelUpPopup {
         new BuildingEntry("Arbre 2",          "src/assets/Buildings/tree2.png",      3),
         new BuildingEntry("Grande enseigne",  "src/assets/Buildings/bigsign.png",    3),
         new BuildingEntry("Puits",            "src/assets/Buildings/well.png",       3),
+        new BuildingEntry("Arroseur auto",    "src/assets/arroseur.png",             3),
         new BuildingEntry("Boite aux lettres","src/assets/Buildings/mailbox1.png",   4),
         new BuildingEntry("Porte (Face)",     "src/assets/Obstacles/fence_face.png", 4),
         new BuildingEntry("Porte (Côté)",     "src/assets/Obstacles/fence_side.png", 4),

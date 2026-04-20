@@ -242,7 +242,7 @@ public class BuildingSidePanel extends JPanel {
                 public void mouseExited (java.awt.event.MouseEvent evt) { place.setBackground(selLight); }
             });
             place.addActionListener(a -> {
-                manager.startPlacement(e.creator.get(), () -> this.refresh());
+                manager.startPlacement(e.creator.get(), e.maxCount, () -> this.refresh());
                 display.getGlobalView().requestFocusInWindow();
             });
         }
@@ -279,6 +279,7 @@ public class BuildingSidePanel extends JPanel {
             case "Bâtiments":
                 out.add(new Entry("Grange", "src/assets/Buildings/barn.png", () -> new BarnBuilding(), 0, 1, 1));
                 out.add(new Entry("Puits",            "src/assets/Buildings/well.png",      () -> new Well(),      40, 3, 2));
+                out.add(new Entry("Arroseur auto",    "src/assets/arroseur.png",            () -> new Arroseur(), 120, 3));
                 out.add(new Entry("Boîte aux lettres","src/assets/Buildings/mailbox1.png",  () -> new Mailbox1(),  30, 4, 1));
                 out.add(new Entry("Linge",            "src/assets/Buildings/linge.png",    () -> new Linge(),    50, 5,2));
 

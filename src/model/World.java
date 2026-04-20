@@ -292,6 +292,10 @@ public class World {
      * Fait avancer le temps d'un cycle dans tout le jeu.
      */
     public void tick() {
+        for (Building building : buildings) {
+            building.applyEffect(this);
+        }
+
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
                 if (this.tiles[y][x] != null) {
@@ -435,6 +439,9 @@ public class World {
                 Tile t = getTile(x, y);
                 t.setWalkable(true);
                 t.setPlowable(true);
+                if (t instanceof PlantTile) {
+                    ((PlantTile) t).setPlantingBlocked(false);
+                }
             }
         }
     }
@@ -480,10 +487,10 @@ public class World {
         return count;
     }
 
-    /** Limite dynamique de labour: 10 * niveau du joueur. */
+    /** Limite dynamique de labour: 5 + 5 * niveau du joueur. */
     public int getPlowLimit() {
         int level = (stats != null) ? stats.getLevel() : 1;
-        return 10 * Math.max(1, level);
+        return 5 + 5 * Math.max(1, level);
     }
 
     /** Vérifie si on peut encore ajouter additionalTiles cases labourées. */

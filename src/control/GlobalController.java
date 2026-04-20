@@ -87,17 +87,24 @@ public class GlobalController implements MouseListener, MouseMotionListener{
         }
 
         // 1. Si on clique sur une entité (Poule ou Jardinier)
+        src.model.Chicken chickenToClick = null;
+        src.model.Gardener gardenerToClick = null;
         for (src.model.Entity entity : tile.getEntities()) {
-            if (entity instanceof src.model.Chicken) {
-                src.model.Chicken chicken = (src.model.Chicken) entity;
-                chicken.flee();
-                return;
+            if (chickenToClick == null && entity instanceof src.model.Chicken) {
+                chickenToClick = (src.model.Chicken) entity;
+            } else if (gardenerToClick == null && entity instanceof src.model.Gardener) {
+                gardenerToClick = (src.model.Gardener) entity;
             }
-            if (entity instanceof src.model.Gardener) {
-                System.out.println("Clic sur le jardinier -> Ouverture du menu");
-                display.switchToPopup(new src.view.ActionsPopup(display, world, (src.model.Gardener) entity));
-                return;
-            }
+        }
+
+        if (chickenToClick != null) {
+            chickenToClick.flee();
+            return;
+        }
+        if (gardenerToClick != null) {
+            System.out.println("Clic sur le jardinier -> Ouverture du menu");
+            display.switchToPopup(new src.view.ActionsPopup(display, world, gardenerToClick));
+            return;
         }
 
         // Le clic sur le monde sans entité ne déclenche plus d'action automatiquement.
