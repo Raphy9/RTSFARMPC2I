@@ -33,7 +33,8 @@ public class Global extends JPanel {
 
     private src.control.popups.BuildingManager ghostManager;
 
-    private final Set<Point> highlights = new HashSet<>();
+    // Compteur de références par case pour éviter qu'un jardinier retire la surbrillance d'un autre.
+    private final Map<Point, Integer> highlights = new HashMap<>();
     private Set<Point> selectedTilesBlueHighlight = new HashSet<Point>();
 
     public void setSelectedTilesBlueHighlight(Set<Point> selectedTiles) {
@@ -61,12 +62,27 @@ public class Global extends JPanel {
     }
 
     public void setHighlight(int wx, int wy) {
-        highlights.add(new Point(wx, wy));
+        synchronized (highlights) {
+            Point p = new Point(wx, wy);
+            int count = highlights.getOrDefault(p, 0);
+            highlights.put(p, count + 1);
+        }
         repaint();
     }
 
     public void clearHighlight(int wx, int wy) {
-        highlights.remove(new Point(wx, wy));
+        synchronized (highlights) {
+            Point p = new Point(wx, wy);
+            Integer count = highlights.get(p);
+            if (count == null) {
+                return;
+            }
+            if (count <= 1) {
+                highlights.remove(p);
+            } else {
+                highlights.put(p, count - 1);
+            }
+        }
         repaint();
     }
 
@@ -84,11 +100,15 @@ public class Global extends JPanel {
     }
 
     public boolean isHighlighted(int wx, int wy) {
-        return highlights.contains(new Point(wx, wy));
+        synchronized (highlights) {
+            return highlights.containsKey(new Point(wx, wy));
+        }
     }
 
     public void clearAllHighlights() {
-        highlights.clear();
+        synchronized (highlights) {
+            highlights.clear();
+        }
         repaint();
     }
 
@@ -272,8 +292,12 @@ public class Global extends JPanel {
         }
 
         // Dessiner ENSUITE le surlignement JAUNE classique (Cible des actions du jardinier)
-        if (highlights != null && !highlights.isEmpty()) {
-            for (Point p : highlights) {
+        Set<Point> highlightSnapshot;
+        synchronized (highlights) {
+            highlightSnapshot = new HashSet<>(highlights.keySet());
+        }
+        if (!highlightSnapshot.isEmpty()) {
+            for (Point p : highlightSnapshot) {
                 int relX = p.x - fstTileX;
                 int relY = p.y - fstTileY;
 

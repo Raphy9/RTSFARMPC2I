@@ -31,7 +31,6 @@ public class PlantActionBuilder extends ActionBuilder {
                     getDisplay().switchToPopup(new src.view.TextPopup(getDisplay(), 350, 150, "Graines insuffisantes",
                             "<div style='text-align: center;'>Il vous manque " + (totalSeedsNeeded - available) + " graine(s) de " + type.getName() + ".<br>Achetez-en à la grange !</div>"));
                 }
-                getDisplay().getGlobalView().clearAllHighlights();
                 return; // Annulation totale
             }
 

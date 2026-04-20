@@ -80,7 +80,7 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
                     if (selectionCriteria.test(pt)) {
                         Point p = new Point(pt.getX(), pt.getY());
                         if (tryAddTarget(p)) {
-                            display.getGlobalView().setHighlight(p.x, p.y);
+                            // Le rendu de sélection passe par l'overlay bleu, pas par le jaune global.
                         }
                     }
                 }
@@ -88,10 +88,8 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
             // Clic simple : toggle (ajoute ou retire)
             else if (builder.getSelectedPoints().contains(targetPoint)) {
                 builder.removeTarget(targetPoint);
-                display.getGlobalView().clearHighlight(targetPoint.x, targetPoint.y);
             } else {
                 if (tryAddTarget(targetPoint)) {
-                    display.getGlobalView().setHighlight(targetPoint.x, targetPoint.y);
                 }
             }
         }
@@ -143,7 +141,6 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
             Tile tile = world.getTile(coords.x, coords.y);
             if (selectionCriteria.test(tile) && !builder.getSelectedPoints().contains(targetPoint)) {
                 if (tryAddTarget(targetPoint)) {
-                    display.getGlobalView().setHighlight(targetPoint.x, targetPoint.y);
                     updateSelectionMessage();
                     display.getSelectionView().setSelectedTilesBlueHighlight(
                             new HashSet<>(builder.getSelectedPoints())
@@ -185,9 +182,6 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
 
         // Annulation avec la touche ÉCHAP
         else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-
-            // Nettoyage du jaune de la vue globale
-            display.getGlobalView().clearAllHighlights();
 
             // Nettoyage de l'écran BLEU de la vue de sélection
             display.getSelectionView().setSelectedTilesBlueHighlight(new HashSet<>());

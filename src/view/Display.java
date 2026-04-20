@@ -315,8 +315,6 @@ public class Display {
         popupView.hidePopup();
         selectionView.setVisible(false);
         globalView.setVisible(true);
-        // Effacer toutes les surbrillances jaunes résiduelles
-        globalView.clearAllHighlights();
         // Désélectionner le slot hotbar
         if (world.getGardeners() != null && !world.getGardeners().isEmpty()) {
             world.getGardeners().get(0).setSelectedHotbarIndex(-1);

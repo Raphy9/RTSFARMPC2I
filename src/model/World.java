@@ -480,10 +480,10 @@ public class World {
         return count;
     }
 
-    /** Limite dynamique de labour: 5 * niveau du joueur. */
+    /** Limite dynamique de labour: 10 * niveau du joueur. */
     public int getPlowLimit() {
         int level = (stats != null) ? stats.getLevel() : 1;
-        return 5 * Math.max(1, level);
+        return 10 * Math.max(1, level);
     }
 
     /** Vérifie si on peut encore ajouter additionalTiles cases labourées. */

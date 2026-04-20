@@ -30,7 +30,7 @@ public class PlowActionBuilder extends ActionBuilder {
         int limit = getPlowLimit();
         int queued = getSelectedPoints().size();
         return "Ajoutez une case à labourer " + current + "/"
-                + limit + " (+5 par niveau) | En attente : " + queued;
+                + limit + " (+10 par niveau) | En attente : " + queued;
     }
 
     @Override
