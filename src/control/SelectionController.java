@@ -182,15 +182,7 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
 
         // Annulation avec la touche ÉCHAP
         else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-
-            // Nettoyage de l'écran BLEU de la vue de sélection
-            display.getSelectionView().setSelectedTilesBlueHighlight(new HashSet<>());
-
-            // On vide la mémoire du builder
-            builder.clearTargets();
-
-            // On ferme le menu
-            display.switchToGlobal();
+            cancelSelection();
         }
     }
 
@@ -228,5 +220,20 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
         if (builder instanceof PlowActionBuilder) {
             display.getSelectionView().setMessage(((PlowActionBuilder) builder).getSelectionMessage());
         }
+    }
+
+    /**
+     * Annule proprement la sélection en cours (utile pour ESC ou switch direct de hotbar).
+     */
+    public void cancelSelection() {
+        display.getSelectionView().setSelectedTilesBlueHighlight(new HashSet<>());
+        if (builder != null) {
+            builder.clearTargets();
+        }
+        dragging = false;
+        movedDuringDrag = false;
+        lastDragPoint = null;
+        plowLimitPopupShown = false;
+        display.switchToGlobal();
     }
 }

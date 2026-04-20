@@ -38,6 +38,11 @@ public class PlantAction extends Action {
      */
     @Override
     public void perform(Gardener gardener, World world) {
+        if (world.hasBuildingAt(plantX, plantY)) {
+            System.out.println("Erreur : Impossible de planter, un bâtiment occupe la case ciblée.");
+            return;
+        }
+
         // On verifie que le jardinier a bien la graine dans son inventaire au moment de planter
         Inventory inv = gardener.getInventory();
         if (inv.findSameItem(new ItemSeed(plantType)) == null) {

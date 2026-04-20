@@ -544,9 +544,11 @@ public class World {
         return count;
     }
 
-    /** Limite globale de labour: 100 cases plantables maximum. */
+    /** Limite de labour : 5 de base + 5 par niveau, plafonné à 100. */
     public int getPlowLimit() {
-        return 100;
+        int level = (stats != null) ? stats.getLevel() : 1;
+        int limit = 5 + 5 * Math.max(1, level);
+        return Math.min(100, limit);
     }
 
     /** Vérifie si on peut encore ajouter additionalTiles cases labourées. */

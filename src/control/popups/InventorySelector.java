@@ -46,7 +46,9 @@ public class InventorySelector implements ActionListener {
             if (itemType == ItemSeed.class) {
                 // On exige que la case soit une PlantTile ET qu'elle soit vide (farmable)
                 display.switchToSelection(
-                        t -> t instanceof PlantTile && t.isFarmable(),
+                        t -> t instanceof PlantTile
+                                && t.isFarmable()
+                                && !display.getWorld().hasBuildingAt(t.getX(), t.getY()),
                         "Selectionner une parcelle",
                         builder
                 );

@@ -35,6 +35,7 @@ public class BuildingManager extends MouseAdapter {
     private int lastPlacedY = Integer.MIN_VALUE;
     private boolean deletionDragActive = false;
     private final Set<Building> pendingDeletionBuildings = new LinkedHashSet<>();
+    private final Set<Point> pendingDeletionPlantTiles = new LinkedHashSet<>();
     private int placementMaxCount = -1;
 
     public void setDeletionModeListener(Consumer<Boolean> listener) {
@@ -48,6 +49,10 @@ public class BuildingManager extends MouseAdapter {
     }
     public Set<Building> getPendingDeletionBuildings() {
         return Collections.unmodifiableSet(pendingDeletionBuildings);
+    }
+
+    public Set<Point> getPendingDeletionPlantTiles() {
+        return Collections.unmodifiableSet(pendingDeletionPlantTiles);
     }
 
     public BuildingManager(World world, Display display) {
@@ -96,6 +101,7 @@ public class BuildingManager extends MouseAdapter {
         this.ghostBuilding = null;
         this.deletionDragActive = false;
         this.pendingDeletionBuildings.clear();
+        this.pendingDeletionPlantTiles.clear();
         // Informer la vue globale pour qu'elle affiche le surlignage rouge
         display.getGlobalView().setGhostBuilding(this);
         display.getGlobalView().repaint();
@@ -107,6 +113,7 @@ public class BuildingManager extends MouseAdapter {
         this.deletionMode = false;
         this.deletionDragActive = false;
         this.pendingDeletionBuildings.clear();
+        this.pendingDeletionPlantTiles.clear();
         display.getGlobalView().repaint();
         if (this.deletionModeListener != null) this.deletionModeListener.accept(false);
         // Retirer la référence pour arrêter le rendu du ghost/highlight
@@ -163,6 +170,7 @@ public class BuildingManager extends MouseAdapter {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 deletionDragActive = true;
                 pendingDeletionBuildings.clear();
+                pendingDeletionPlantTiles.clear();
                 Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
                 ghostX = coords.x;
                 ghostY = coords.y;
@@ -261,12 +269,22 @@ public class BuildingManager extends MouseAdapter {
         Building b = world.getBuildingAt(wx, wy);
         if (b != null && pendingDeletionBuildings.add(b)) {
             display.getGlobalView().repaint();
+            return;
+        }
+
+        Tile t = world.getTile(wx, wy);
+        if (t instanceof PlantTile) {
+            PlantTile pt = (PlantTile) t;
+            // On autorise la suppression de parcelle seulement si elle est vide.
+            if (pt.getPlant() == null && pendingDeletionPlantTiles.add(new Point(wx, wy))) {
+                display.getGlobalView().repaint();
+            }
         }
     }
 
     private void confirmAndApplyDeletionSelection() {
         deletionDragActive = false;
-        if (pendingDeletionBuildings.isEmpty()) {
+        if (pendingDeletionBuildings.isEmpty() && pendingDeletionPlantTiles.isEmpty()) {
             return;
         }
 
@@ -275,11 +293,13 @@ public class BuildingManager extends MouseAdapter {
             totalSell += Math.max(0, b.getSellPrice());
         }
 
-        String msg = "Supprimer " + pendingDeletionBuildings.size() + " bâtiment(s) ?\n"
+        String msg = "Supprimer " + pendingDeletionBuildings.size() + " bâtiment(s)"
+                + " et " + pendingDeletionPlantTiles.size() + " parcelle(s) ?\n"
                 + "Revente totale : " + totalSell + " PO";
         boolean confirmed = GameDialog.showConfirm(display.getGlobalView(), "Confirmer suppression", msg);
         if (!confirmed) {
             pendingDeletionBuildings.clear();
+            pendingDeletionPlantTiles.clear();
             display.getGlobalView().repaint();
             return;
         }
@@ -287,11 +307,15 @@ public class BuildingManager extends MouseAdapter {
         for (Building b : pendingDeletionBuildings) {
             world.removeBuilding(b);
         }
+        for (Point p : pendingDeletionPlantTiles) {
+            world.toNormalTile(p.x, p.y);
+        }
         if (totalSell > 0) {
             world.getStats().addMoney(totalSell);
         }
 
         pendingDeletionBuildings.clear();
+        pendingDeletionPlantTiles.clear();
         display.getGlobalView().repaint();
         notifyPlacementComplete();
         System.out.println("Bâtiments supprimés -> +" + totalSell + " PO | Solde : " + world.getStats().getMoney());

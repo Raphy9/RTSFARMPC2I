@@ -60,6 +60,67 @@ public class GameDialog {
         dialog.setVisible(true);
     }
 
+    /**
+     * Affiche une boîte de saisie stylisée et retourne le texte saisi, ou null si annulé.
+     */
+    public static String showInput(Component parent, String title, String message, String defaultValue) {
+        final String[] result = {null};
+        JDialog dialog = buildDialog(parent, title);
+
+        JPanel center = new JPanel(new BorderLayout(0, 8));
+        center.setOpaque(false);
+        center.add(buildMessage(message), BorderLayout.NORTH);
+
+        JTextField input = new JTextField(defaultValue != null ? defaultValue : "");
+        input.setFont(GameFonts.MINECRAFT_FONT != null
+                ? GameFonts.MINECRAFT_FONT.deriveFont(13f)
+                : new Font("Arial", Font.PLAIN, 13));
+        input.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 2),
+                BorderFactory.createEmptyBorder(6, 8, 6, 8)
+        ));
+        JPanel inputWrap = new JPanel(new BorderLayout());
+        inputWrap.setOpaque(false);
+        inputWrap.setBorder(new EmptyBorder(0, 28, 0, 28));
+        inputWrap.add(input, BorderLayout.CENTER);
+        center.add(inputWrap, BorderLayout.CENTER);
+
+        dialog.add(center, BorderLayout.CENTER);
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 14, 10));
+        buttons.setOpaque(false);
+
+        JButton ok = buildButton("Créer", new Color(80, 140, 70), new Color(50, 100, 45));
+        ok.addActionListener(e -> {
+            String value = input.getText();
+            if (value != null) {
+                value = value.trim();
+            }
+            if (value == null || value.isEmpty()) {
+                return;
+            }
+            result[0] = value;
+            dialog.dispose();
+        });
+
+        JButton cancel = buildButton("Annuler", new Color(180, 60, 50), new Color(130, 40, 30));
+        cancel.addActionListener(e -> dialog.dispose());
+
+        buttons.add(ok);
+        buttons.add(cancel);
+        dialog.add(buttons, BorderLayout.SOUTH);
+
+        // Valider rapidement avec Entrée.
+        dialog.getRootPane().setDefaultButton(ok);
+
+        dialog.pack();
+        dialog.setMinimumSize(new Dimension(430, dialog.getPreferredSize().height));
+        dialog.setLocationRelativeTo(parent);
+        SwingUtilities.invokeLater(input::requestFocusInWindow);
+        dialog.setVisible(true);
+        return result[0];
+    }
+
     // ── Helpers privés ────────────────────────────────────────────────────────
 
     /** Crée le JDialog modal sans décoration avec le fond style SDV. */
