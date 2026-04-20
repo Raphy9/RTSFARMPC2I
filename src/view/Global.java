@@ -260,12 +260,12 @@ public class Global extends JPanel {
                     int hx = (relX * Display.RATIO_X) - pixelDiffX;
                     int hy = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                    // Remplissage marron semi-transparent
-                    g2.setColor(new Color(110, 45, 15, 100));
+                    // Remplissage bleu semi-transparent pour la selection de cases
+                    g2.setColor(new Color(60, 140, 255, 110));
                     g2.fillRect(hx, hy, Display.RATIO_X, Display.RATIO_Y);
 
-                    // Bordure marron foncé opaque
-                    g2.setColor(new Color(110, 45, 15));
+                    // Bordure bleue opaque
+                    g2.setColor(new Color(20, 90, 220));
                     g2.drawRect(hx + 1, hy + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
                 }
             }

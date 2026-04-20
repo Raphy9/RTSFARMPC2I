@@ -12,6 +12,27 @@ public class PlowActionBuilder extends ActionBuilder {
         this.world = world;
     }
 
+    public World getWorld() {
+        return world;
+    }
+
+    public int getPlowLimit() {
+        return world.getPlowLimit();
+    }
+
+    public int getCurrentPlowedTilesCount() {
+        return world.getPlowedTilesCount();
+    }
+
+    /** Message affiché en mode sélection labour. */
+    public String getSelectionMessage() {
+        int current = getCurrentPlowedTilesCount();
+        int limit = getPlowLimit();
+        int queued = getSelectedPoints().size();
+        return "Ajoutez une case à labourer " + current + "/"
+                + limit + " (+5 par niveau) | En attente : " + queued;
+    }
+
     @Override
     public void buildAction() {
 

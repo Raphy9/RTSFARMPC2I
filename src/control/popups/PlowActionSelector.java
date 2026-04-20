@@ -36,6 +36,6 @@ public class PlowActionSelector implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         System.out.println("Lancement du mode de sélection pour labourer");
         // Le critère : La case doit être labourable (pas déjà labourée, pas d'obstacle, etc.)
-        display.switchToSelection(Tile::isPlowable, "Sélectionnez une case à labourer", builder);
+        display.switchToSelection(Tile::isPlowable, builder.getSelectionMessage(), builder);
     }
 }

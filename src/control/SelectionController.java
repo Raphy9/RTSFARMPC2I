@@ -4,7 +4,9 @@ import src.model.PlantTile;
 import src.model.Tile;
 import src.model.World;
 import src.model.actions.ActionBuilder;
+import src.model.actions.PlowActionBuilder;
 import src.view.Display;
+import src.view.GameDialog;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -27,6 +29,7 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
     private boolean movedDuringDrag = false;
     /** Dernière case traitée pendant un drag, pour éviter de retraiter la même case */
     private Point lastDragPoint = null;
+    private boolean plowLimitPopupShown = false;
 
     /** Constructeur du controleur de selection
      * @param display la classe d'affichage
@@ -50,6 +53,7 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
      */
     public void setActionBuilder(ActionBuilder builder) {
         this.builder = builder;
+        updateSelectionMessage();
     }
 
     // -------------------------------------------------------
@@ -75,8 +79,9 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
                 for (PlantTile pt : ((PlantTile) tile).getParcel().getTiles()) {
                     if (selectionCriteria.test(pt)) {
                         Point p = new Point(pt.getX(), pt.getY());
-                        builder.addTarget(p);
-                        display.getGlobalView().setHighlight(p.x, p.y);
+                        if (tryAddTarget(p)) {
+                            display.getGlobalView().setHighlight(p.x, p.y);
+                        }
                     }
                 }
             }
@@ -85,10 +90,12 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
                 builder.removeTarget(targetPoint);
                 display.getGlobalView().clearHighlight(targetPoint.x, targetPoint.y);
             } else {
-                builder.addTarget(targetPoint);
-                display.getGlobalView().setHighlight(targetPoint.x, targetPoint.y);
+                if (tryAddTarget(targetPoint)) {
+                    display.getGlobalView().setHighlight(targetPoint.x, targetPoint.y);
+                }
             }
         }
+        updateSelectionMessage();
         display.getSelectionView().setSelectedTilesBlueHighlight(
                 new HashSet<>(builder.getSelectedPoints())
         );
@@ -100,6 +107,7 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
             dragging = true;
             movedDuringDrag = false;
             lastDragPoint = null;
+            plowLimitPopupShown = false;
         }
     }
 
@@ -107,6 +115,7 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
     public void mouseReleased(MouseEvent e) {
         dragging = false;
         lastDragPoint = null;
+        plowLimitPopupShown = false;
     }
 
     @Override public void mouseEntered(MouseEvent e) {}
@@ -133,11 +142,13 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
         try {
             Tile tile = world.getTile(coords.x, coords.y);
             if (selectionCriteria.test(tile) && !builder.getSelectedPoints().contains(targetPoint)) {
-                builder.addTarget(targetPoint);
-                display.getGlobalView().setHighlight(targetPoint.x, targetPoint.y);
-                display.getSelectionView().setSelectedTilesBlueHighlight(
-                        new HashSet<>(builder.getSelectedPoints())
-                );
+                if (tryAddTarget(targetPoint)) {
+                    display.getGlobalView().setHighlight(targetPoint.x, targetPoint.y);
+                    updateSelectionMessage();
+                    display.getSelectionView().setSelectedTilesBlueHighlight(
+                            new HashSet<>(builder.getSelectedPoints())
+                    );
+                }
             }
         } catch (IndexOutOfBoundsException ex) { /* hors limites, on ignore */ }
     }
@@ -191,4 +202,37 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
 
     @Override
     public void keyReleased(KeyEvent e) {}
+
+    private boolean tryAddTarget(Point targetPoint) {
+        if (builder.getSelectedPoints().contains(targetPoint)) {
+            return false;
+        }
+
+        if (builder instanceof PlowActionBuilder) {
+            PlowActionBuilder plowBuilder = (PlowActionBuilder) builder;
+            int selectedCount = builder.getSelectedPoints().size();
+            if (!plowBuilder.getWorld().canAddPlowedTiles(selectedCount + 1)) {
+                if (!plowLimitPopupShown) {
+                    int current = plowBuilder.getCurrentPlowedTilesCount();
+                    int limit = plowBuilder.getPlowLimit();
+                    GameDialog.showMessage(display.getSelectionView(),
+                            "Limite de labour atteinte",
+                            "Impossible de labourer plus de cases.\n"
+                                    + "Actuel : " + current + " / Limite : " + limit);
+                    plowLimitPopupShown = true;
+                }
+                updateSelectionMessage();
+                return false;
+            }
+        }
+
+        builder.addTarget(targetPoint);
+        return true;
+    }
+
+    private void updateSelectionMessage() {
+        if (builder instanceof PlowActionBuilder) {
+            display.getSelectionView().setMessage(((PlowActionBuilder) builder).getSelectionMessage());
+        }
+    }
 }

@@ -467,6 +467,30 @@ public class World {
         return stats;
     }
 
+    /** Nombre total de cases actuellement labourées (PlantTile). */
+    public int getPlowedTilesCount() {
+        int count = 0;
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                if (tiles[y][x] instanceof PlantTile) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    /** Limite dynamique de labour: 5 * niveau du joueur. */
+    public int getPlowLimit() {
+        int level = (stats != null) ? stats.getLevel() : 1;
+        return 5 * Math.max(1, level);
+    }
+
+    /** Vérifie si on peut encore ajouter additionalTiles cases labourées. */
+    public boolean canAddPlowedTiles(int additionalTiles) {
+        return getPlowedTilesCount() + Math.max(0, additionalTiles) <= getPlowLimit();
+    }
+
     /** Enregistre un callback appelé à chaque montée de niveau, avec le nouveau niveau. */
     public void setLevelUpCallback(java.util.function.IntConsumer callback) {
         stats.setLevelUpCallback(callback);
