@@ -1,7 +1,6 @@
 package src.model.actions;
 
 import src.model.Gardener;
-import src.model.PlantTile;
 import src.model.Tile;
 import src.model.World;
 

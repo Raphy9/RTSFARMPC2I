@@ -79,9 +79,9 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
         Tile tile = world.getTile(coords.x, coords.y);
 
-        // 0. Si on clique sur la grange Ouvrir PopupBarn
-        if (world.isBarnAt(coords.x, coords.y)) {
-            System.out.println("Clic sur la grange -> Ouverture PopupBarn");
+        // 0. Si on clique sur la grange ou une case voisine -> Ouvrir PopupBarn
+        if (world.isBarnAdjacentOrInside(coords.x, coords.y)) {
+            System.out.println("Clic proche de la grange -> Ouverture PopupBarn");
             display.switchToPopup(new src.view.PopupBarn(display, world));
             return;
         }

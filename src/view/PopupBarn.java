@@ -51,6 +51,8 @@ public class PopupBarn extends PopupPanel {
         // Stocker les références
         this.display = display;
         this.world = world;
+        // Sécurité: assure un catalogue minimum visible même après une sauvegarde partielle/corrompue.
+        this.world.ensureBarnCatalog();
         this.barn = world.getBarn();
         
         // Construire l'interface: catégories + grille + description

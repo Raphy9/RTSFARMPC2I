@@ -242,6 +242,20 @@ public class Global extends JPanel {
                 }
             }
 
+            for (Point selectedTile : ghostManager.getPendingDeletionPlantTiles()) {
+                int relX = selectedTile.x - fstTileX;
+                int relY = selectedTile.y - fstTileY;
+                if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                    int px = (relX * Display.RATIO_X) - pixelDiffX;
+                    int py = (relY * Display.RATIO_Y) - pixelDiffY;
+                    g4.setColor(new Color(255, 0, 0, 110));
+                    g4.fillRect(px, py, Display.RATIO_X, Display.RATIO_Y);
+                    g4.setColor(new Color(210, 20, 20));
+                    g4.drawRect(px + 1, py + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
+                }
+            }
+
+
             int gx = ghostManager.getGhostX();
             int gy = ghostManager.getGhostY();
             src.model.buildings.Building hovered = world.getBuildingAt(gx, gy);

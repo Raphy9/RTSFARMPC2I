@@ -51,6 +51,18 @@ public class Stats {
         return level;
     }
 
+    public void setMoney(int m) {
+        this.money = m;
+    }
+
+    public void setLevel(int lvl) {
+        this.level = lvl;
+    }
+
+    public void setExp(int e) {
+        this.exp = e;
+    }
+
     /** XP nécessaire pour passer au niveau suivant (toujours 100 dans ce système simple) */
     public int getExpForNextLevel() {
         return 100;

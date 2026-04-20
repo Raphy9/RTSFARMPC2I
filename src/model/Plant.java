@@ -219,6 +219,18 @@ public class Plant {
         return currentWaterLevel;
     }
 
+    public int getAge() {
+        return age;
+    }
+
+    public int getTicksWithoutWater() {
+        return ticksWithoutWater;
+    }
+
+    public boolean hasFertilizer() {
+        return hasFertilizer;
+    }
+
     // Pour debug ou barre de vie
     public float getGrowthPercentage() {
         return Math.min((float) age / type.getGrowthDuration(), 1.0f);
@@ -234,5 +246,17 @@ public class Plant {
             this.state = PlantState.EATEN;
             updateSprite(); // Change l'image pour afficher la souche grignotée
         }
+    }
+
+    /**
+     * Restaure un état complet de plante depuis une sauvegarde.
+     */
+    public void restoreState(int age, float waterLevel, int ticksWithoutWater, boolean hasFertilizer, PlantState state) {
+        this.age = Math.max(0, age);
+        this.currentWaterLevel = Math.max(0.0f, Math.min(MAX_WATER_LEVEL, waterLevel));
+        this.ticksWithoutWater = Math.max(0, ticksWithoutWater);
+        this.hasFertilizer = hasFertilizer;
+        this.state = (state != null) ? state : PlantState.GRAINE;
+        updateSprite();
     }
 }

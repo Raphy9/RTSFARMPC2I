@@ -39,6 +39,7 @@ public class Display {
     private JPanel controlPanel;
     private EdgeScroller edgeScroller;
     private BuildingManager buildingManager;
+    private String currentSaveName = null;
 
     /** Constructeur de la classe Display, qui initialise les différentes vues et contrôleurs, et configure la fenêtre principale du jeu.
      * @param frame la fenêtre principale du jeu, créée dans la classe Main, pour laquelle on va configurer le contenu et les dimensions
@@ -50,7 +51,9 @@ public class Display {
         this.frame = frame;
         this.newGame();
         Dimension gameSize = new Dimension(Camera.WIDTH * RATIO_X, Camera.HEIGHT * RATIO_Y);
-        //this.frame.setPreferredSize(gameSize);
+        this.frame.setPreferredSize(gameSize);
+        final int baseGameWidth = gameSize.width;
+        final int baseGameHeight = gameSize.height;
 
         // LayeredPane pour pouvoir superposer les popups par dessus la vue globale
         this.layeredPane = new JLayeredPane();
@@ -221,8 +224,8 @@ public class Display {
         this.btnOpenMenu.addActionListener(e -> SwingUtilities.invokeLater(() -> {
             buildingManager.cancelDeletionMode();
             this.controlPanel.setVisible(false);
-            int cw = Math.max(this.frame.getContentPane().getWidth(), gameSize.width);
-            sidePanel.setBounds(cw - panelWidth, 0, panelWidth, gameSize.height);
+            int cw = Math.max(this.frame.getContentPane().getWidth(), baseGameWidth);
+            sidePanel.setBounds(cw - panelWidth, 0, panelWidth, baseGameHeight);
             globalView.setHotbarVisible(false);
             sidePanel.setVisible(true);
             this.layeredPane.moveToFront(sidePanel);
@@ -276,9 +279,8 @@ public class Display {
 
         this.frame.setContentPane(this.layeredPane);
         this.frame.pack();
-
+        enforceExactContentSize(gameSize);
         this.frame.setLocationRelativeTo(null);
-        this.frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         this.frame.setVisible(true);
 
@@ -295,6 +297,24 @@ public class Display {
 
     public Global getGlobalView() {
         return this.globalView;
+    }
+
+    public World getWorld() {
+        return this.world;
+    }
+
+    public void setCurrentSaveName(String saveName) {
+        this.currentSaveName = saveName;
+    }
+
+    public String getCurrentSaveName() {
+        return this.currentSaveName;
+    }
+
+    public void saveGame() {
+        if (this.currentSaveName != null) {
+            SaveManager.saveGame(this.currentSaveName, this.world);
+        }
     }
 
     private void newGame() {
@@ -445,5 +465,16 @@ public class Display {
             this.edgeScroller.setRightSidebarWidth(0);
             this.edgeScroller.setEnabled(true);
         }
+    }
+
+    /**
+     * Garantit une zone de contenu exacte (hors bordures système) pour éviter
+     * les écarts de quelques pixels selon l'état précédent de la JFrame.
+     */
+    private void enforceExactContentSize(Dimension contentSize) {
+        Insets insets = this.frame.getInsets();
+        int outerW = contentSize.width + insets.left + insets.right;
+        int outerH = contentSize.height + insets.top + insets.bottom;
+        this.frame.setSize(outerW, outerH);
     }
 }

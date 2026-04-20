@@ -10,14 +10,26 @@ import javax.swing.ImageIcon;
  */
 public class Obstacle extends Building {
 
+    private String spritePath;
+
+    public Obstacle(String spritePath) {
+        this(new ImageIcon(spritePath));
+        this.spritePath = spritePath;
+    }
+
     public Obstacle(ImageIcon sprite) {
         // Taille 1x1, non franchissable, règle de placement NORMAL_ONLY
         super(1, 1, false, PlacementRule.NORMAL_ONLY, sprite);
         buyPrice = 5;
+        this.spritePath = (sprite != null) ? sprite.getDescription() : null;
     }
 
     @Override
     public void applyEffect(World world) {
         // Pas d'effet particulier
+    }
+
+    public String getSpritePath() {
+        return spritePath;
     }
 }

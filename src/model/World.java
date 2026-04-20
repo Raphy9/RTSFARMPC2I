@@ -95,8 +95,9 @@ public class World {
                 "buche", "rondin", "rocher1", "rocher2"
         };
         for (String name : names) {
-            // Assure-toi que le chemin correspond à ton dossier assets
-            obstacleSprites.add(new ImageIcon("src/assets/Obstacles/" + name + ".png"));
+            String path = "src/assets/Obstacles/" + name + ".png";
+            // On garde le path dans la description pour la sérialisation des obstacles.
+            obstacleSprites.add(new ImageIcon(path, path));
         }
     }
 
@@ -104,7 +105,7 @@ public class World {
      * Initialise les statistiques du monde
      */
     private void initalizeStats() {
-        stats = new Stats(10000); // Commence avec 100 pièces d'argent
+        stats = new Stats(100); // Commence avec 100 pièces d'argent
     }
 
     /** Initialise les cases du monde, en créant une zone de sécurité autour du point (55, 55) et en générant aléatoirement des obstacles sur le reste du terrain. */
@@ -223,7 +224,8 @@ public class World {
     public int getBarnX() {
         for (Building b : buildings) {
             if (b instanceof BarnBuilding) {
-                return b.getX();
+                // Point d'accès: colonne centrale de la grange
+                return b.getX() + (b.getWidth() / 2);
             }
         }
         return 55; // Fallback de sécurité si la grange a été supprimée
@@ -232,7 +234,8 @@ public class World {
     public int getBarnY() {
         for (Building b : buildings) {
             if (b instanceof BarnBuilding) {
-                return b.getY();
+                // Point d'accès: ligne basse de la grange
+                return b.getY() + (b.getHeight() - 1);
             }
         }
         return 55; // Fallback de sécurité
@@ -241,6 +244,24 @@ public class World {
     public boolean isBarnAt(int x, int y) {
         Building b = getBuildingAt(x, y);
         return b instanceof BarnBuilding;
+    }
+
+    /**
+     * Retourne true si la case (x,y) est sur la grange ou adjacente (8 directions)
+     * à l'empreinte de la grange.
+     */
+    public boolean isBarnAdjacentOrInside(int x, int y) {
+        for (Building b : buildings) {
+            if (!(b instanceof BarnBuilding)) continue;
+            int minX = b.getX() - 1;
+            int maxX = b.getX() + b.getWidth();
+            int minY = b.getY() - 1;
+            int maxY = b.getY() + b.getHeight();
+            if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Retourne la liste des ennemis (poules) présents dans le monde */
@@ -286,6 +307,21 @@ public class World {
         barn.addItem(new ItemSeed(PlantType.CAROTTE, 5));
         barn.addItem(new ItemSeed(PlantType.CHOUX, 5));
 
+    }
+
+    /**
+     * Garantit que la grange contient au minimum le catalogue de base
+     * (une entrée graines + plante pour chaque type), sans réinitialiser les quantités existantes.
+     */
+    public void ensureBarnCatalog() {
+        for (PlantType plantType : PlantType.values()) {
+            if (barn.findSameItem(new ItemPlant(plantType, 0)) == null) {
+                barn.addItem(new ItemPlant(plantType, 0));
+            }
+            if (barn.findSameItem(new ItemSeed(plantType, 0)) == null) {
+                barn.addItem(new ItemSeed(plantType, 0));
+            }
+        }
     }
 
     /**
@@ -425,6 +461,27 @@ public class World {
         buildings.add(b);
     }
 
+    /**
+     * Nettoie la carte avant restauration d'une sauvegarde pour éviter que
+     * les obstacles générés aléatoirement au démarrage restent présents.
+     */
+    public void prepareForLoad() {
+        buildings.clear();
+
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                Tile oldTile = tiles[y][x];
+                Tile clean = new Tile(x, y, grassSprite);
+                if (oldTile != null) {
+                    for (Entity entity : oldTile.getEntities()) {
+                        clean.addEntity(entity);
+                    }
+                }
+                tiles[y][x] = clean;
+            }
+        }
+    }
+
     // Récupère la liste des bâtiments (utile pour l'affichage)
     public List<Building> getBuildings() {
         return buildings;
@@ -487,10 +544,9 @@ public class World {
         return count;
     }
 
-    /** Limite dynamique de labour: 5 + 5 * niveau du joueur. */
+    /** Limite globale de labour: 100 cases plantables maximum. */
     public int getPlowLimit() {
-        int level = (stats != null) ? stats.getLevel() : 1;
-        return 5 + 5 * Math.max(1, level);
+        return 100;
     }
 
     /** Vérifie si on peut encore ajouter additionalTiles cases labourées. */
