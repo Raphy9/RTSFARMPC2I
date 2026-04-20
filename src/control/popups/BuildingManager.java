@@ -8,6 +8,9 @@ import src.model.Tile;
 import src.model.PlantTile;
 
 import javax.swing.SwingUtilities;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -27,6 +30,11 @@ public class BuildingManager extends MouseAdapter {
     private Consumer<Boolean> deletionModeListener = null;
     private Runnable onPlacementComplete = null;
     private long lastActionTimestampMs = 0L;
+    private boolean leftMousePressed = false;
+    private int lastPlacedX = Integer.MIN_VALUE;
+    private int lastPlacedY = Integer.MIN_VALUE;
+    private boolean deletionDragActive = false;
+    private final Set<Building> pendingDeletionBuildings = new LinkedHashSet<>();
 
     public void setDeletionModeListener(Consumer<Boolean> listener) {
         this.deletionModeListener = listener;
@@ -37,6 +45,9 @@ public class BuildingManager extends MouseAdapter {
     public boolean hasJustActed() {
         return (System.currentTimeMillis() - lastActionTimestampMs) < JUST_ACTED_WINDOW_MS;
     }
+    public Set<Building> getPendingDeletionBuildings() {
+        return Collections.unmodifiableSet(pendingDeletionBuildings);
+    }
 
     public BuildingManager(World world, Display display) {
         this.world = world;
@@ -46,6 +57,8 @@ public class BuildingManager extends MouseAdapter {
     // Active le mode construction
     public void startPlacement(Building buildingTemplate) {
         this.ghostBuilding = buildingTemplate;
+        this.lastPlacedX = Integer.MIN_VALUE;
+        this.lastPlacedY = Integer.MIN_VALUE;
         display.getGlobalView().setGhostBuilding(this); // On informe la vue
     }
 
@@ -62,6 +75,9 @@ public class BuildingManager extends MouseAdapter {
     // Annule le mode construction
     public void cancelPlacement() {
         this.ghostBuilding = null;
+        this.leftMousePressed = false;
+        this.lastPlacedX = Integer.MIN_VALUE;
+        this.lastPlacedY = Integer.MIN_VALUE;
         display.getGlobalView().setGhostBuilding(null);
         display.getGlobalView().repaint();
         display.getGlobalView().requestFocusInWindow();
@@ -71,6 +87,8 @@ public class BuildingManager extends MouseAdapter {
     public void startDeletionMode() {
         this.deletionMode = true;
         this.ghostBuilding = null;
+        this.deletionDragActive = false;
+        this.pendingDeletionBuildings.clear();
         // Informer la vue globale pour qu'elle affiche le surlignage rouge
         display.getGlobalView().setGhostBuilding(this);
         display.getGlobalView().repaint();
@@ -80,6 +98,8 @@ public class BuildingManager extends MouseAdapter {
     public void cancelDeletionMode() {
         if (!this.deletionMode) return; // rien à faire si le mode n'était pas actif
         this.deletionMode = false;
+        this.deletionDragActive = false;
+        this.pendingDeletionBuildings.clear();
         display.getGlobalView().repaint();
         if (this.deletionModeListener != null) this.deletionModeListener.accept(false);
         // Retirer la référence pour arrêter le rendu du ghost/highlight
@@ -98,35 +118,48 @@ public class BuildingManager extends MouseAdapter {
     }
 
     @Override
+    public void mouseDragged(MouseEvent e) {
+        mouseMoved(e);
+        if (deletionMode && leftMousePressed) {
+            addBuildingToDeletionSelection(ghostX, ghostY);
+            return;
+        }
+        if (!deletionMode && ghostBuilding != null && leftMousePressed) {
+            tryPlaceCurrentGhost();
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            leftMousePressed = false;
+            lastPlacedX = Integer.MIN_VALUE;
+            lastPlacedY = Integer.MIN_VALUE;
+            if (deletionMode && deletionDragActive) {
+                confirmAndApplyDeletionSelection();
+            }
+        }
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            leftMousePressed = true;
+        }
+
         // Si on est en mode suppression
         if (deletionMode) {
             if (SwingUtilities.isRightMouseButton(e)) {
                 cancelDeletionMode();
                 return;
             }
-            Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
-            Building toRemove = world.getBuildingAt(coords.x, coords.y);
-            if (toRemove != null) {
-                int sell = toRemove.getSellPrice();
-                String msg = "Supprimer ce bâtiment ?\nRevente : " + sell + " PO";
-                if (GameDialog.showConfirm(display.getGlobalView(), "Confirmer suppression", msg)) {
-                    if (sell > 0) world.getStats().addMoney(sell);
-                    world.removeBuilding(toRemove);
-                    display.getGlobalView().repaint();
-                    notifyPlacementComplete();
-                    System.out.println("Bâtiment supprimé -> +" + sell + " PO | Solde : " + world.getStats().getMoney());
-                }
-            } else {
-                // Pas de bâtiment : vérifier si c'est une terre labourée vide
-                Tile tile = world.getTile(coords.x, coords.y);
-                if (tile instanceof PlantTile && ((PlantTile) tile).getPlant() == null) {
-                    if (GameDialog.showConfirm(display.getGlobalView(), "Confirmer", "Retransformer cette terre en herbe ?")) {
-                        world.toNormalTile(coords.x, coords.y);
-                        display.getGlobalView().repaint();
-                        notifyPlacementComplete();
-                    }
-                }
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                deletionDragActive = true;
+                pendingDeletionBuildings.clear();
+                Point coords = display.getCamera().screenToWorld(e.getX(), e.getY());
+                ghostX = coords.x;
+                ghostY = coords.y;
+                addBuildingToDeletionSelection(coords.x, coords.y);
             }
             return; // multi-suppression : on reste en mode suppression
         }
@@ -137,34 +170,101 @@ public class BuildingManager extends MouseAdapter {
                 return;
             }
 
-            if (SwingUtilities.isLeftMouseButton(e) && canPlace(ghostX, ghostY, ghostBuilding)) {
-                int cost = ghostBuilding.getBuyPrice();
-                if (cost > 0 && world.getStats().getMoney() < cost) {
-                    GameDialog.showMessage(display.getGlobalView(),
-                            "Fonds insuffisants",
-                            "Pas assez d'argent !\nCoût : " + cost + " PO\nSolde : " + world.getStats().getMoney() + " PO");
-                    return;
-                }
-
-                ghostBuilding.setPosition(ghostX, ghostY);
-                world.addBuilding(ghostBuilding);
-
-                if (cost > 0) {
-                    world.getStats().removeMoney(cost);
-                    System.out.println("Bâtiment acheté : " + cost + " PO | Solde : " + world.getStats().getMoney());
-                }
-
-                for (int dx = 0; dx < ghostBuilding.getWidth(); dx++) {
-                    for (int dy = 0; dy < ghostBuilding.getHeight(); dy++) {
-                        Tile tileUnder = world.getTile(ghostX + dx, ghostY + dy);
-                        tileUnder.setPlowable(false);
-                        if (!ghostBuilding.isPassable()) tileUnder.setWalkable(false);
-                    }
-                }
-                cancelPlacement();
-                notifyPlacementComplete();
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                tryPlaceCurrentGhost();
             }
         }
+    }
+
+    private void tryPlaceCurrentGhost() {
+        if (ghostBuilding == null) return;
+        if (ghostX == lastPlacedX && ghostY == lastPlacedY) return;
+        if (!canPlace(ghostX, ghostY, ghostBuilding)) return;
+
+        int cost = ghostBuilding.getBuyPrice();
+        if (cost > 0 && world.getStats().getMoney() < cost) {
+            // On coupe le drag pour eviter de spammer la popup pendant le maintien du clic.
+            leftMousePressed = false;
+            GameDialog.showMessage(display.getGlobalView(),
+                    "Fonds insuffisants",
+                    "Pas assez d'argent !\nCoût : " + cost + " PO\nSolde : " + world.getStats().getMoney() + " PO");
+            return;
+        }
+
+        Building placedBuilding = createBuildingLikeGhost();
+        if (placedBuilding == null) {
+            return;
+        }
+
+        placedBuilding.setPosition(ghostX, ghostY);
+        world.addBuilding(placedBuilding);
+
+        if (cost > 0) {
+            world.getStats().removeMoney(cost);
+            System.out.println("Bâtiment acheté : " + cost + " PO | Solde : " + world.getStats().getMoney());
+        }
+
+        for (int dx = 0; dx < placedBuilding.getWidth(); dx++) {
+            for (int dy = 0; dy < placedBuilding.getHeight(); dy++) {
+                Tile tileUnder = world.getTile(ghostX + dx, ghostY + dy);
+                tileUnder.setPlowable(false);
+                if (!placedBuilding.isPassable()) tileUnder.setWalkable(false);
+            }
+        }
+
+        lastPlacedX = ghostX;
+        lastPlacedY = ghostY;
+        display.getGlobalView().repaint();
+        notifyPlacementComplete();
+    }
+
+    private Building createBuildingLikeGhost() {
+        try {
+            return ghostBuilding.getClass().getDeclaredConstructor().newInstance();
+        } catch (Exception ex) {
+            System.err.println("Impossible d'instancier le batiment: " + ghostBuilding.getClass().getSimpleName());
+            return null;
+        }
+    }
+
+    private void addBuildingToDeletionSelection(int wx, int wy) {
+        Building b = world.getBuildingAt(wx, wy);
+        if (b != null && pendingDeletionBuildings.add(b)) {
+            display.getGlobalView().repaint();
+        }
+    }
+
+    private void confirmAndApplyDeletionSelection() {
+        deletionDragActive = false;
+        if (pendingDeletionBuildings.isEmpty()) {
+            return;
+        }
+
+        int totalSell = 0;
+        for (Building b : pendingDeletionBuildings) {
+            totalSell += Math.max(0, b.getSellPrice());
+        }
+
+        String msg = "Supprimer " + pendingDeletionBuildings.size() + " bâtiment(s) ?\n"
+                + "Revente totale : " + totalSell + " PO";
+        boolean confirmed = GameDialog.showConfirm(display.getGlobalView(), "Confirmer suppression", msg);
+        if (!confirmed) {
+            pendingDeletionBuildings.clear();
+            display.getGlobalView().repaint();
+            return;
+        }
+
+        for (Building b : pendingDeletionBuildings) {
+            world.removeBuilding(b);
+        }
+        if (totalSell > 0) {
+            world.getStats().addMoney(totalSell);
+        }
+
+        pendingDeletionBuildings.clear();
+        display.getGlobalView().repaint();
+        notifyPlacementComplete();
+        System.out.println("Bâtiments supprimés -> +" + totalSell + " PO | Solde : " + world.getStats().getMoney());
     }
 
     private void notifyPlacementComplete() {

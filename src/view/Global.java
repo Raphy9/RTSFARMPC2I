@@ -184,37 +184,6 @@ public class Global extends JPanel {
             g3.dispose();
         }
 
-        // === DELETION HIGHLIGHT (si on est en mode suppression) ===
-        // On réutilise ghostManager pour obtenir les coordonnées du curseur
-        try {
-            if (ghostManager != null && ghostManager.isDeletionMode()) {
-                int gx = ghostManager.getGhostX();
-                int gy = ghostManager.getGhostY();
-                src.model.buildings.Building b = world.getBuildingAt(gx, gy);
-                if (b != null) {
-                    Graphics2D g4 = (Graphics2D) g.create();
-                    g4.setStroke(new BasicStroke(3));
-                    Color fill = new Color(255, 0, 0, 100);
-                    Color border = new Color(200, 0, 0);
-                    for (int dx = 0; dx < b.getWidth(); dx++) {
-                        for (int dy = 0; dy < b.getHeight(); dy++) {
-                            int relX = (b.getX() + dx) - fstTileX;
-                            int relY = (b.getY() + dy) - fstTileY;
-                            if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
-                                int px = (relX * Display.RATIO_X) - pixelDiffX;
-                                int py = (relY * Display.RATIO_Y) - pixelDiffY;
-                                g4.setColor(fill);
-                                g4.fillRect(px, py, Display.RATIO_X, Display.RATIO_Y);
-                                g4.setColor(border);
-                                g4.drawRect(px + 1, py + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
-                            }
-                        }
-                    }
-                    g4.dispose();
-                }
-            }
-        } catch (Throwable t) {}
-
         // === DESSIN DES BÂTIMENTS DÉJÀ CONSTRUITS ===
         if (world.getBuildings() != null) {
             for (src.model.buildings.Building b : world.getBuildings()) {
@@ -229,6 +198,51 @@ public class Global extends JPanel {
                     g.drawImage(b.getSprite().getImage(), px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
                 }
             }
+        }
+
+        // === DELETION HIGHLIGHT (si on est en mode suppression) ===
+        if (ghostManager != null && ghostManager.isDeletionMode()) {
+            Graphics2D g4 = (Graphics2D) g.create();
+            g4.setStroke(new BasicStroke(3));
+
+            for (src.model.buildings.Building selected : ghostManager.getPendingDeletionBuildings()) {
+                for (int dx = 0; dx < selected.getWidth(); dx++) {
+                    for (int dy = 0; dy < selected.getHeight(); dy++) {
+                        int relX = (selected.getX() + dx) - fstTileX;
+                        int relY = (selected.getY() + dy) - fstTileY;
+                        if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                            int px = (relX * Display.RATIO_X) - pixelDiffX;
+                            int py = (relY * Display.RATIO_Y) - pixelDiffY;
+                            g4.setColor(new Color(255, 0, 0, 110));
+                            g4.fillRect(px, py, Display.RATIO_X, Display.RATIO_Y);
+                            g4.setColor(new Color(210, 20, 20));
+                            g4.drawRect(px + 1, py + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
+                        }
+                    }
+                }
+            }
+
+            int gx = ghostManager.getGhostX();
+            int gy = ghostManager.getGhostY();
+            src.model.buildings.Building hovered = world.getBuildingAt(gx, gy);
+            if (hovered != null && !ghostManager.getPendingDeletionBuildings().contains(hovered)) {
+                for (int dx = 0; dx < hovered.getWidth(); dx++) {
+                    for (int dy = 0; dy < hovered.getHeight(); dy++) {
+                        int relX = (hovered.getX() + dx) - fstTileX;
+                        int relY = (hovered.getY() + dy) - fstTileY;
+                        if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                            int px = (relX * Display.RATIO_X) - pixelDiffX;
+                            int py = (relY * Display.RATIO_Y) - pixelDiffY;
+                            g4.setColor(new Color(255, 120, 120, 90));
+                            g4.fillRect(px, py, Display.RATIO_X, Display.RATIO_Y);
+                            g4.setColor(new Color(255, 80, 80));
+                            g4.drawRect(px + 1, py + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
+                        }
+                    }
+                }
+            }
+
+            g4.dispose();
         }
 
         // Highlight : on utilise un Graphics2D pour pouvoir dessiner des rectangles avec une bordure plus épaisse, et des couleurs semi-transparentes pour le remplissage

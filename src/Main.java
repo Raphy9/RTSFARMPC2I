@@ -18,7 +18,7 @@ public class Main {
 
         // Initialisation de la vuee
         Display display = new Display(f);
-        Rendering renderer = new Rendering(display);w
+        Rendering renderer = new Rendering(display);
         timer.schedule(renderer, 0, 1000 / Rendering.FPS);
         // show frame
         f.pack();
