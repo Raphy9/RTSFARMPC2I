@@ -32,6 +32,7 @@ public class Stats {
 
     public void addMoney(int m) {
         this.money += m;
+        SoundManager.playSound(SoundManager.SELL);
     }
 
     public void removeMoney(int m) {

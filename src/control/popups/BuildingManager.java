@@ -1,5 +1,6 @@
 package src.control.popups;
 
+import src.model.SoundManager;
 import src.model.World;
 import src.model.buildings.Building;
 import src.view.Display;
@@ -224,6 +225,8 @@ public class BuildingManager extends MouseAdapter {
         placedBuilding.setPosition(ghostX, ghostY);
         world.addBuilding(placedBuilding);
 
+        SoundManager.playSound(SoundManager.PLACE);
+
         if (cost > 0) {
             world.getStats().removeMoney(cost);
             System.out.println("Bâtiment acheté : " + cost + " PO | Solde : " + world.getStats().getMoney());
@@ -319,6 +322,8 @@ public class BuildingManager extends MouseAdapter {
         display.getGlobalView().repaint();
         notifyPlacementComplete();
         System.out.println("Bâtiments supprimés -> +" + totalSell + " PO | Solde : " + world.getStats().getMoney());
+
+//        SoundManager.playSound(SoundManager.BREAK);    // Pour le moment son de gain d'argent, a voir
     }
 
     private void notifyPlacementComplete() {

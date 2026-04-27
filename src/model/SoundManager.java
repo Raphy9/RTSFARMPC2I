@@ -28,11 +28,14 @@ public class SoundManager {
     public static SoundData BG;
     public static SoundData MENU;
     public static SoundData LEVEL_UP;
+    public static SoundData SELL;
 
     public static SoundData PLANT;
     public static SoundData WATER;
     public static SoundData PLOW;
     public static SoundData HARVEST;
+    public static SoundData PLACE;
+    public static SoundData BREAK;
 
     public static SoundData CHICKEN_AMBIENT;
     public static SoundData CHICKEN_RUN;
@@ -57,11 +60,14 @@ public class SoundManager {
         BG = loadSound("src/assets/sounds/background_3.wav");
         MENU = loadSound("src/assets/sounds/menu_1-1.wav");
         LEVEL_UP = loadSound("src/assets/sounds/level_up.wav");
+        SELL = loadSound("src/assets/sounds/coins.wav");
 
         PLANT = loadSound("src/assets/sounds/planting.wav");
         WATER = loadSound("src/assets/sounds/watering.wav");
         PLOW = loadSound("src/assets/sounds/till.wav");
         HARVEST = loadSound("src/assets/sounds/pop_2.wav");
+        PLACE = loadSound("src/assets/sounds/place.wav");
+        BREAK = loadSound("src/assets/sounds/break_1.wav");
 
         CHICKEN_AMBIENT = loadSound("src/assets/sounds/chicken_ambient_1.wav");
         CHICKEN_RUN = loadSound("src/assets/sounds/chicken_cluck.wav");
