@@ -1,6 +1,7 @@
 package src.view;
 
 import src.control.popups.BuildingManager;
+import src.control.popups.QuestMenuController;
 import src.control.CameraController;
 import src.control.GlobalController;
 import src.control.SelectionController;
@@ -11,6 +12,7 @@ import src.model.actions.ActionBuilder;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
@@ -33,10 +35,23 @@ public class Display {
     private final SelectionController selectionController;
     private JLayeredPane layeredPane;
     private JButton btnOpenMenu;
+    private JButton btnOpenQuestMenu;
     private JPanel controlPanel;
     private EdgeScroller edgeScroller;
     private BuildingManager buildingManager;
+    private BuildingSidePanel buildingSidePanel;
+    private QuestSidePanel questSidePanel;
+    private QuestMenuController questMenuController;
+    private final Quests quests;
     private String currentSaveName = null;
+    private boolean wasQuestPanelOpen = false;
+
+    private static final int CONTROL_PANEL_WIDTH = 90;
+    private static final int CONTROL_PANEL_HEIGHT = 280; // HUD_BUTTON_SIZE * 3 + 10
+    private static final int RIGHT_PANEL_WIDTH = 380;
+    private static final int HUD_MARGIN = 10;
+    private static final int HUD_BUTTON_SIZE = 90;
+    private static final int HUD_PANEL_HEIGHT = 100;
 
     /** Constructeur de la classe Display, qui initialise les différentes vues et contrôleurs, et configure la fenêtre principale du jeu.
      * @param frame la fenêtre principale du jeu, créée dans la classe Main, pour laquelle on va configurer le contenu et les dimensions
@@ -47,6 +62,7 @@ public class Display {
 
         this.frame = frame;
         this.newGame();
+        this.quests = this.world.getQuests();
         Dimension gameSize = new Dimension(Camera.WIDTH * RATIO_X, Camera.HEIGHT * RATIO_Y);
         this.frame.setPreferredSize(gameSize);
         final int baseGameWidth = gameSize.width;
@@ -146,15 +162,19 @@ public class Display {
         globalView.addMouseListener(buildingManager);
         globalView.addMouseMotionListener(buildingManager);
 
-        BuildingSidePanel sidePanel = new BuildingSidePanel(buildingManager, this, this.world, null);
-        sidePanel.setOnClose(() -> SwingUtilities.invokeLater(() -> {
-            buildingManager.cancelPlacement();
-        }));
-        int panelWidth = 380;
-        sidePanel.setBounds(gameSize.width - panelWidth, 0, panelWidth, gameSize.height);
-        sidePanel.setVisible(false);
-        layeredPane.add(sidePanel, JLayeredPane.PALETTE_LAYER);
-        buildingManager.setOnPlacementComplete(sidePanel::refresh);
+        this.buildingSidePanel = new BuildingSidePanel(buildingManager, this, this.world, null);
+        this.buildingSidePanel.setOnClose(() -> SwingUtilities.invokeLater(() -> buildingManager.cancelPlacement()));
+        this.buildingSidePanel.setBounds(gameSize.width - RIGHT_PANEL_WIDTH, 0, RIGHT_PANEL_WIDTH, gameSize.height);
+        this.buildingSidePanel.setVisible(false);
+        layeredPane.add(this.buildingSidePanel, JLayeredPane.PALETTE_LAYER);
+        buildingManager.setOnPlacementComplete(this.buildingSidePanel::refresh);
+
+        this.questSidePanel = new QuestSidePanel(this.quests);
+        this.questSidePanel.putClientProperty("edgeScrollIgnore", Boolean.TRUE);
+        Rectangle initialQuestBounds = computeQuestOverlayBounds(gameSize.width, gameSize.height);
+        this.questSidePanel.setBounds(initialQuestBounds);
+        this.questSidePanel.setVisible(false);
+        layeredPane.add(this.questSidePanel, JLayeredPane.PALETTE_LAYER);
 
 
         this.btnOpenMenu = ImageButtonFactory.createImageButton(
@@ -163,14 +183,42 @@ public class Display {
                 "src/assets/UI/build_pressed.png"
         );
         this.btnOpenMenu.setFocusable(false);
-        this.btnOpenMenu.setBounds(0, 0, 100, 100);
+        this.btnOpenMenu.setBounds(0, 0, HUD_BUTTON_SIZE, HUD_BUTTON_SIZE);
+
+        File questButtonImage = new File("src/assets/UI/quetes.png");
+        if (questButtonImage.exists()) {
+            this.btnOpenQuestMenu = ImageButtonFactory.createImageButton(
+                    "src/assets/UI/quetes.png",
+                    "src/assets/UI/quetes.png",
+                    "src/assets/UI/quetes.png"
+            );
+            this.btnOpenQuestMenu.setFocusable(false);
+            this.btnOpenQuestMenu.setBounds(0, 0, HUD_BUTTON_SIZE, HUD_BUTTON_SIZE);
+            this.btnOpenQuestMenu.setOpaque(false);
+            this.btnOpenQuestMenu.setContentAreaFilled(false);
+            this.btnOpenQuestMenu.setBorderPainted(false);
+        } else {
+            // Fallback visuel en attendant l'image quetes.png.
+            this.btnOpenQuestMenu = new JButton("Quêtes");
+            this.btnOpenQuestMenu.setFocusable(false);
+            this.btnOpenQuestMenu.setFont(GameFonts.MINECRAFT_FONT != null
+                    ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 14f)
+                    : new Font("Arial", Font.BOLD, 14));
+            this.btnOpenQuestMenu.setBackground(new Color(235, 185, 120));
+            this.btnOpenQuestMenu.setForeground(new Color(75, 35, 10));
+            this.btnOpenQuestMenu.setBorder(BorderFactory.createLineBorder(new Color(110, 45, 15), 2));
+            this.btnOpenQuestMenu.setBounds(0, 0, HUD_BUTTON_SIZE, HUD_BUTTON_SIZE);
+            this.btnOpenQuestMenu.setOpaque(true);
+        }
 
         this.controlPanel = new JPanel(null);
         this.controlPanel.setOpaque(false);
         this.controlPanel.putClientProperty("edgeScrollIgnore", Boolean.TRUE);
-        int ctrlW = 200;
-        this.controlPanel.setBounds(gameSize.width - ctrlW, 10, ctrlW, 100);
+        this.controlPanel.setBounds(gameSize.width - CONTROL_PANEL_WIDTH - HUD_MARGIN, gameSize.height / 2 - CONTROL_PANEL_HEIGHT / 2, CONTROL_PANEL_WIDTH, CONTROL_PANEL_HEIGHT);
         this.controlPanel.add(this.btnOpenMenu);
+
+        this.questMenuController = new QuestMenuController(this);
+        this.questMenuController.bind();
 
         JButton btnDeleteIdle = ImageButtonFactory.createImageButton(
                 "src/assets/UI/bulldozer_idle.png",
@@ -178,9 +226,9 @@ public class Display {
                 "src/assets/UI/bulldozer_idle_pressed.png"
         );
         btnDeleteIdle.setFocusable(false);
-        btnDeleteIdle.setBounds(105, 5, 90, 90);
+        btnDeleteIdle.setBounds(0, HUD_BUTTON_SIZE + 5, HUD_BUTTON_SIZE, HUD_BUTTON_SIZE);
         btnDeleteIdle.addActionListener(e -> {
-            buildingManager.setOnPlacementComplete(sidePanel::refresh);
+            buildingManager.setOnPlacementComplete(this.buildingSidePanel::refresh);
             buildingManager.startDeletionMode();
         });
         this.controlPanel.add(btnDeleteIdle);
@@ -191,14 +239,23 @@ public class Display {
                 "src/assets/UI/bulldozer_active_pressed.png"
         );
         btnDeleteActive.setFocusable(false);
-        btnDeleteActive.setBounds(105, 5, 90, 90);
+        btnDeleteActive.setBounds(0, HUD_BUTTON_SIZE + 5, HUD_BUTTON_SIZE, HUD_BUTTON_SIZE);
         btnDeleteActive.setVisible(false);
         btnDeleteActive.addActionListener(e -> buildingManager.cancelDeletionMode());
         this.controlPanel.add(btnDeleteActive);
 
+        this.btnOpenQuestMenu.setBounds(0, (HUD_BUTTON_SIZE + 5) * 2, HUD_BUTTON_SIZE, HUD_BUTTON_SIZE);
+        this.controlPanel.add(this.btnOpenQuestMenu);
+
         buildingManager.setDeletionModeListener(active -> {
             // Synchrone (pas d'invokeLater) : évite que setHotbarVisible(true) arrive après
             // les appels directs à setHotbarVisible(false) lors du passage construction↔destruction
+            if (active) {
+                rememberQuestPanelStateBeforeTransientAction();
+                setQuestPanelVisible(false);
+            } else {
+                restoreQuestPanelIfNeeded();
+            }
             btnDeleteIdle.setVisible(!active);
             btnDeleteActive.setVisible(active);
             globalView.setHotbarVisible(!active);
@@ -206,11 +263,13 @@ public class Display {
 
 
 
-        sidePanel.addHierarchyListener(e -> {
+        this.buildingSidePanel.addHierarchyListener(e -> {
             if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
-                if (sidePanel.isVisible()) {
+                if (this.buildingSidePanel.isVisible()) {
+                    rememberQuestPanelStateBeforeTransientAction();
+                    setQuestPanelVisible(false);
                     globalView.setHotbarVisible(false);
-                    overlayOpened(panelWidth, sidePanel.getBounds());
+                    overlayOpened(RIGHT_PANEL_WIDTH);
                 } else {
                     globalView.setHotbarVisible(true);
                     overlayClosed();
@@ -218,14 +277,25 @@ public class Display {
             }
         });
 
+        this.questSidePanel.addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+                if (this.questSidePanel.isVisible()) {
+                    this.buildingSidePanel.setVisible(false);
+                }
+            }
+        });
+
         this.btnOpenMenu.addActionListener(e -> SwingUtilities.invokeLater(() -> {
             buildingManager.cancelDeletionMode();
+            rememberQuestPanelStateBeforeTransientAction();
+            setQuestPanelVisible(false);
             this.controlPanel.setVisible(false);
             int cw = Math.max(this.frame.getContentPane().getWidth(), baseGameWidth);
-            sidePanel.setBounds(cw - panelWidth, 0, panelWidth, baseGameHeight);
+            this.buildingSidePanel.setBounds(cw - RIGHT_PANEL_WIDTH, 0, RIGHT_PANEL_WIDTH, baseGameHeight);
             globalView.setHotbarVisible(false);
-            sidePanel.setVisible(true);
-            this.layeredPane.moveToFront(sidePanel);
+            this.buildingSidePanel.refresh();
+            this.buildingSidePanel.setVisible(true);
+            this.layeredPane.moveToFront(this.buildingSidePanel);
             this.layeredPane.revalidate();
             this.layeredPane.repaint();
         }));
@@ -238,12 +308,15 @@ public class Display {
             public void actionPerformed(ActionEvent e) {
                 // Ignoré si on est en mode sélection (géré par SelectionController/CloseController)
                 if (selectionView.isVisible()) return;
-                if (sidePanel.isVisible()) {
-                    sidePanel.setVisible(false);
+                if (buildingSidePanel.isVisible()) {
+                    buildingSidePanel.setVisible(false);
                     onBuildingPanelClose();
                     buildingManager.cancelPlacement();
                 } else if (buildingManager.isDeletionMode()) {
                     buildingManager.cancelDeletionMode();
+                } else if (questSidePanel.isVisible()) {
+                    questSidePanel.setVisible(false);
+                    onQuestPanelClose();
                 }
             }
         });
@@ -255,8 +328,18 @@ public class Display {
             public void componentResized(ComponentEvent e) {
                 SwingUtilities.invokeLater(() -> {
                     int cw = Math.max(100, frame.getContentPane().getWidth());
-                    int ctrlX = Math.max(8, cw - 200);
-                    controlPanel.setBounds(ctrlX, 10, 200, 100);
+                    int ch = Math.max(100, frame.getContentPane().getHeight());
+                    int ctrlX = Math.max(8, cw - CONTROL_PANEL_WIDTH - HUD_MARGIN);
+                    int ctrlY = Math.max(8, ch / 2 - CONTROL_PANEL_HEIGHT / 2);
+                    if (controlPanel != null) {
+                        controlPanel.setBounds(ctrlX, ctrlY, CONTROL_PANEL_WIDTH, CONTROL_PANEL_HEIGHT);
+                    }
+                    if (buildingSidePanel != null && buildingSidePanel.isVisible()) {
+                        buildingSidePanel.setBounds(cw - RIGHT_PANEL_WIDTH, 0, RIGHT_PANEL_WIDTH, frame.getContentPane().getHeight());
+                    }
+                    if (questSidePanel != null && questSidePanel.isVisible()) {
+                        questSidePanel.setBounds(computeQuestOverlayBounds(cw, ch));
+                    }
                     layeredPane.revalidate();
                     layeredPane.repaint();
                 });
@@ -266,8 +349,18 @@ public class Display {
             public void componentShown(ComponentEvent e) {
                 SwingUtilities.invokeLater(() -> {
                     int cw = Math.max(100, frame.getContentPane().getWidth());
-                    int ctrlX = Math.max(8, cw - 200);
-                    controlPanel.setBounds(ctrlX, 10, 200, 100);
+                    int ch = Math.max(100, frame.getContentPane().getHeight());
+                    int ctrlX = Math.max(8, cw - CONTROL_PANEL_WIDTH - HUD_MARGIN);
+                    int ctrlY = Math.max(8, ch / 2 - CONTROL_PANEL_HEIGHT / 2);
+                    if (controlPanel != null) {
+                        controlPanel.setBounds(ctrlX, ctrlY, CONTROL_PANEL_WIDTH, CONTROL_PANEL_HEIGHT);
+                    }
+                    if (buildingSidePanel != null && buildingSidePanel.isVisible()) {
+                        buildingSidePanel.setBounds(cw - RIGHT_PANEL_WIDTH, 0, RIGHT_PANEL_WIDTH, frame.getContentPane().getHeight());
+                    }
+                    if (questSidePanel != null && questSidePanel.isVisible()) {
+                        questSidePanel.setBounds(computeQuestOverlayBounds(cw, ch));
+                    }
                     layeredPane.revalidate();
                     layeredPane.repaint();
                 });
@@ -280,6 +373,9 @@ public class Display {
         this.frame.setLocationRelativeTo(null);
 
         this.frame.setVisible(true);
+
+        // Ajuste une fois après affichage pour éviter tout dépassement visuel initial des boutons.
+        SwingUtilities.invokeLater(this::layoutHudButtons);
 
         this.edgeScroller = new EdgeScroller(this.frame, this.layeredPane, this.camera, this.globalView,
                 Rendering.FPS, 72, 0.12f);
@@ -303,12 +399,62 @@ public class Display {
         return this.world;
     }
 
+    public Quests getQuests() {
+        return this.quests;
+    }
+
+    public void setQuestChangeCallback(Runnable callback) {
+        this.world.setQuestChangeCallback(callback);
+    }
+
     public void setCurrentSaveName(String saveName) {
         this.currentSaveName = saveName;
     }
 
     public String getCurrentSaveName() {
         return this.currentSaveName;
+    }
+
+    public JButton getQuestMenuButton() {
+        return this.btnOpenQuestMenu;
+    }
+
+    public QuestSidePanel getQuestSidePanel() {
+        return this.questSidePanel;
+    }
+
+    public BuildingSidePanel getBuildingSidePanel() {
+        return this.buildingSidePanel;
+    }
+
+    public void refreshQuestPanel() {
+        if (this.questMenuController != null) {
+            this.questMenuController.refreshFromModel();
+        }
+    }
+
+    public void showQuestPanel() {
+        SwingUtilities.invokeLater(() -> {
+            buildingManager.cancelDeletionMode();
+            if (this.buildingSidePanel != null) {
+                this.buildingSidePanel.setVisible(false);
+            }
+            int cw = Math.max(100, this.frame.getContentPane().getWidth());
+            int ch = Math.max(100, this.frame.getContentPane().getHeight());
+            this.questSidePanel.setBounds(computeQuestOverlayBounds(cw, ch));
+            setQuestPanelVisible(true);
+            this.layeredPane.moveToFront(this.questSidePanel);
+            this.layeredPane.revalidate();
+            this.layeredPane.repaint();
+        });
+    }
+
+    public void hideQuestPanel() {
+        SwingUtilities.invokeLater(() -> {
+            setQuestPanelVisible(false);
+            this.layeredPane.revalidate();
+            this.layeredPane.repaint();
+        });
     }
 
     public void saveGame() {
@@ -325,9 +471,12 @@ public class Display {
     public void switchToPopup(PopupPanel popup) {
         globalView.removeMouseListener(globalController);
         globalView.removeKeyListener(cameraController);
+        if (buildingSidePanel != null) buildingSidePanel.setVisible(false);
+        rememberQuestPanelStateBeforeTransientAction();
+        setQuestPanelVisible(false);
         controlPanel.setVisible(false);
         popupView.showPopup(popup);
-        overlayOpened(0, null);
+        overlayOpened(0);
         globalView.setHotbarVisible(false);
     }
 
@@ -335,6 +484,8 @@ public class Display {
         popupView.hidePopup();
         selectionView.setVisible(false);
         globalView.setVisible(true);
+        if (buildingSidePanel != null) buildingSidePanel.setVisible(false);
+        restoreQuestPanelIfNeeded();
         // Désélectionner le slot hotbar
         if (world.getGardeners() != null && !world.getGardeners().isEmpty()) {
             world.getGardeners().get(0).setSelectedHotbarIndex(-1);
@@ -366,6 +517,8 @@ public class Display {
         selectionView.setMessage(message);selectionController.setSelectionCriteria(selectionCriteria);
         selectionController.setActionBuilder(builder);
         globalView.setHotbarVisible(false); // bloque les touches hotbar pendant la sélection
+        rememberQuestPanelStateBeforeTransientAction();
+        setQuestPanelVisible(false);
         controlPanel.setVisible(false);     // désactive les boutons build/destroy
         globalView.setVisible(false);
         selectionView.setVisible(true);
@@ -392,8 +545,10 @@ public class Display {
     public void onBuildingPanelClose() {
         SwingUtilities.invokeLater(() -> {
             int cw = Math.max(100, this.frame.getContentPane().getWidth());
-            int ctrlX = Math.max(8, cw - 200);
-            this.controlPanel.setBounds(ctrlX, 10, 200, 100);
+            int ch = Math.max(100, this.frame.getContentPane().getHeight());
+            int ctrlX = Math.max(8, cw - CONTROL_PANEL_WIDTH - HUD_MARGIN);
+            int ctrlY = Math.max(8, ch / 2 - CONTROL_PANEL_HEIGHT / 2);
+            this.controlPanel.setBounds(ctrlX, ctrlY, CONTROL_PANEL_WIDTH, CONTROL_PANEL_HEIGHT);
             if (this.controlPanel.getParent() == null) {
                 this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
             }
@@ -401,9 +556,52 @@ public class Display {
             this.controlPanel.setVisible(true);
             this.controlPanel.setEnabled(true);
             this.controlPanel.repaint();
+            restoreQuestPanelIfNeeded();
             globalView.setHotbarVisible(true);
             this.globalView.requestFocusInWindow();
         });
+    }
+
+    public void onQuestPanelClose() {
+        SwingUtilities.invokeLater(() -> {
+            int cw = Math.max(100, this.frame.getContentPane().getWidth());
+            int ch = Math.max(100, this.frame.getContentPane().getHeight());
+            int ctrlX = Math.max(8, cw - CONTROL_PANEL_WIDTH - HUD_MARGIN);
+            int ctrlY = Math.max(8, ch / 2 - CONTROL_PANEL_HEIGHT / 2);
+            this.controlPanel.setBounds(ctrlX, ctrlY, CONTROL_PANEL_WIDTH, CONTROL_PANEL_HEIGHT);
+            if (this.controlPanel.getParent() == null) {
+                this.layeredPane.add(this.controlPanel, JLayeredPane.DRAG_LAYER);
+            }
+            this.layeredPane.setLayer(this.controlPanel, JLayeredPane.DRAG_LAYER);
+            this.controlPanel.setVisible(true);
+            this.controlPanel.setEnabled(true);
+            this.controlPanel.repaint();
+            setQuestPanelVisible(false);
+        });
+    }
+
+    /**
+     * Le panneau quêtes est un overlay d'information: largeur max 1/5 et hauteur max 2/3 de l'écran.
+     */
+    private Rectangle computeQuestOverlayBounds(int contentWidth, int contentHeight) {
+        int width = Math.max(1, contentWidth / 5);
+        int height = Math.max(1, (contentHeight * 2) / 3);
+
+        // Le panneau quêtes doit s'ouvrir à gauche.
+        int y = Math.max(HUD_MARGIN, (contentHeight - height) / 2);
+        return new Rectangle(HUD_MARGIN, y, width, height);
+    }
+
+    /** Place les boutons HUD en bas de l'écran sans qu'ils débordent. */
+    private void layoutHudButtons() {
+        int cw = Math.max(100, frame.getContentPane().getWidth());
+        int ch = Math.max(100, frame.getContentPane().getHeight());
+        int ctrlX = Math.max(HUD_MARGIN, cw - CONTROL_PANEL_WIDTH - HUD_MARGIN);
+        int ctrlY = Math.max(8, ch / 2 - CONTROL_PANEL_HEIGHT / 2);
+
+        if (controlPanel != null) {
+            controlPanel.setBounds(ctrlX, ctrlY, CONTROL_PANEL_WIDTH, CONTROL_PANEL_HEIGHT);
+        }
     }
 
     public void update() { }
@@ -448,20 +646,62 @@ public class Display {
         }
         if (this.edgeScroller != null) {
             this.edgeScroller.setEnabled(!hasVisibleOverlay);
+
+            // On met à jour les zones ignorées (boutons HUD + marges)
+            java.util.List<Rectangle> ignoredRegions = new java.util.ArrayList<>();
+            if (this.controlPanel != null && this.controlPanel.isVisible()) {
+                Rectangle bounds = this.controlPanel.getBounds();
+                bounds.grow(20, 20); // Marge pour ne pas scroller si on approche
+                ignoredRegions.add(bounds);
+            }
+            this.edgeScroller.setIgnoredRegions(ignoredRegions);
         }
     }
 
-    public void overlayOpened(int rightSidebarWidth, Rectangle ignoredRegion) {
+    private void setQuestPanelVisible(boolean visible) {
+        if (this.questSidePanel != null) {
+            this.questSidePanel.setVisible(visible);
+        }
+        if (this.btnOpenQuestMenu != null) {
+            this.btnOpenQuestMenu.setVisible(!visible);
+        }
+    }
+
+    private void rememberQuestPanelStateBeforeTransientAction() {
+        if (this.questSidePanel != null && this.questSidePanel.isVisible()) {
+            this.wasQuestPanelOpen = true;
+        }
+    }
+
+    private void restoreQuestPanelIfNeeded() {
+        if (!this.wasQuestPanelOpen) {
+            return;
+        }
+        if (this.buildingManager != null && this.buildingManager.isDeletionMode()) {
+            return;
+        }
+        if (this.buildingSidePanel != null && this.buildingSidePanel.isVisible()) {
+            return;
+        }
+        int cw = Math.max(100, this.frame.getContentPane().getWidth());
+        int ch = Math.max(100, this.frame.getContentPane().getHeight());
+        this.questSidePanel.setBounds(computeQuestOverlayBounds(cw, ch));
+        setQuestPanelVisible(true);
+        this.layeredPane.moveToFront(this.questSidePanel);
+        this.layeredPane.revalidate();
+        this.layeredPane.repaint();
+        this.wasQuestPanelOpen = false;
+    }
+
+    public void overlayOpened(int rightSidebarWidth) {
         if (this.edgeScroller != null) {
             this.edgeScroller.setEnabled(false);
             this.edgeScroller.setRightSidebarWidth(rightSidebarWidth);
-            this.edgeScroller.setIgnoredRegion(ignoredRegion);
         }
     }
 
     public void overlayClosed() {
         if (this.edgeScroller != null) {
-            this.edgeScroller.setIgnoredRegion(null);
             this.edgeScroller.setRightSidebarWidth(0);
             this.edgeScroller.setEnabled(true);
         }
@@ -478,3 +718,4 @@ public class Display {
         this.frame.setSize(outerW, outerH);
     }
 }
+

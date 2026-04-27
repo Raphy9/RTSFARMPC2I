@@ -27,29 +27,26 @@ public class Barn extends Inventory {
     public int sellItem(Item item, int qty) {
         int itemPrice = 0;
 
-        // 1. Déterminer le prix unitaire
         if (item instanceof ItemPlant) {
-            switch (((ItemPlant) item).getPlantType()) {
-                case CHOUX -> itemPrice = 4;
-                case CAROTTE -> itemPrice = 3;
-                case CITROUILLE -> itemPrice = 7;
-                case FRAISE -> itemPrice = 9;
+            switch (item.getPlantType()) {
+                case CHOUX -> itemPrice = PlantType.CHOUX.getValue();
+                case CAROTTE -> itemPrice = PlantType.CAROTTE.getValue();
+                case CITROUILLE -> itemPrice = PlantType.CITROUILLE.getValue();
+                case FRAISE -> itemPrice = PlantType.FRAISE.getValue();
             }
         } else if (item instanceof ItemSeed) {
-            switch (((ItemSeed) item).getPlantType()) {
-                case CHOUX -> itemPrice = 2;
-                case CAROTTE -> itemPrice = 1;
-                case CITROUILLE -> itemPrice = 3;
-                case FRAISE -> itemPrice = 4;
+            switch (item.getPlantType()) {
+                case CHOUX -> itemPrice = PlantType.CHOUX.getValue()/2;
+                case CAROTTE -> itemPrice = PlantType.CAROTTE.getValue()/2;
+                case CITROUILLE -> itemPrice = PlantType.CITROUILLE.getValue()/2;
+                case FRAISE -> itemPrice = PlantType.FRAISE.getValue()/2;
             }
         }
 
-        // 2. Effectuer la transaction UNIQUEMENT si on vend vraiment (qty > 0)
         if (qty > 0 && getItems().contains(item) && item.getQuantity() >= qty) {
             item.removeQuantity(qty);
             int earned = itemPrice * qty;
             stats.addMoney(earned);
-            stats.addExp(earned); // XP = montant gagné à la vente
         }
 
         return itemPrice;
@@ -61,24 +58,22 @@ public class Barn extends Inventory {
     public int buyItem(Item item, int qty) {
         int itemPrice = 0;
 
-        // 1. Déterminer le prix unitaire
         if (item instanceof ItemSeed) {
-            switch (((ItemSeed) item).getPlantType()) {
-                case CHOUX -> itemPrice = 3;
-                case CAROTTE -> itemPrice = 2;
-                case CITROUILLE -> itemPrice = 4;
-                case FRAISE -> itemPrice = 5;
+            switch (item.getPlantType()) {
+                case CHOUX -> itemPrice = PlantType.CHOUX.getValue() + 1;
+                case CAROTTE -> itemPrice = PlantType.CAROTTE.getValue() + 1;
+                case CITROUILLE -> itemPrice = PlantType.CITROUILLE.getValue() + 1;
+                case FRAISE -> itemPrice = PlantType.FRAISE.getValue() + 1;
             }
         } else if (item instanceof ItemPlant) {
-            switch (((ItemPlant) item).getPlantType()) {
-                case CHOUX -> itemPrice = 5;
-                case CAROTTE -> itemPrice = 4;
-                case CITROUILLE -> itemPrice = 8;
-                case FRAISE -> itemPrice = 10;
+            switch (item.getPlantType()) {
+                case CHOUX -> itemPrice = PlantType.CHOUX.getValue()/2 + 1;
+                case CAROTTE -> itemPrice = PlantType.CAROTTE.getValue()/2 + 1;
+                case CITROUILLE -> itemPrice = PlantType.CITROUILLE.getValue()/2 + 1;
+                case FRAISE -> itemPrice = PlantType.FRAISE.getValue()/2 + 1;
             }
         }
 
-        // 2. Effectuer la transaction UNIQUEMENT si on achète vraiment (qty > 0)
         if (qty > 0) {
             int cost = itemPrice * qty;
 
@@ -86,9 +81,9 @@ public class Barn extends Inventory {
                 stats.removeMoney(cost);
 
                 if (item instanceof ItemSeed) {
-                    super.addItem(new ItemSeed(((ItemSeed) item).getPlantType(), qty));
+                    super.addItem(new ItemSeed(item.getPlantType(), qty));
                 } else if (item instanceof ItemPlant) {
-                    super.addItem(new ItemPlant(((ItemPlant) item).getPlantType(), qty));
+                    super.addItem(new ItemPlant(item.getPlantType(), qty));
                 }
             }
         }

@@ -1,7 +1,7 @@
 package src.view;
 
 import src.model.World;
-
+import src.control.persistence.SaveController;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -64,7 +64,8 @@ public class SaveManager {
 
                 try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
                     Object obj = ois.readObject();
-                    if (obj instanceof WorldSaveData data) {
+                    if (obj instanceof WorldSaveData) {
+                        WorldSaveData data = (WorldSaveData) obj;
                         level = data.getLevel();
                         money = data.getMoney();
                     }
@@ -85,49 +86,14 @@ public class SaveManager {
      * Sauvegarde l'état du monde dans un fichier
      */
     public static boolean saveGame(String saveName, World world) {
-        try {
-            Path savePath = Paths.get(SAVES_DIR, saveName + ".sav");
-            FileOutputStream fos = new FileOutputStream(savePath.toFile());
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-
-            WorldSaveData data = new WorldSaveData(world);
-            oos.writeObject(data);
-            oos.close();
-            fos.close();
-
-            System.out.println("Jeu sauvegardé : " + saveName);
-            return true;
-        } catch (Exception ex) {
-            System.err.println("Erreur lors de la sauvegarde : " + ex.getMessage());
-            ex.printStackTrace();
-            return false;
-        }
+        return src.control.persistence.SaveController.saveGame(saveName, world);
     }
 
     /**
      * Charge l'état du monde depuis un fichier
      */
     public static void loadGame(String saveName, World world) {
-        try {
-            Path savePath = Paths.get(SAVES_DIR, saveName + ".sav");
-            FileInputStream fis = new FileInputStream(savePath.toFile());
-            ObjectInputStream ois = new ObjectInputStream(fis);
-
-            WorldSaveData data = (WorldSaveData) ois.readObject();
-            ois.close();
-            fis.close();
-
-            world.prepareForLoad();
-            data.applyToWorld(world);
-            System.out.println("Jeu chargé : " + saveName);
-            world.computeParcels();
-        } catch (Exception ex) {
-            System.err.println("Erreur lors du chargement : " + ex.getMessage());
-            ex.printStackTrace();
-        } finally {
-            // Toujours garantir un inventaire minimum pour que l'UI grange reste utilisable.
-            world.ensureBarnCatalog();
-        }
+        SaveController.loadGame(saveName, world);
     }
 
     /**

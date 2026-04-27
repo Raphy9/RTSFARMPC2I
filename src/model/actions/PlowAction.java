@@ -4,6 +4,7 @@ import src.model.Gardener;
 import src.model.SoundManager;
 import src.model.Tile;
 import src.model.World;
+import src.model.Quests;
 
 /**
  * Action de labourage : le jardinier se déplace sur la tuile d'exécution (execX,execY) et laboure la case (plowX,plowY).
@@ -38,6 +39,7 @@ public class PlowAction extends Action {
             System.out.println("Succès : Le jardinier a labouré la case (" + plowX + ", " + plowY + ") !");
             SoundManager.playSound(SoundManager.PLOW);
             world.computeParcels();
+            world.registerQuestAction(Quests.ACTION_PLOW_TILE);
         } else {
             System.out.println("Échec : La case (" + plowX + ", " + plowY + ") est déjà labourée ou n'existe pas.");
         }

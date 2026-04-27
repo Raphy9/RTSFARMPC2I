@@ -3,6 +3,8 @@ package src.model;
 import src.model.buildings.Building;
 import src.model.buildings.Obstacle;
 import src.model.buildings.BarnBuilding;
+import src.model.buildings.FenceFace;
+import src.model.buildings.FenceSide;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -28,6 +30,9 @@ public class World {
 
 
     private Stats stats;
+    // Gestionnaire global des quêtes du joueur (chapitres + progression).
+    private src.model.Quests quests;
+    private java.util.function.IntConsumer levelUpCallback;
 
     // Liste des ennemis (poules) présents dans le monde
     private List<Chicken> enemies;
@@ -105,7 +110,31 @@ public class World {
      * Initialise les statistiques du monde
      */
     private void initalizeStats() {
-        stats = new Stats(100); // Commence avec 100 pièces d'argent
+        stats = new Stats(0); // Commence avec 0 pièces d'argent
+        quests = new src.model.Quests();
+        stats.setLevelUpCallback(this::onLevelUp);
+    }
+
+    private void onLevelUp(int newLevel) {
+        syncLevelMilestones();
+        if (levelUpCallback != null) {
+            levelUpCallback.accept(newLevel);
+        }
+    }
+
+    private void syncLevelMilestones() {
+        if (quests != null) {
+            int level = stats != null ? stats.getLevel() : 1;
+            if (level >= 3) {
+                quests.onAction(src.model.Quests.ACTION_REACH_LEVEL_3, stats);
+            }
+            if (level >= 4) {
+                quests.onAction(src.model.Quests.ACTION_REACH_LEVEL_4, stats);
+            }
+            if (level >= 5) {
+                quests.onAction(src.model.Quests.ACTION_REACH_LEVEL_5, stats);
+            }
+        }
     }
 
     /** Initialise les cases du monde, en créant une zone de sécurité autour du point (55, 55) et en générant aléatoirement des obstacles sur le reste du terrain. */
@@ -228,7 +257,7 @@ public class World {
                 return b.getX() + (b.getWidth() / 2);
             }
         }
-        return 55; // Fallback de sécurité si la grange a été supprimée
+        return -1;
     }
 
     public int getBarnY() {
@@ -238,7 +267,7 @@ public class World {
                 return b.getY() + (b.getHeight() - 1);
             }
         }
-        return 55; // Fallback de sécurité
+        return -1;
     }
 
     public boolean isBarnAt(int x, int y) {
@@ -257,6 +286,23 @@ public class World {
             int maxX = b.getX() + b.getWidth();
             int minY = b.getY() - 1;
             int maxY = b.getY() + b.getHeight();
+            if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Retourne true si la case (x,y) est sur la grange.
+     */
+    public boolean isBarnInside(int x, int y) {
+        for (Building b : buildings) {
+            if (!(b instanceof BarnBuilding)) continue;
+            int minX = b.getX();
+            int maxX = b.getX() + b.getWidth() - 1;
+            int minY = b.getY();
+            int maxY = b.getY() + b.getHeight() - 1;
             if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
                 return true;
             }
@@ -531,6 +577,56 @@ public class World {
         return stats;
     }
 
+    /** Retourne le moteur de quêtes du monde pour l'UI et la sauvegarde. */
+    public src.model.Quests getQuests() {
+        return quests;
+    }
+
+    /** Permet à la vue de se rafraîchir quand la progression des quêtes change. */
+    public void setQuestChangeCallback(Runnable callback) {
+        if (quests != null) {
+            quests.setChangeListener(callback);
+        }
+    }
+
+    /** Notifie le système de quêtes qu'une plantation vient de réussir. */
+    public void registerPlantEvent(PlantType plantType) {
+        if (quests != null) {
+            syncLevelMilestones();
+            quests.onPlant(plantType, stats);
+        }
+    }
+
+    /** Notifie le système de quêtes qu'une récolte vient de réussir. */
+    public void registerHarvestEvent(PlantType plantType) {
+        if (quests != null) {
+            syncLevelMilestones();
+            quests.onHarvest(plantType, stats);
+        }
+    }
+
+    /** Notifie le système de quêtes qu'un bâtiment vient d'être posé. */
+    public void registerBuildEvent(Building building) {
+        if (quests != null) {
+            syncLevelMilestones();
+            quests.onBuild(building, stats);
+            if (building instanceof FenceFace || building instanceof FenceSide) {
+                quests.onAction(src.model.Quests.ACTION_PLACE_FENCE, stats);
+            }
+        }
+    }
+
+    public void registerQuestAction(String actionKey) {
+        registerQuestAction(actionKey, 1);
+    }
+
+    public void registerQuestAction(String actionKey, int amount) {
+        if (quests != null) {
+            syncLevelMilestones();
+            quests.onAction(actionKey, stats, amount);
+        }
+    }
+
     /** Nombre total de cases actuellement labourées (PlantTile). */
     public int getPlowedTilesCount() {
         int count = 0;
@@ -558,8 +654,7 @@ public class World {
 
     /** Enregistre un callback appelé à chaque montée de niveau, avec le nouveau niveau. */
     public void setLevelUpCallback(java.util.function.IntConsumer callback) {
-        stats.setLevelUpCallback(callback);
+        this.levelUpCallback = callback;
     }
 
 }
-

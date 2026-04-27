@@ -19,7 +19,7 @@ public class EdgeScrollThread {
     private volatile float edgeSpeed;
 
     private volatile int rightSidebarWidth = 0;
-    private volatile Rectangle ignoredRegion = null;
+    private volatile java.util.List<Rectangle> ignoredRegions = new java.util.ArrayList<>();
     private volatile boolean overlayActive = false; // true quand un menu/popup est ouvert
     private volatile boolean enabled = true;
 
@@ -67,9 +67,18 @@ public class EdgeScrollThread {
                             if (gLocal.x >= 0 && gLocal.y >= 0 && gLocal.x < gvW && gLocal.y < gvH) {
                                 int mouseX = gLocal.x;
                                 int mouseY = gLocal.y;
-                                // ignore explicit region
-                                Rectangle ir = this.ignoredRegion;
-                                if (ir == null || !ir.contains(mouseX, mouseY)) {
+                                // ignore explicit regions
+                                boolean inIgnoredRegion = false;
+                                java.util.List<Rectangle> irs = this.ignoredRegions;
+                                if (irs != null) {
+                                    for (Rectangle ir : irs) {
+                                        if (ir != null && ir.contains(mouseX, mouseY)) {
+                                            inIgnoredRegion = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!inIgnoredRegion) {
                                     int effectiveW = Math.max(0, gvW - rightSidebarWidth);
                                     if (mouseX < effectiveW) {
                                         float dx = 0f, dy = 0f;
@@ -108,7 +117,7 @@ public class EdgeScrollThread {
 
     // API de configuration (thread-safe via volatile fields)
     public void setRightSidebarWidth(int widthPx) { this.rightSidebarWidth = Math.max(0, widthPx); }
-    public void setIgnoredRegion(Rectangle r) { this.ignoredRegion = r; }
+    public void setIgnoredRegions(java.util.List<Rectangle> r) { this.ignoredRegions = r; }
     public void setOverlayActive(boolean active) { this.overlayActive = active; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public void setEdgeThreshold(int t) { this.edgeThreshold = Math.max(1, t); }

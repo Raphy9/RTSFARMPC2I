@@ -6,10 +6,10 @@ package src.model;
  */
 public enum PlantType {
     // Nom, Temps croissance (ticks), Soif (eau/tick), Prix vente
-    CHOUX("Choux",       75, 0.5f,  6),
-    CAROTTE("Carotte",   75, 0.5f, 10),
-    CITROUILLE("Citrouille", 75, 0.5f, 25, 3),
-    FRAISE("Fraise",     75, 0.5f,  8, 4);
+    CHOUX("Choux",       75, 0.3f,  4, 3),
+    CAROTTE("Carotte",   100, 0.6f, 3, 3),
+    CITROUILLE("Citrouille", 125, 1f, 7, 4, 3),
+    FRAISE("Fraise",     100, 2f,  9, 5, 4);
 
     // --- Attributs ---
     private final String name;
@@ -17,6 +17,7 @@ public enum PlantType {
     private final float waterConsumption; // Eau bue par tick
     private final int value; // Prix de vente
     private int levelRequirement = 0; // Niveau requis pour débloquer cette plante
+    private int expGain;
 
     /**
      * Constructeur de l'énumération PlantType.
@@ -26,12 +27,13 @@ public enum PlantType {
      * @param waterConsumption  La quantité d'eau consommée par tick
      * @param value             La valeur de vente de la plante une fois récoltée
      */
-    PlantType(String name, int growthDuration, float waterConsumption, int value) {
+    PlantType(String name, int growthDuration, float waterConsumption, int value, int expGain) {
         this.name = name;
         this.growthDuration = growthDuration;
         this.waterConsumption = waterConsumption;
         this.value = value;
         this.levelRequirement = 0;
+        this.expGain = expGain;
     }
 
     /**
@@ -42,12 +44,13 @@ public enum PlantType {
      * @param waterConsumption  La quantité d'eau consommée par tick
      * @param value             La valeur de vente de la plante une fois récoltée
      */
-    PlantType(String name, int growthDuration, float waterConsumption, int value, int levelRequirement) {
+    PlantType(String name, int growthDuration, float waterConsumption, int value, int expGain, int levelRequirement) {
         this.name = name;
         this.growthDuration = growthDuration;
         this.waterConsumption = waterConsumption;
         this.value = value;
         this.levelRequirement = levelRequirement;
+        this.expGain = expGain;
     }
 
     // --- Getters ---
@@ -56,4 +59,5 @@ public enum PlantType {
     public float getWaterConsumption() { return waterConsumption; }
     public int getValue() { return value; }
     public int getLevelRequirement() { return levelRequirement; }
+    public int getExpGain() { return expGain; }
 }

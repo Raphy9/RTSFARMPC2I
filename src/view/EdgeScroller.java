@@ -26,7 +26,7 @@ public class EdgeScroller {
 
     public void stop() { this.thread.stop(); }
     public void setRightSidebarWidth(int w) { this.thread.setRightSidebarWidth(w); }
-    public void setIgnoredRegion(Rectangle r) { this.thread.setIgnoredRegion(r); }
+    public void setIgnoredRegions(java.util.List<Rectangle> r) { this.thread.setIgnoredRegions(r); }
     public void setOverlayActive(boolean active) { this.thread.setOverlayActive(active); }
     public void setEnabled(boolean enabled) { this.thread.setEnabled(enabled); }
     public void setEdgeThreshold(int t) { this.thread.setEdgeThreshold(t); }

@@ -80,7 +80,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
         Tile tile = world.getTile(coords.x, coords.y);
 
         // 0. Si on clique sur la grange ou une case voisine -> Ouvrir PopupBarn
-        if (world.isBarnAdjacentOrInside(coords.x, coords.y)) {
+        if (world.isBarnInside(coords.x, coords.y)) {
             System.out.println("Clic proche de la grange -> Ouverture PopupBarn");
             display.switchToPopup(new src.view.PopupBarn(display, world));
             return;
@@ -99,6 +99,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
         if (chickenToClick != null) {
             chickenToClick.flee();
+            world.registerQuestAction(Quests.ACTION_CHASE_CHICKEN);
             return;
         }
         if (gardenerToClick != null) {

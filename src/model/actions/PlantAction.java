@@ -62,6 +62,8 @@ public class PlantAction extends Action {
 
                 if (success) {
                     System.out.println("Succès : Le jardinier a planté " + plantType.getName() + " !");
+                    // On ne progresse que si la plantation a réellement fonctionné.
+                    world.registerPlantEvent(plantType);
 
                     SoundManager.playSound(SoundManager.PLANT);
 

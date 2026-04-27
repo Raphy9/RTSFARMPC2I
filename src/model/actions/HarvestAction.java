@@ -4,8 +4,11 @@ import src.model.*;
 
 public class HarvestAction extends Action {
 
-    public HarvestAction(int targetX, int targetY) {
+    private Stats stats;
+
+    public HarvestAction(int targetX, int targetY, Stats stats) {
         super(targetX, targetY);
+        this.stats = stats;
     }
 
     @Override
@@ -23,12 +26,15 @@ public class HarvestAction extends Action {
                     PlantType type = plant.getType();
 
                     parcel.harvest(); // Vide la case
+                    // La quête de récolte avance seulement sur une vraie récolte mûre.
+                    world.registerHarvestEvent(type);
 
                     // Ajout à l'inventaire du jardinier
                     gardener.getInventory().addItem(new ItemPlant(type, 1));
                     System.out.println("Succès : Le jardinier a récolté " + type.getName() + " !");
 
                     SoundManager.playSound(SoundManager.HARVEST);
+                    stats.addExp(type.getExpGain());
                 }
 
                 //  La plante est morte ou mangée (Nettoyage : Ne donne rien)

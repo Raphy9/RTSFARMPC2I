@@ -400,8 +400,8 @@ public class PopupBarn extends PopupPanel {
         JButton sellButton = createActionBtn("Vendre");  
 
         if (unlocked) {
-            buyButton.addActionListener(new BarnController(barn, this, item, true, quantityInput));
-            sellButton.addActionListener(new BarnController(barn, this, item, false, quantityInput));
+            buyButton.addActionListener(new BarnController(world, barn, this, item, true, quantityInput));
+            sellButton.addActionListener(new BarnController(world, barn, this, item, false, quantityInput));
             sellButton.setEnabled(item.getQuantity() > 0);
         } else {
             buyButton.setEnabled(false);

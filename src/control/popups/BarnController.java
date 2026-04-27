@@ -2,6 +2,10 @@ package src.control.popups;
 
 import src.model.Barn;
 import src.model.Item;
+import src.model.ItemPlant;
+import src.model.ItemSeed;
+import src.model.Quests;
+import src.model.World;
 import src.view.GameDialog;
 import src.view.PopupBarn;
 
@@ -10,13 +14,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class BarnController implements ActionListener {
+    private final World world;
     private final Barn barn;
     private final PopupBarn popupBarn;
     private final Item item;
     private final boolean isBuyAction;
     private final JTextComponent quantityInput;
 
-    public BarnController(Barn barn, PopupBarn popupBarn, Item item, boolean isBuyAction, JTextComponent quantityInput) {
+    public BarnController(World world, Barn barn, PopupBarn popupBarn, Item item, boolean isBuyAction, JTextComponent quantityInput) {
+        this.world = world;
         this.barn = barn;
         this.popupBarn = popupBarn;
         this.item = item;
@@ -34,6 +40,9 @@ public class BarnController implements ActionListener {
             int unitPrice = barn.buyItem(item, 0);
             if (currentMoney >= unitPrice * qty) {
                 barn.buyItem(item, qty);
+                if (item instanceof ItemSeed && item.getPlantType() == src.model.PlantType.CITROUILLE) {
+                    world.registerQuestAction(Quests.ACTION_BUY_SEED_CITROUILLE, qty);
+                }
             } else {
                 GameDialog.showMessage(popupBarn, "Achat impossible",
                         "Vous n'avez pas assez d'argent !\nCoût : " + (unitPrice * qty) + " PO\nPortefeuille : " + currentMoney + " PO");
@@ -42,6 +51,14 @@ public class BarnController implements ActionListener {
             // On vérifie d'abord si le joueur a assez de stock
             if (item.getQuantity() >= qty) {
                 barn.sellItem(item, qty);
+                if (item instanceof ItemPlant) {
+                    switch (item.getPlantType()) {
+                        case CAROTTE -> world.registerQuestAction(Quests.ACTION_SELL_CAROTTE, qty);
+                        case CHOUX -> world.registerQuestAction(Quests.ACTION_SELL_CHOUX, qty);
+                        case CITROUILLE -> world.registerQuestAction(Quests.ACTION_SELL_CITROUILLE, qty);
+                        case FRAISE -> world.registerQuestAction(Quests.ACTION_SELL_FRAISE, qty);
+                    }
+                }
             } else {
                 GameDialog.showMessage(popupBarn, "Vente impossible",
                         "Vous n'avez pas assez de cet objet en stock !\nEn stock : " + item.getQuantity() + "\nQuantité demandée : " + qty);

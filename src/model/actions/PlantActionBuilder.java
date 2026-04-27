@@ -13,6 +13,14 @@ public class PlantActionBuilder extends ActionBuilder {
 
     @Override
     public void buildAction() {
+        if (world.getBarnY() == -1 || world.getBarnX() == -1) {
+            if (getDisplay() != null) {
+                getDisplay().switchToPopup(new src.view.TextPopup(getDisplay(), 350, 150, "Grange manquante",
+                        "<div style='text-align: center;'>Vous devez construire une grange pour planter des graines !</div>"));
+            }
+            return; // Annulation totale
+        }
+
         if (getItem() instanceof ItemSeed) {
             int totalSeedsNeeded = getSelectedPoints().size();
             PlantType type = getItem().getPlantType();

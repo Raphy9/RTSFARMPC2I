@@ -14,6 +14,13 @@ public class HarvestActionBuilder extends ActionBuilder {
 
     @Override
     public void buildAction() {
+        if (world.getBarnY() == -1 || world.getBarnX() == -1) {
+            if (getDisplay() != null) {
+                getDisplay().switchToPopup(new src.view.TextPopup(getDisplay(), 350, 150, "Grange manquante",
+                        "<div style='text-align: center;'>Vous devez construire une grange pour ramasser / récolter !</div>"));
+            }
+            return; // Annulation totale
+        }
 
         for (Point p : getSelectedPoints()) {
             if (getDisplay() != null) {
@@ -30,7 +37,7 @@ public class HarvestActionBuilder extends ActionBuilder {
             int execY = (adjacent != null) ? adjacent.y : p.y;
 
             getGardener().addAction(new MoveAction(execX, execY, clearHighlight));
-            getGardener().addAction(new HarvestAction(p.x, p.y));
+            getGardener().addAction(new HarvestAction(p.x, p.y, world.getStats()));
         }
 
         // Après avoir tout récolté, on va à la grange

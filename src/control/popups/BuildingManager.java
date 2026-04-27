@@ -2,7 +2,9 @@ package src.control.popups;
 
 import src.model.SoundManager;
 import src.model.World;
+import src.model.Quests;
 import src.model.buildings.Building;
+import src.model.buildings.Obstacle;
 import src.view.Display;
 import src.view.GameDialog;
 import src.model.Tile;
@@ -224,6 +226,8 @@ public class BuildingManager extends MouseAdapter {
 
         placedBuilding.setPosition(ghostX, ghostY);
         world.addBuilding(placedBuilding);
+        // La construction a été posée: on l'annonce au système de quêtes.
+        world.registerBuildEvent(placedBuilding);
 
         SoundManager.playSound(SoundManager.PLACE);
 
@@ -309,6 +313,11 @@ public class BuildingManager extends MouseAdapter {
 
         for (Building b : pendingDeletionBuildings) {
             world.removeBuilding(b);
+            if (b instanceof Obstacle) {
+                world.registerQuestAction(Quests.ACTION_DESTROY_OBSTACLE);
+            } else {
+                world.registerQuestAction(Quests.ACTION_DESTROY_BUILDING);
+            }
         }
         for (Point p : pendingDeletionPlantTiles) {
             world.toNormalTile(p.x, p.y);

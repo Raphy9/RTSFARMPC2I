@@ -64,15 +64,20 @@ public class Stats {
         this.exp = e;
     }
 
-    /** XP nécessaire pour passer au niveau suivant (toujours 100 dans ce système simple) */
+    /** XP nécessaire pour passer au niveau suivant. */
     public int getExpForNextLevel() {
-        return 100;
+        return switch (level) {
+            case 1 -> 100;
+            case 2 -> 150;
+            case 3 -> 150;
+            case 4 -> 200;
+            default -> 250;
+        };
     }
 
     private void checkLevelUp() {
-        // Simple système de level up : chaque 100 exp, on gagne un niveau
-        while (exp >= 100) {
-            exp -= 100;
+        while (exp >= getExpForNextLevel()) {
+            exp -= getExpForNextLevel();
             level++;
             if (levelUpCallback != null) {
                 final int lvl = level;

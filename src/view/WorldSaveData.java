@@ -1,49 +1,80 @@
 package src.view;
 
-import src.model.Item;
-import src.model.ItemPlant;
-import src.model.ItemSeed;
-import src.model.PlantState;
-import src.model.PlantType;
-import src.model.World;
-import src.model.buildings.Building;
-import src.model.buildings.Obstacle;
-import src.model.Tile;
-import src.model.PlantTile;
-import src.model.Plant;
+import src.model.*;
+import src.model.buildings.*;
 
 import java.io.Serializable;
 import java.util.*;
 
 /**
- * Classe pour sérialiser/désérialiser l'état complet du monde
+ * ╔════════════════════════════════════════════════════════════════════════╗
+ * ║ WorldSaveData - DTO pour la sérialisation du monde                    ║
+ * ╠════════════════════════════════════════════════════════════════════════╣
+ * ║                                                                        ║
+ * ║ Classe responsable de:                                                ║
+ * ║ • Capturer l'état complet du World en constructeur                   ║
+ * ║ • Exposer les données via des getters                                ║
+ * ║                                                                        ║
+ * ║ Architecture MVC:                                                     ║
+ * ║ • C'est un DTO (Data Transfer Object) = données seulement             ║
+ * ║ • Pas de logique métier                                              ║
+ * ║ • La restauration est effectuée par SaveController (contrôleur)       ║
+ * ║                                                                        ║
+ * ║ Sérialisation:                                                        ║
+ * ║ • Classe Serializable pour ObjectOutputStream                        ║
+ * ║ • Tous les champs doivent être sérialisables                         ║
+ * ╚════════════════════════════════════════════════════════════════════════╝
  */
 public class WorldSaveData implements Serializable {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 1L;
 
+    // ────────────────────────────────────────────────────────────────────
+    // CHAMPS PRINCIPAUX DE LA CLASSE
+    // ────────────────────────────────────────────────────────────────────
+
+    // Statistiques du joueur
     private int level;
     private int money;
     private int exp;
     private long timestamp;
-    private List<BuildingSaveData> buildings;
-    private Map<String, PlantTileSaveData> plantTiles;
-    private List<ItemSaveData> barnItems;
 
+    // Données de la carte et bâtiments
+    private List<BuildingSaveData> buildings;           // Tous les bâtiments
+    private Map<String, PlantTileSaveData> plantTiles;  // Tuiles labourées
+
+    // Inventaire et quêtes
+    private List<ItemSaveData> barnItems;               // Items de la grange
+    private List<List<Integer>> questProgresses;        // Progression quêtes
+    private int activeQuestLineIndex;                   // Chapitre actif
+
+    /**
+     * ╔════════════════════════════════════════════════════════════════════╗
+     * ║ Constructeur: Capture l'état complet du World                     ║
+     * ║                                                                    ║
+     * ║ Appelé depuis SaveController.saveGame()                          ║
+     * ║ Extrait UNIQUEMENT les données, pas la logique                   ║
+     * ╚════════════════════════════════════════════════════════════════════╝
+     */
     public WorldSaveData(World world) {
+        // Sauvegarder les statistiques
         this.level = world.getStats().getLevel();
         this.money = world.getStats().getMoney();
         this.exp = world.getStats().getExp();
         this.timestamp = System.currentTimeMillis();
+
+        // Initialiser les collections
         this.buildings = new ArrayList<>();
         this.plantTiles = new HashMap<>();
         this.barnItems = new ArrayList<>();
+        this.questProgresses = new ArrayList<>();
+        this.activeQuestLineIndex = 0;
 
         // Sauvegarder tous les bâtiments
         for (Building b : world.getBuildings()) {
             buildings.add(new BuildingSaveData(b));
         }
 
-        // Sauvegarder toutes les PlantTile (même vides)
+        // Sauvegarder toutes les PlantTiles
         for (int x = 0; x < World.WIDTH; x++) {
             for (int y = 0; y < World.HEIGHT; y++) {
                 Tile t = world.getTile(x, y);
@@ -57,43 +88,40 @@ public class WorldSaveData implements Serializable {
         for (Item item : world.getBarn().getItems()) {
             barnItems.add(new ItemSaveData(item));
         }
+
+        // Sauvegarder la progression des quêtes (utilise getProgressSnapshot() du modèle Quests)
+        try {
+            if (world.getQuests() != null) {
+                questProgresses = world.getQuests().getProgressSnapshot();
+                activeQuestLineIndex = world.getQuests().getActiveQuestLineIndex();
+            }
+        } catch (Exception ignored) {}
     }
 
-    public void applyToWorld(World world) {
-        world.getStats().setLevel(this.level);
-        world.getStats().setMoney(this.money);
-        world.getStats().setExp(this.exp);
+    // ════════════════════════════════════════════════════════════════════
+    // GETTERS POUR ACCÈS AUX DONNÉES
+    // ════════════════════════════════════════════════════════════════════
 
-        // Restaurer l'inventaire de la grange seulement si la sauvegarde contient ces données.
-        // (compatibilité avec anciennes sauvegardes)
-        if (barnItems != null) {
-            world.getBarn().getItems().clear();
-            for (ItemSaveData itemData : barnItems) {
-                itemData.restoreToBarn(world);
-            }
-        }
+    public int getLevel() { return level; }
+    public int getMoney() { return money; }
+    public int getExp() { return exp; }
+    public long getTimestamp() { return timestamp; }
 
-        // Restaurer d'abord les PlantTile (même vides), puis les bâtiments.
-        // Cela permet de conserver les parcelles labourées ; les bâtiments réappliqueront ensuite leurs collisions.
-        if (plantTiles != null) {
-            for (Map.Entry<String, PlantTileSaveData> entry : plantTiles.entrySet()) {
-                String[] coords = entry.getKey().split(",");
-                int x = Integer.parseInt(coords[0]);
-                int y = Integer.parseInt(coords[1]);
-                entry.getValue().restoreToWorld(world, x, y);
-            }
-        }
+    public List<BuildingSaveData> getBuildings() { return buildings; }
+    public Map<String, PlantTileSaveData> getPlantTiles() { return plantTiles; }
+    public List<ItemSaveData> getBarnItems() { return barnItems; }
+    public List<List<Integer>> getQuestProgresses() { return questProgresses; }
+    public int getActiveQuestLineIndex() { return activeQuestLineIndex; }
 
-        if (buildings != null) {
-            for (BuildingSaveData bsd : buildings) {
-                bsd.restoreToWorld(world);
-            }
-        }
-    }
+    // ════════════════════════════════════════════════════════════════════
+    // CLASSE INTERNE: BuildingSaveData
+    // ════════════════════════════════════════════════════════════════════
 
-    // Classes internes pour sérialiser les données
+    /**
+     * DTO pour sauvegarder les données d'un bâtiment (classe et position).
+     */
     public static class BuildingSaveData implements Serializable {
-        private static final long serialVersionUID = -8617244170660032689L;
+        private static final long serialVersionUID = 1L;
 
         public String className;
         public int x, y;
@@ -111,9 +139,13 @@ public class WorldSaveData implements Serializable {
             }
         }
 
+        /**
+         * Restaure le bâtiment dans le monde
+         */
         public void restoreToWorld(World world) {
             try {
                 Building b;
+
                 if (Obstacle.class.getName().equals(this.className)) {
                     String spritePath = (obstacleSpritePath != null)
                             ? obstacleSpritePath
@@ -144,6 +176,13 @@ public class WorldSaveData implements Serializable {
         }
     }
 
+    // ════════════════════════════════════════════════════════════════════
+    // CLASSE INTERNE: PlantTileSaveData
+    // ════════════════════════════════════════════════════════════════════
+
+    /**
+     * DTO pour sauvegarder les données d'une tuile labourée avec sa plante.
+     */
     public static class PlantTileSaveData implements Serializable {
         private static final long serialVersionUID = 1L;
 
@@ -180,8 +219,7 @@ public class WorldSaveData implements Serializable {
                     pt = (PlantTile) t;
                 }
 
-                // Compatibilité anciennes sauvegardes: si plantTypeName est présent,
-                // c'était forcément une case avec plante (même si hasPlant n'existait pas).
+                // Compatibilité anciennes sauvegardes
                 boolean shouldRestorePlant = hasPlant || plantTypeName != null;
                 if (!shouldRestorePlant) {
                     return;
@@ -193,7 +231,9 @@ public class WorldSaveData implements Serializable {
                 }
                 Plant p = pt.getPlant();
                 if (p != null) {
-                    PlantState state = (plantStateName != null) ? PlantState.valueOf(plantStateName) : PlantState.GRAINE;
+                    PlantState state = (plantStateName != null)
+                        ? PlantState.valueOf(plantStateName)
+                        : PlantState.GRAINE;
                     p.restoreState(age, waterLevel, ticksWithoutWater, hasFertilizer, state);
                 }
             } catch (Exception ex) {
@@ -202,6 +242,13 @@ public class WorldSaveData implements Serializable {
         }
     }
 
+    // ════════════════════════════════════════════════════════════════════
+    // CLASSE INTERNE: ItemSaveData
+    // ════════════════════════════════════════════════════════════════════
+
+    /**
+     * DTO pour sauvegarder les données d'un item de grange.
+     */
     public static class ItemSaveData implements Serializable {
         private static final long serialVersionUID = 1L;
 
@@ -228,10 +275,6 @@ public class WorldSaveData implements Serializable {
             }
         }
     }
-
-    public int getLevel() { return level; }
-    public int getMoney() { return money; }
-    public long getTimestamp() { return timestamp; }
 }
 
 

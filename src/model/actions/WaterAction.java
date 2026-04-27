@@ -35,6 +35,7 @@ public class WaterAction extends Action {
             if (plantTile.getPlant() != null) {
                 plantTile.water();
                 SoundManager.playSound(SoundManager.WATER);
+                world.registerQuestAction(Quests.ACTION_WATER_TILE);
             }
             else {
                 System.out.println("Erreur : Il n'y a pas de plante à arroser sur cette case.");
