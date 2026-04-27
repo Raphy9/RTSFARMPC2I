@@ -14,6 +14,7 @@ public class Chicken extends Entity implements Runnable {
     private State currentState;
     private boolean isRunning;
     private Thread chickenThread;
+    private boolean hasClucked = false;
 
     public Chicken(int x, int y, World world) {
         super(world, x, y);
@@ -86,7 +87,14 @@ public class Chicken extends Entity implements Runnable {
                         world.getTile(oldX, oldY).removeEntity(this);
                         world.getTile(newX, newY).addEntity(this);
 
-                        Thread.sleep(200);
+                        if (!hasClucked) {
+                            if (Math.abs(newX - targetX) + Math.abs(newY - targetY) <= 10) {
+                                SoundManager.playSound(SoundManager.CHICKEN_AMBIENT);
+                                hasClucked = true;
+                            }
+                        }
+
+                        Thread.sleep(280);
                     }
                 }
 
@@ -97,6 +105,7 @@ public class Chicken extends Entity implements Runnable {
                         this.currentState = State.EATING;
                         Thread.sleep(3000);
                         plant.destroyByEnemy();
+                        hasClucked = false;     // jsp, enlever peut etre
                     }
                     this.currentState = State.IDLE;
                     Thread.sleep(500);
@@ -240,6 +249,8 @@ public class Chicken extends Entity implements Runnable {
         if (this.currentState == State.FLEEING) return;
 
         System.out.println("Cot cot ! La poule a été chassée !");
+        SoundManager.playSound(SoundManager.CHICKEN_RUN);
+
         this.currentState = State.FLEEING;
 
         if (chickenThread != null) {

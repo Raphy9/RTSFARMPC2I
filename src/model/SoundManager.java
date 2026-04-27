@@ -34,6 +34,9 @@ public class SoundManager {
     public static SoundData PLOW;
     public static SoundData HARVEST;
 
+    public static SoundData CHICKEN_AMBIENT;
+    public static SoundData CHICKEN_RUN;
+
     // Clips actifs et boucles
     private static final List<Clip> activeClips = Collections.synchronizedList(new ArrayList<>());
     private static final Map<String, Clip> loopClips = Collections.synchronizedMap(new HashMap<>());
@@ -59,6 +62,9 @@ public class SoundManager {
         WATER = loadSound("src/assets/sounds/watering.wav");
         PLOW = loadSound("src/assets/sounds/till.wav");
         HARVEST = loadSound("src/assets/sounds/pop_2.wav");
+
+        CHICKEN_AMBIENT = loadSound("src/assets/sounds/chicken_ambient_1.wav");
+        CHICKEN_RUN = loadSound("src/assets/sounds/chicken_cluck.wav");
     }
 
     /**
