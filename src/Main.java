@@ -22,7 +22,7 @@ public class Main {
             // Charger les sons
             final SoundManager soundManager = new SoundManager();
             SoundManager.loadSounds();
-            SoundManager.playLoop("menu", SoundManager.MENU, 100);   // Musique de background en boucle
+            SoundManager.playLoop("menu", SoundManager.MENU);   // Musique de background en boucle
 
             final Display[] displayHolder = new Display[1];
 
