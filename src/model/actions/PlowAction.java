@@ -1,6 +1,7 @@
 package src.model.actions;
 
 import src.model.Gardener;
+import src.model.SoundManager;
 import src.model.Tile;
 import src.model.World;
 
@@ -35,6 +36,7 @@ public class PlowAction extends Action {
             // On remplace la tile actuelle par une nouvelle PlantTile
             world.toPlantTile(plowX, plowY);
             System.out.println("Succès : Le jardinier a labouré la case (" + plowX + ", " + plowY + ") !");
+            SoundManager.playSound(SoundManager.PLOW);
             world.computeParcels();
         } else {
             System.out.println("Échec : La case (" + plowX + ", " + plowY + ") est déjà labourée ou n'existe pas.");

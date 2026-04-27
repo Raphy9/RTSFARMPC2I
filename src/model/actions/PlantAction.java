@@ -63,6 +63,8 @@ public class PlantAction extends Action {
                 if (success) {
                     System.out.println("Succès : Le jardinier a planté " + plantType.getName() + " !");
 
+                    SoundManager.playSound(SoundManager.PLANT);
+
                     //  On déduit la graine utilisée depuis l'inventaire du jardinier
                     // Créer un item prototype pour rechercher la pile correspondante
                     ItemSeed prototype = new ItemSeed(plantType);

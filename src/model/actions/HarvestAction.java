@@ -1,13 +1,6 @@
 package src.model.actions;
 
-import src.model.PlantTile;
-import src.model.Gardener;
-import src.model.Item;
-import src.model.ItemPlant;
-import src.model.Plant;
-import src.model.PlantType;
-import src.model.Tile;
-import src.model.World;
+import src.model.*;
 
 public class HarvestAction extends Action {
 
@@ -34,6 +27,8 @@ public class HarvestAction extends Action {
                     // Ajout à l'inventaire du jardinier
                     gardener.getInventory().addItem(new ItemPlant(type, 1));
                     System.out.println("Succès : Le jardinier a récolté " + type.getName() + " !");
+
+                    SoundManager.playSound(SoundManager.HARVEST);
                 }
 
                 //  La plante est morte ou mangée (Nettoyage : Ne donne rien)

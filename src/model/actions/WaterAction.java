@@ -1,9 +1,6 @@
 package src.model.actions;
 
-import src.model.Gardener;
-import src.model.PlantTile;
-import src.model.Tile;
-import src.model.World;
+import src.model.*;
 
 /**
  * Action d'arrosage : le jardinier se déplace sur la tuile d'exécution (execX,execY) et arrose la case (waterX,waterY).
@@ -37,6 +34,7 @@ public class WaterAction extends Action {
             PlantTile plantTile = (PlantTile) tile;
             if (plantTile.getPlant() != null) {
                 plantTile.water();
+                SoundManager.playSound(SoundManager.WATER);
             }
             else {
                 System.out.println("Erreur : Il n'y a pas de plante à arroser sur cette case.");

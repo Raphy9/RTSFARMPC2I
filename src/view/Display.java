@@ -5,10 +5,7 @@ import src.control.CameraController;
 import src.control.GlobalController;
 import src.control.SelectionController;
 import src.control.popups.CloseController;
-import src.model.Camera;
-import src.model.Gardener;
-import src.model.Tile;
-import src.model.World;
+import src.model.*;
 import src.model.actions.ActionBuilder;
 
 import javax.swing.*;
@@ -291,7 +288,10 @@ public class Display {
 
         // Callback level-up : affiche le popup de félicitations
         this.world.setLevelUpCallback(newLevel -> SwingUtilities.invokeLater(() ->
-            LevelUpPopup.show(this.globalView, this.world, newLevel)
+            {
+                SoundManager.playSound(SoundManager.LEVEL_UP);
+                LevelUpPopup.show(this.globalView, this.world, newLevel);
+            }
         ));
     }
 

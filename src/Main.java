@@ -1,6 +1,7 @@
 package src;
 
 import src.model.Camera;
+import src.model.SoundManager;
 import src.view.Display;
 import src.view.HomeScreenPanel;
 import src.view.Rendering;
@@ -17,6 +18,11 @@ public class Main {
             JFrame f = new JFrame("Saclay Valley");
             f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             f.setResizable(false);
+
+            // Charger les sons
+            final SoundManager soundManager = new SoundManager();
+            SoundManager.loadSounds();
+            SoundManager.playLoop("menu", SoundManager.MENU, 100);   // Musique de background en boucle
 
             final Display[] displayHolder = new Display[1];
 
@@ -37,6 +43,9 @@ public class Main {
                     SaveManager.loadGame(selectedSave, display.getWorld());
                 }
                 display.setCurrentSaveName(selectedSave);
+                // Lancer le son de jeu
+                SoundManager.stopLoop("menu", 2000); // Arrêter la musique de menu avec un fondu de 2 secondes
+                SoundManager.playLoop("bg", SoundManager.BG, 1000); // Lancer la musique de jeu en boucle avec un fondu de 2 secondes
             });
 
             f.addWindowListener(new java.awt.event.WindowAdapter() {
