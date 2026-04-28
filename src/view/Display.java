@@ -43,6 +43,7 @@ public class Display {
     private QuestSidePanel questSidePanel;
     private QuestMenuController questMenuController;
     private final Quests quests;
+    private final FloatingTextManager floatingTextManager;
     private String currentSaveName = null;
     private boolean wasQuestPanelOpen = false;
 
@@ -76,6 +77,14 @@ public class Display {
         this.globalView = new Global(this.world, this.camera);
         globalView.setPreferredSize(gameSize);
         globalView.setBounds(0, 0, gameSize.width, gameSize.height);
+
+        this.floatingTextManager = new FloatingTextManager();
+        this.floatingTextManager.setRepaintCallback(globalView::repaint);
+        this.floatingTextManager.start();
+        this.globalView.setFloatingTextManager(this.floatingTextManager);
+
+        this.world.getStats().setMoneyGainCallback(amount -> showMoneyText(amount, 150, 28));
+        this.world.getStats().setExpGainCallback(amount -> showExpText(amount, 150, 56));
 
         this.globalController = new GlobalController(this, globalView, this.world);
         this.cameraController = new CameraController(camera, globalView);
@@ -393,6 +402,65 @@ public class Display {
 
     public Global getGlobalView() {
         return this.globalView;
+    }
+
+    public FloatingTextManager getFloatingTextManager() {
+        return this.floatingTextManager;
+    }
+
+    public void showFloatingText(String text, int screenX, int screenY, Color color) {
+        this.floatingTextManager.addText(text, screenX, screenY, color);
+    }
+
+    public void showMoneyText(int amount, int screenX, int screenY) {
+        this.floatingTextManager.addMoney(amount, screenX, screenY);
+    }
+
+    public void showExpText(int amount, int screenX, int screenY) {
+        this.floatingTextManager.addExp(amount, screenX, screenY);
+    }
+
+    public void showQuestRewardText(int money, int exp) {
+        if (money > 0) {
+            showMoneyText(money, 150, 28);
+        }
+        if (exp > 0) {
+            showExpText(exp, 150, 56);
+        }
+    }
+
+    public Point worldToScreen(int worldX, int worldY) {
+        int fstTileX = (int) camera.getX();
+        int fstTileY = (int) camera.getY();
+        int pixelDiffX = (int) ((camera.getX() - fstTileX) * RATIO_X);
+        int pixelDiffY = (int) ((camera.getY() - fstTileY) * RATIO_Y);
+
+        int relX = worldX - fstTileX;
+        int relY = worldY - fstTileY;
+        int screenX = (relX * RATIO_X) - pixelDiffX;
+        int screenY = (relY * RATIO_Y) - pixelDiffY;
+        return new Point(screenX, screenY);
+    }
+
+    public void showFloatingTextWorld(String text, int worldX, int worldY, Color color) {
+        Point p = worldToScreen(worldX, worldY);
+        int x = p.x + (RATIO_X / 2);
+        int y = p.y + (RATIO_Y / 3);
+        showFloatingText(text, x, y, color);
+    }
+
+    public void showMoneyTextWorld(int amount, int worldX, int worldY) {
+        Point p = worldToScreen(worldX, worldY);
+        int x = p.x + (RATIO_X / 2);
+        int y = p.y + (RATIO_Y / 3);
+        showMoneyText(amount, x, y);
+    }
+
+    public void showExpTextWorld(int amount, int worldX, int worldY) {
+        Point p = worldToScreen(worldX, worldY);
+        int x = p.x + (RATIO_X / 2);
+        int y = p.y + (RATIO_Y / 3);
+        showExpText(amount, x, y);
     }
 
     public World getWorld() {

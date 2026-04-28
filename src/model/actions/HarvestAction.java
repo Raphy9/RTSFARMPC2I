@@ -5,10 +5,16 @@ import src.model.*;
 public class HarvestAction extends Action {
 
     private Stats stats;
+    private src.view.Display display;
 
     public HarvestAction(int targetX, int targetY, Stats stats) {
+        this(targetX, targetY, stats, null);
+    }
+
+    public HarvestAction(int targetX, int targetY, Stats stats, src.view.Display display) {
         super(targetX, targetY);
         this.stats = stats;
+        this.display = display;
     }
 
     @Override
@@ -35,6 +41,9 @@ public class HarvestAction extends Action {
 
                     SoundManager.playSound(SoundManager.HARVEST);
                     stats.addExp(type.getExpGain());
+                    if (display != null && type.getExpGain() > 0) {
+                        display.showExpTextWorld(type.getExpGain(), targetX, targetY);
+                    }
                 }
 
                 //  La plante est morte ou mangée (Nettoyage : Ne donne rien)

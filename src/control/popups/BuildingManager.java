@@ -289,6 +289,30 @@ public class BuildingManager extends MouseAdapter {
         }
     }
 
+    private Point computeDeletionFeedbackWorldPoint() {
+        int count = 0;
+        int sumX = 0;
+        int sumY = 0;
+
+        for (Building b : pendingDeletionBuildings) {
+            int cx = b.getX() + (b.getWidth() / 2);
+            int cy = b.getY() + (b.getHeight() / 2);
+            sumX += cx;
+            sumY += cy;
+            count++;
+        }
+        for (Point p : pendingDeletionPlantTiles) {
+            sumX += p.x;
+            sumY += p.y;
+            count++;
+        }
+
+        if (count == 0) {
+            return new Point(ghostX, ghostY);
+        }
+        return new Point(Math.round(sumX / (float) count), Math.round(sumY / (float) count));
+    }
+
     private void confirmAndApplyDeletionSelection() {
         deletionDragActive = false;
         if (pendingDeletionBuildings.isEmpty() && pendingDeletionPlantTiles.isEmpty()) {
@@ -324,6 +348,8 @@ public class BuildingManager extends MouseAdapter {
         }
         if (totalSell > 0) {
             world.getStats().addMoney(totalSell);
+            Point feedbackPoint = computeDeletionFeedbackWorldPoint();
+            display.showMoneyTextWorld(totalSell, feedbackPoint.x, feedbackPoint.y);
         }
 
         pendingDeletionBuildings.clear();

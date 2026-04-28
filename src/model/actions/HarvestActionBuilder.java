@@ -37,7 +37,7 @@ public class HarvestActionBuilder extends ActionBuilder {
             int execY = (adjacent != null) ? adjacent.y : p.y;
 
             getGardener().addAction(new MoveAction(execX, execY, clearHighlight));
-            getGardener().addAction(new HarvestAction(p.x, p.y, world.getStats()));
+            getGardener().addAction(new HarvestAction(p.x, p.y, world.getStats(), getDisplay()));
         }
 
         // Après avoir tout récolté, on va à la grange
