@@ -44,6 +44,14 @@ public class SoundManager {
     public static SoundData CROW_AMBIENT;
     public static SoundData CROW_RUN;
 
+    // --- NOUVEAU : Variables pour la gestion du Mute ---
+    private static boolean musicMuted = false;
+    private static boolean sfxMuted = false;
+
+    // Mémorisation de la musique en cours pour pouvoir la relancer après un unmute
+    private static String currentMusicKey = null;
+    private static SoundData currentMusicData = null;
+
     // Clips actifs et boucles
     private static final List<Clip> activeClips = Collections.synchronizedList(new ArrayList<>());
     private static final Map<String, Clip> loopClips = Collections.synchronizedMap(new HashMap<>());
@@ -56,11 +64,49 @@ public class SoundManager {
     });
     private static final Map<String, ScheduledFuture<?>> fadeFutures = Collections.synchronizedMap(new HashMap<>());
 
+    // --- NOUVEAU : Méthodes de contrôle du son (Mute/Unmute) ---
+
+    public static boolean isMusicMuted() { return musicMuted; }
+    public static boolean isSfxMuted() { return sfxMuted; }
+
+    public static void toggleSFX() {
+        sfxMuted = !sfxMuted;
+        if (sfxMuted) {
+            // Arrête tous les bruitages actifs (ceux qui ne sont pas des boucles)
+            List<Clip> copy;
+            synchronized (activeClips) {
+                copy = new ArrayList<>(activeClips);
+            }
+            for (Clip c : copy) {
+                if (!loopClips.containsValue(c)) { // Si ce n'est pas une boucle (musique)
+                    try { c.stop(); } catch (Exception ignored) {}
+                    try { c.close(); } catch (Exception ignored) {}
+                    activeClips.remove(c);
+                }
+            }
+        }
+    }
+
+    public static void toggleMusic() {
+        musicMuted = !musicMuted;
+        if (musicMuted) {
+            // Coupe toutes les musiques (boucles) en cours sans les oublier
+            List<String> activeLoops = new ArrayList<>(loopClips.keySet());
+            for (String key : activeLoops) {
+                stopLoop(key, 0L); // Arrêt immédiat
+            }
+        } else {
+            // Relance la dernière musique prévue si elle existe
+            if (currentMusicKey != null && currentMusicData != null) {
+                playLoop(currentMusicKey, currentMusicData);
+            }
+        }
+    }
+
     /**
      * Charge plusieurs sons d'exemple ; adaptez les chemins/cles selon votre projet.
      */
     public static void loadSounds() {
-        // Exemple: chargez chaque son directement dans sa variable statique
         BG = loadSound("src/assets/sounds/background_3.wav");
         MENU = loadSound("src/assets/sounds/menu_1-1.wav");
         LEVEL_UP = loadSound("src/assets/sounds/level_up.wav");
@@ -131,7 +177,9 @@ public class SoundManager {
      * Joue une instance à partir d'une SoundData. Retourne le Clip (ou null si échec).
      */
     public static Clip playSound(SoundData sd) {
-        if (sd == null) return null;
+        // MODIFICATION : On ignore si les bruitages sont coupés
+        if (sfxMuted || sd == null) return null;
+
         try {
             Clip clip = AudioSystem.getClip();
             clip.open(sd.format, sd.data, 0, sd.data.length);
@@ -164,7 +212,13 @@ public class SoundManager {
      * se fait sur fadeMs millisecondes si > 0.
      */
     public static Clip playLoop(String keyLoop, SoundData sd, long fadeMs) {
-        if (keyLoop == null || sd == null) return null;
+        // Mémorisation de la demande
+        currentMusicKey = keyLoop;
+        currentMusicData = sd;
+
+        // MODIFICATION : On ignore l'exécution réelle si la musique est coupée
+        if (musicMuted || keyLoop == null || sd == null) return null;
+
         stopLoop(keyLoop, 0L); // stop existing without fade (we'll start new)
         try {
             Clip clip = AudioSystem.getClip();
@@ -342,6 +396,8 @@ public class SoundManager {
         }
         activeClips.clear();
         loopClips.clear();
+        currentMusicKey = null;
+        currentMusicData = null;
     }
 
 }

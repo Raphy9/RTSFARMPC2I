@@ -46,6 +46,7 @@ public class Display {
     private final FloatingTextManager floatingTextManager;
     private String currentSaveName = null;
     private boolean wasQuestPanelOpen = false;
+    private Runnable onReturnToMenuCallback;
 
     private static final int CONTROL_PANEL_WIDTH = 90;
     private static final int CONTROL_PANEL_HEIGHT = 280; // HUD_BUTTON_SIZE * 3 + 10
@@ -315,8 +316,14 @@ public class Display {
         am.put("escape_overlay", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Ignoré si on est en mode sélection (géré par SelectionController/CloseController)
                 if (selectionView.isVisible()) return;
+
+                // NOUVEAU : Si un popup est DÉJÀ ouvert (inventaire, grange, pause...), on le ferme
+                if (popupView.isVisible() && popupView.getComponentCount() > 0) {
+                    switchToGlobal();
+                    return;
+                }
+
                 if (buildingSidePanel.isVisible()) {
                     buildingSidePanel.setVisible(false);
                     onBuildingPanelClose();
@@ -326,6 +333,9 @@ public class Display {
                 } else if (questSidePanel.isVisible()) {
                     questSidePanel.setVisible(false);
                     onQuestPanelClose();
+                } else {
+                    // NOUVEAU : Si rien n'est ouvert, Echap ouvre le menu Pause !
+                    switchToPopup(new PauseMenuPopup(Display.this));
                 }
             }
         });
@@ -784,6 +794,25 @@ public class Display {
         int outerW = contentSize.width + insets.left + insets.right;
         int outerH = contentSize.height + insets.top + insets.bottom;
         this.frame.setSize(outerW, outerH);
+    }
+
+    public void setReturnToMenuCallback(Runnable callback) {
+        this.onReturnToMenuCallback = callback;
+    }
+
+    public void returnToMainMenu() {
+        // 1. On sauvegarde l'état actuel
+        saveGame();
+        // 2. On arrête tous les threads des entités pour ne pas faire planter le jeu en arrière-plan
+        world.stopWorld();
+        // 3. On arrête le thread de la caméra
+        if (this.edgeScroller != null) {
+            this.edgeScroller.stop();
+        }
+        // 4. On prévient la classe Main de re-afficher le HomeScreenPanel
+        if (onReturnToMenuCallback != null) {
+            onReturnToMenuCallback.run();
+        }
     }
 }
 
