@@ -64,22 +64,31 @@ public class Gardener extends Entity implements Runnable {
             Action currentAction = null;
 
             try {
+                // Use a timed wait so the gardener can wander when idle
                 synchronized (actionQueue) {
                     while (actionQueue.isEmpty() && isRunning) {
                         currentState = State.WAITING;
                         try {
-                            actionQueue.wait();
+                            // wait between 1.5s and 3s
+                            long timeout = 1500L + (long) (Math.random() * 1500L);
+                            actionQueue.wait(timeout);
                         } catch (InterruptedException e) {
                             break;
                         }
+                        // if we wake up due to timeout and still no actions, break to do wandering
+                        if (actionQueue.isEmpty()) break;
                     }
                     if (!isRunning) break;
+                    // If there's an action available, take it
                     currentAction = actionQueue.poll();
                 }
 
                 if (currentAction != null) {
                     Thread.interrupted();
                     executeAction(currentAction);
+                } else {
+                    // No action after timed wait -> do a short random wander
+                    wanderWhenIdle();
                 }
             } catch (InterruptedException e) {
                 System.out.println("Jardinier : Action annulée en cours de route.");
@@ -179,6 +188,69 @@ public class Gardener extends Entity implements Runnable {
     public int getPendingActionsCount() {
         synchronized (actionQueue) {
             return actionQueue.size();
+        }
+    }
+
+    /**
+     * Promenade aléatoire courte lorsque le jardinier est en attente (inspirée de Chicken.wanderRandomly).
+     * Vérifie la file d'actions avant et pendant la promenade pour pouvoir s'interrompre proprement.
+     */
+    private void wanderWhenIdle() throws InterruptedException {
+        // If actions appeared meanwhile, abort wandering
+        synchronized (actionQueue) {
+            if (!actionQueue.isEmpty() || !isRunning) return;
+        }
+
+        int radius = 3; // jardinier se promène moins loin que la poule
+        int randomX = this.x + (int) (Math.random() * (radius * 2 + 1)) - radius;
+        int randomY = this.y + (int) (Math.random() * (radius * 2 + 1)) - radius;
+
+        if (randomX >= 0 && randomX < World.WIDTH && randomY >= 0 && randomY < World.HEIGHT) {
+            Tile destTile = world.getTile(randomX, randomY);
+            if (destTile.isWalkable()) {
+                List<Tile> path = pathFinding(world, randomX, randomY);
+                if (path != null && !path.isEmpty()) {
+                    this.currentState = State.MOVING;
+
+                    for (Tile step : path) {
+                        // If new actions queued, abort wandering
+                        synchronized (actionQueue) {
+                            if (!actionQueue.isEmpty() || !isRunning) {
+                                this.currentState = State.WAITING;
+                                return;
+                            }
+                        }
+
+                        if (Thread.interrupted()) throw new InterruptedException();
+
+                        int newX = step.getX();
+                        int newY = step.getY();
+
+                        // anticollision: avoid stepping onto a tile occupied by other entities (gardener may share?)
+                        Tile nextTile = world.getTile(newX, newY);
+                        if (!nextTile.isWalkable()) break;
+
+                        if (newX > this.x) this.facingDirection = Entity.RIGHT;
+                        else if (newX < this.x) this.facingDirection = Entity.LEFT;
+
+                        int oldX = this.x;
+                        int oldY = this.y;
+                        this.x = newX;
+                        this.y = newY;
+
+                        world.getTile(oldX, oldY).removeEntity(this);
+                        world.getTile(newX, newY).addEntity(this);
+
+                        Thread.sleep(350 + (int) (Math.random() * 250)); // promenade lente
+                    }
+                }
+            }
+        }
+
+        if (this.currentState != State.WORKING && isRunning) {
+            this.currentState = State.WAITING;
+            // pause aléatoire avant prochaine promenade
+            Thread.sleep(500 + (int) (Math.random() * 1000));
         }
     }
 }
