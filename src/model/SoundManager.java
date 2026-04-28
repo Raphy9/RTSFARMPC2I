@@ -65,8 +65,8 @@ public class SoundManager {
         MENU = loadSound("src/assets/sounds/menu_1-1.wav");
         LEVEL_UP = loadSound("src/assets/sounds/level_up.wav");
         QUEST_COMPLETE = loadSound("src/assets/sounds/success_2.wav");
-        SELL = loadSound("src/assets/sounds/coins.wav");
-        BUY = loadSound("src/assets/sounds/purchase.wav");
+        SELL = loadSound("src/assets/sounds/coins_1.wav");
+        BUY = loadSound("src/assets/sounds/coins_2.wav");
 
         PLANT = loadSound("src/assets/sounds/planting.wav");
         WATER = loadSound("src/assets/sounds/watering.wav");
