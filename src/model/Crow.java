@@ -242,6 +242,12 @@ public class Crow extends Entity implements Runnable {
                     Plant p = pt.getPlant();
 
                     if (p != null && p.getState() != PlantState.MORT && p.getState() != PlantState.EATEN && !p.isHarvestable()) {
+
+                        // --- NOUVEAU : Le corbeau ignore les plantes près d'un épouvantail ---
+                        if (isProtectedByScarecrow(x, y)) {
+                            continue; // On passe à la plante suivante
+                        }
+
                         if (!hasCrow(pt) || (pt.getX() == this.x && pt.getY() == this.y)) {
                             int dist = Math.abs(x - getX()) + Math.abs(y - getY());
                             if (dist < minDistance) {
@@ -255,6 +261,7 @@ public class Crow extends Entity implements Runnable {
         }
         return nearest;
     }
+
 
     private void wanderRandomly() throws InterruptedException {
         int radius = 8; // Le corbeau vole plus loin qu'une poule
@@ -322,5 +329,18 @@ public class Crow extends Entity implements Runnable {
             case EATING: return 2;
             default: return 0;
         }
+    }
+
+    /** Vérifie si la case (px, py) est dans le rayon d'un épouvantail de la carte */
+    private boolean isProtectedByScarecrow(int px, int py) {
+        for (src.model.buildings.Building b : world.getBuildings()) {
+            if (b instanceof src.model.buildings.Scarecrow) {
+                int radius = src.model.buildings.Scarecrow.RADIUS;
+                if (Math.abs(b.getX() - px) <= radius && Math.abs(b.getY() - py) <= radius) {
+                    return true; // La plante est protégée !
+                }
+            }
+        }
+        return false;
     }
 }

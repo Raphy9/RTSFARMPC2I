@@ -38,16 +38,20 @@ public class CrowSpawner implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Générateur de corbeaux activé !");
+        System.out.println("Générateur de corbeaux activé ! (Apparition à partir du niveau 4)");
 
         while (isRunning) {
             try {
-                // On attend X secondes avant la prochaine apparition
+                // On attend X secondes avant la prochaine tentative d'apparition
                 Thread.sleep(SPAWN_INTERVAL);
 
-                // On ne fait apparaître un corbeau que si on n'a pas atteint la limite
-                if (world.getCrows().size() < MAX_CROWS) {
-                    spawnCrowAtEdge();
+                // On s'assure que les stats existent et que le niveau est au moins 4
+                if (world.getStats() != null && world.getStats().getLevel() >= 4) {
+
+                    // On ne fait apparaître un corbeau que si on n'a pas atteint la limite
+                    if (world.getCrows().size() < MAX_CROWS) {
+                        spawnCrowAtEdge();
+                    }
                 }
 
             } catch (InterruptedException e) {
@@ -55,7 +59,6 @@ public class CrowSpawner implements Runnable {
             }
         }
     }
-
     /**
      * Fait apparaître un corbeau aléatoirement sur un des 4 bords de l'écran.
      */
