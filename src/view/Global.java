@@ -414,7 +414,7 @@ public class Global extends JPanel {
         // --- Dessin de la barre d'action par dessus tout ! ---
         drawHotbar(g);
     }
-    
+
 
     private void drawDeletionModePanel(Graphics g) {
         Graphics2D gPanel = (Graphics2D) g.create();
