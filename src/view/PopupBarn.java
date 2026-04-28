@@ -229,10 +229,13 @@ public class PopupBarn extends PopupPanel {
                 // Stock
                 detailsPanel.add(createDetailLabel("En stock : " + selectedItem.getQuantity()));
                 
-                // Prix
-                detailsPanel.add(createDetailLabel("Prix d'Achat : " + barn.buyItem(selectedItem, 0) + " PO"));
+                // Prix de vente (toujours affiché)
                 detailsPanel.add(createDetailLabel("Prix de Vente : " + barn.sellItem(selectedItem, 0) + " PO"));
-                
+                // N'afficher le prix d'achat QUE pour les graines ou autres items non-plante
+                if (!(selectedItem instanceof ItemPlant)) {
+                    detailsPanel.add(createDetailLabel("Prix d'Achat : " + barn.buyItem(selectedItem, 0) + " PO"));
+                }
+
                 // Croissance (si c'est une graine)
                 if (selectedItem instanceof ItemSeed) {
                     detailsPanel.add(createDetailLabel("Durée de croissance : " + plantType.getGrowthDuration() + " unités"));
@@ -400,18 +403,24 @@ public class PopupBarn extends PopupPanel {
         JButton sellButton = createActionBtn("Vendre");  
 
         if (unlocked) {
-            buyButton.addActionListener(new BarnController(world, barn, this, item, true, quantityInput));
-            sellButton.addActionListener(new BarnController(world, barn, this, item, false, quantityInput));
+            // Do not allow buying of ItemPlant (légumes) from the barn — only selling
+            if (!(item instanceof ItemPlant)) {
+                buyButton.addActionListener(new BarnController(world, barn, PopupBarn.this, item, true, quantityInput));
+            } else {
+                // hide the buy button for plants to avoid leaving empty space
+                buyButton.setVisible(false);
+            }
+            sellButton.addActionListener(new BarnController(world, barn, PopupBarn.this, item, false, quantityInput));
             sellButton.setEnabled(item.getQuantity() > 0);
-        } else {
-            buyButton.setEnabled(false);
-            sellButton.setEnabled(false);
-            buyButton.setBackground(Color.LIGHT_GRAY);
-            sellButton.setBackground(Color.LIGHT_GRAY);
-        }
+         } else {
+             buyButton.setEnabled(false);
+             sellButton.setEnabled(false);
+             buyButton.setBackground(Color.LIGHT_GRAY);
+             sellButton.setBackground(Color.LIGHT_GRAY);
+         }
 
-        actionsPanel.add(buyButton);
-        actionsPanel.add(sellButton);
+         actionsPanel.add(buyButton);
+         actionsPanel.add(sellButton);
 
         economyPanel.add(inputPanel);
         economyPanel.add(Box.createVerticalStrut(2));
