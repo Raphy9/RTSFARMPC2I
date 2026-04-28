@@ -16,6 +16,9 @@ public class Chicken extends Entity implements Runnable {
     private Thread chickenThread;
     private boolean hasClucked = false;
 
+    // --- NOUVEAU : Compteur de plantes mangées ---
+    private int plantsEaten = 0;
+
     public Chicken(int x, int y, World world) {
         super(world, x, y);
         this.currentState = State.IDLE;
@@ -46,6 +49,7 @@ public class Chicken extends Entity implements Runnable {
 
                 PlantTile targetPlant = findNearestPlant();
 
+                // Si pas de plante, on se promène
                 if (targetPlant == null) {
                     wanderRandomly();
                     continue;
@@ -61,6 +65,7 @@ public class Chicken extends Entity implements Runnable {
                     continue;
                 }
 
+                // Déplacement vers la plante
                 if (!path.isEmpty()) {
                     this.currentState = State.RUNNING;
                     for (Tile step : path) {
@@ -98,15 +103,34 @@ public class Chicken extends Entity implements Runnable {
                     }
                 }
 
+                // Si elle n'a pas été chassée pendant le trajet
                 if (this.currentState != State.FLEEING) {
                     Plant plant = targetPlant.getPlant();
                     // On vérifie qu'elle est bien arrivée sur la plante (et pas bloquée par une autre poule)
-                    if (this.x == targetX && this.y == targetY && plant != null && plant.getState() != PlantState.MORT && plant.getState() != PlantState.EATEN) {                        System.out.println("La poule mange une plante en (" + targetX + "," + targetY + ")");
+                    if (this.x == targetX && this.y == targetY && plant != null && plant.getState() != PlantState.MORT && plant.getState() != PlantState.EATEN) {
+                        System.out.println("La poule mange une plante en (" + targetX + "," + targetY + ")");
                         this.currentState = State.EATING;
-                        Thread.sleep(3000);
+                        Thread.sleep(3000); // Temps de manger
                         plant.destroyByEnemy();
-                        hasClucked = false;     // jsp, enlever peut etre
+                        hasClucked = false;
+
+                        // --- NOUVEAU : Logique de satiété et digestion ---
+                        plantsEaten++;
+
+                        if (plantsEaten >= 3) {
+                            System.out.println("La poule a le ventre plein (3 plantes) et quitte la ferme !");
+                            this.currentState = State.FLEEING;
+                            continue; // On repasse au début de la boucle pour gérer la fuite
+                        } else {
+                            System.out.println("La poule digère et fait une petite balade...");
+                            this.currentState = State.IDLE;
+                            Thread.sleep(1000);
+                            wanderRandomly(); // Force une balade aléatoire avant de chercher une autre plante
+                            continue;
+                        }
+                        // -------------------------------------------------
                     }
+
                     this.currentState = State.IDLE;
                     Thread.sleep(500);
                 }
@@ -183,7 +207,7 @@ public class Chicken extends Entity implements Runnable {
                     Plant p = pt.getPlant();
 
                     if (p != null && p.getState() != PlantState.MORT && p.getState() != PlantState.EATEN && !p.isHarvestable()) {
-                        //  On ne cible pas une plante si une AUTRE poule est déjà dessus !
+                        // On ne cible pas une plante si une AUTRE poule est déjà dessus !
                         if (!pt.hasChicken() || (pt.getX() == this.x && pt.getY() == this.y)) {
                             int dist = Math.abs(x - getX()) + Math.abs(y - getY());
                             if (dist < minDistance) {
