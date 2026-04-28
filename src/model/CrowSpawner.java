@@ -13,10 +13,10 @@ public class CrowSpawner implements Runnable {
     private Thread spawnerThread;
     private final Random random;
 
-    // Temps entre chaque apparition (ex: 30 secondes, un peu plus rare que les poules)
-    private static final int SPAWN_INTERVAL = 30000;
+    // Temps entre chaque apparition
+    private static final int SPAWN_INTERVAL = 20000;
     // Nombre maximum de corbeaux en même temps
-    private static final int MAX_CROWS = 2;
+    private static final int MAX_CROWS = 3;
 
     public CrowSpawner(World world) {
         this.world = world;
