@@ -34,8 +34,11 @@ public class World {
     private src.model.Quests quests;
     private java.util.function.IntConsumer levelUpCallback;
 
-    // Liste des ennemis (poules) présents dans le monde
-    private List<Chicken> enemies;
+    // --- ENNEMIS ---
+    private List<Chicken> enemies; // Poules
+    private List<Crow> crows;      // Corbeaux (NOUVEAU)
+    private ChickenSpawner chickenSpawner;
+    private CrowSpawner crowSpawner;   // (NOUVEAU)
 
     // Liste des sprites d'obstacles (ex: cailloux, arbres) à ajouter plus tard pour diversifier le terrain
     private List<ImageIcon> obstacleSprites = new ArrayList<>();
@@ -60,10 +63,15 @@ public class World {
             t.start(); // Lance le thread du jardinier
         }
 
-        // Création et lancement d'une poule pour tester les ennemis
+        // --- Initialisation des Poules ---
         this.enemies = new java.util.concurrent.CopyOnWriteArrayList<>();
         this.chickenSpawner = new ChickenSpawner(this);
         this.chickenSpawner.start();
+
+        // --- Initialisation des Corbeaux (NOUVEAU) ---
+        this.crows = new java.util.concurrent.CopyOnWriteArrayList<>();
+        this.crowSpawner = new CrowSpawner(this);
+        this.crowSpawner.start();
 
         // Initialisation de la grange et remplissage de départ pour les tests
         barn = new Barn(stats);
@@ -206,7 +214,7 @@ public class World {
     /**
      * Retourne le prochain jardinier disponible en round-robin :
      * - d'abord un jardinier complètement libre (WAITING + 0 actions en attente),
-     *   en commençant APRÈS le dernier assigné pour répartir équitablement la charge,
+     * en commençant APRÈS le dernier assigné pour répartir équitablement la charge,
      * - sinon celui qui a le moins d'actions en attente (toujours en round-robin si égalité).
      * Fonctionne pour n jardiniers.
      */
@@ -312,7 +320,9 @@ public class World {
 
     /** Retourne la liste des ennemis (poules) présents dans le monde */
     public List<Chicken> getEnemies() { return enemies; }
-    private ChickenSpawner chickenSpawner;
+
+    /** Retourne la liste des corbeaux présents dans le monde (NOUVEAU) */
+    public List<Crow> getCrows() { return crows; }
 
     public void toPlantTile(int x, int y) {
         ArrayList<Entity> entities = this.tiles[y][x].getEntities();
@@ -419,9 +429,15 @@ public class World {
         return new Point(bestX, bestY);
     }
 
-    /** Retire un ennemi du monde (quand il est chassé) */
-    public void removeEnemy(Chicken chicken) {
-        this.enemies.remove(chicken);
+    /** * Retire un ennemi du monde.
+     * Cette méthode accepte maintenant n'importe quelle Entity pour gérer poules et corbeaux.
+     */
+    public void removeEnemy(Entity enemy) {
+        if (enemy instanceof Chicken) {
+            this.enemies.remove(enemy);
+        } else if (enemy instanceof Crow) {
+            this.crows.remove(enemy);
+        }
     }
 
     /**
@@ -431,14 +447,13 @@ public class World {
     public void stopWorld() {
         System.out.println("Arrêt du monde : fermeture des Threads...");
 
-        // Arrêter le spawner de poules
-        if (this.chickenSpawner != null) {
-            this.chickenSpawner.stop();
-        }
+        // Arrêter les spawners
+        if (this.chickenSpawner != null) this.chickenSpawner.stop();
+        if (this.crowSpawner != null) this.crowSpawner.stop();
 
         // Arrêter le jardinier
         for (Gardener gardener : gardeners) {
-             gardener.stopGardener();
+            gardener.stopGardener();
         }
 
         // Arrêter tous les ennemis (poules)
@@ -447,7 +462,15 @@ public class World {
                 enemy.stop();
             }
         }
+
+        // Arrêter tous les corbeaux (NOUVEAU)
+        if (this.crows != null) {
+            for (Crow crow : crows) {
+                crow.stop();
+            }
+        }
     }
+
     /** Méthode pour recalculer automatiquement les parcelles du monde en utilisant un algorithme de Flood Fill.
      * Parcourt toutes les cases du monde, et chaque fois qu'il trouve une PlantTile non visitée, il lance un
      * Flood Fill pour trouver toutes les PlantTile connectées orthogonalement

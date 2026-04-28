@@ -16,6 +16,7 @@ public class Global extends JPanel {
     private final SpriteSheetLoader gardenerLoader;
     private final long startTime;
     private ChickenSpriteSheetLoader chickenLoader;
+    private CrowSpriteSheetLoader crowLoader;
 
     private Image progressBarEmpty;
     private ImageIcon slowCoinGif;
@@ -53,6 +54,7 @@ public class Global extends JPanel {
         this.chickenLoader = new ChickenSpriteSheetLoader();
         this.progressBarEmpty = new ImageIcon("src/assets/progress_bar_ui.png").getImage();
         this.slowCoinGif = new ImageIcon("src/assets/money.gif");
+        this.crowLoader = new CrowSpriteSheetLoader();
 
         // --- Chargement des outils et actions ---
         this.houeImg = new ImageIcon("src/assets/UI/houe.png").getImage();
@@ -619,6 +621,41 @@ public class Global extends JPanel {
                         g.drawImage(spriteToDraw,
                                 drawX, drawY,
                                 Display.RATIO_X, Display.RATIO_Y, null);
+                    }
+                }
+            }
+
+
+        }
+
+        //dessin des corbeaux
+        // Récupère la liste des corbeaux (il faudra créer cette liste dans World.java, comme enemies)
+        java.util.List<src.model.Crow> corbeaux = world.getCrows(); // Exemple, adapte le nom
+
+        if (corbeaux != null && !corbeaux.isEmpty()) {
+            // Calcule la frame d'animation actuelle basée sur le temps écoulé
+            // (Tu utilises déjà NB_FRAMES=4 pour la poule, c'est parfait)
+            int currentCrowFrame = (int) (elapsedTime / 150) % 4; // Vitesse d'animation
+
+            for (src.model.Crow crow : corbeaux) {
+                // Ne dessine que s'il est visible à l'écran (dans la caméra)
+                if (crow.getX() >= fstTileX && crow.getX() <= fstTileX + Camera.WIDTH &&
+                        crow.getY() >= fstTileY && crow.getY() <= fstTileY + Camera.HEIGHT) {
+
+                    // --- Récupération de l'image exacte via ton nouveau loader ---
+                    BufferedImage spriteToDraw = crowLoader.getFrame(
+                            crow.getCurrentStateActionIndex(), // Il faudra créer cette méthode dans Crow.java
+                            crow.getFacingDirection(),
+                            currentCrowFrame
+                    );
+
+                    // Calcule les coordonnées de dessin à l'écran
+                    int drawX = ((crow.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
+                    int drawY = ((crow.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
+
+                    // --- Dessin ---
+                    if (spriteToDraw != null) {
+                        g.drawImage(spriteToDraw, drawX, drawY, Display.RATIO_X, Display.RATIO_Y, null);
                     }
                 }
             }
