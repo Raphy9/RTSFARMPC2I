@@ -319,6 +319,8 @@ public class PopupBarn extends PopupPanel {
         // === CONTENEUR PRINCIPAL ===
         JPanel panel = new JPanel(new BorderLayout(10, 0)); // 10px espace horizontal entre gauche/droite
         boolean unlocked = isItemUnlocked(item);
+        boolean outOfStock = item.getQuantity() <= 0;
+        // si débloqué -> couleur claire, sinon gris
         panel.setBackground(unlocked ? SDV_BORDER_LIGHT : Color.GRAY);
         panel.setPreferredSize(new Dimension(slotWidth, slotHeight));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8)); // Marges
@@ -357,6 +359,17 @@ public class PopupBarn extends PopupPanel {
         iconLabel.setAlignmentX(0.5f);
         iconLabel.setAlignmentY(0.5f);
 
+        // Si out of stock, ajouter un calque semi-transparent pour "dim" l'icône
+        if (outOfStock) {
+            JPanel dimmer = new JPanel();
+            dimmer.setOpaque(true);
+            // blanc semi-transparent pour éclaircir et donner l'effet grisé; on peut aussi utiliser noir transparent
+            dimmer.setBackground(new Color(150, 150, 150, 160));
+            dimmer.setAlignmentX(0.5f);
+            dimmer.setAlignmentY(0.5f);
+            overlay.add(dimmer);
+        }
+
         // Texte quantité en bas à droite
         JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 1));
         quantityPanel.setOpaque(true);
@@ -366,7 +379,7 @@ public class PopupBarn extends PopupPanel {
         quantityPanel.setAlignmentY(1.0f);
 
         JLabel quantityLabel = new JLabel("x" + item.getQuantity());
-        quantityLabel.setForeground(Color.WHITE);
+        quantityLabel.setForeground(outOfStock ? Color.LIGHT_GRAY : Color.WHITE);
         quantityLabel.setFont(quantityLabel.getFont().deriveFont(Font.BOLD, 11f));
         quantityPanel.add(quantityLabel);
 
@@ -385,8 +398,9 @@ public class PopupBarn extends PopupPanel {
         String name = unlocked ? item.getPlantType().getName() : "???";
         JLabel nameLabel = new JLabel(name);
         nameLabel.setFont(getCustomFont(14f));
-        nameLabel.setForeground(unlocked ? SDV_TEXT : Color.DARK_GRAY);
-        
+        // Si débloqué mais outOfStock -> gris, sinon si débloqué normal couleur SDV_TEXT, sinon dark gray
+        nameLabel.setForeground(!unlocked ? Color.DARK_GRAY : SDV_TEXT);
+
         infoPanel.add(nameLabel);
 
         JPanel economyPanel = new JPanel();
