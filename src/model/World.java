@@ -382,8 +382,8 @@ public class World {
         for (PlantType plantType : PlantType.values()) {
             barn.addItem(new ItemSeed(plantType, 0));
         }
-        barn.addItem(new ItemSeed(PlantType.CAROTTE, 5));
-        barn.addItem(new ItemSeed(PlantType.CHOUX, 5));
+        // Initial seeds
+        barn.addItem(new ItemSeed(PlantType.CAROTTE, 10));
 
     }
 

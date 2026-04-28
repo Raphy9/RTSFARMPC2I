@@ -6,9 +6,9 @@ package src.model;
  */
 public enum PlantType {
     // Nom, Temps croissance (ticks), Soif (eau/tick), Prix vente
-    CHOUX("Choux",       75, 0.3f,  4, 3),
-    CAROTTE("Carotte",   100, 0.6f, 3, 3),
-    CITROUILLE("Citrouille", 125, 1f, 7, 4, 3),
+    CHOUX("Choux",       75, 0.5f,  4, 3, 2),
+    CAROTTE("Carotte",   100, 0.8f, 3, 3),
+    CITROUILLE("Citrouille", 125, 1.2f, 7, 4, 3),
     FRAISE("Fraise",     100, 2f,  9, 5, 4);
 
     // --- Attributs ---

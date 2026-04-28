@@ -201,7 +201,7 @@ public class Gardener extends Entity implements Runnable {
             if (!actionQueue.isEmpty() || !isRunning) return;
         }
 
-        int radius = 3; // jardinier se promène moins loin que la poule
+        int radius = 2; // jardinier se promène moins loin que la poule
         int randomX = this.x + (int) (Math.random() * (radius * 2 + 1)) - radius;
         int randomY = this.y + (int) (Math.random() * (radius * 2 + 1)) - radius;
 
