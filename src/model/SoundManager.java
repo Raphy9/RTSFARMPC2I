@@ -28,6 +28,7 @@ public class SoundManager {
     public static SoundData BG;
     public static SoundData MENU;
     public static SoundData LEVEL_UP;
+    public static SoundData QUEST_COMPLETE;
     public static SoundData SELL;
 
     public static SoundData PLANT;
@@ -60,6 +61,7 @@ public class SoundManager {
         BG = loadSound("src/assets/sounds/background_3.wav");
         MENU = loadSound("src/assets/sounds/menu_1-1.wav");
         LEVEL_UP = loadSound("src/assets/sounds/level_up.wav");
+        QUEST_COMPLETE = loadSound("src/assets/sounds/success_2.wav");
         SELL = loadSound("src/assets/sounds/coins.wav");
 
         PLANT = loadSound("src/assets/sounds/planting.wav");
