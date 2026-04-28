@@ -51,7 +51,7 @@ public class Crow extends Entity implements Runnable {
 
                 PlantTile targetPlant = findNearestPlant();
 
-                // S'il n'y a pas de plantes, il s'ennuie et finit par fuir
+                // S'il n'y a pas de plantes sur la carte, il s'ennuie et finit par fuir
                 if (targetPlant == null) {
                     boredom++;
                     if (boredom >= 3) {
@@ -68,7 +68,7 @@ public class Crow extends Entity implements Runnable {
                 int targetX = targetPlant.getX();
                 int targetY = targetPlant.getY();
 
-                // Le corbeau vole en ligne droite, sans se soucier des obstacles !
+                // Le corbeau vole en ligne droite
                 List<Tile> path = getFlightPath(targetX, targetY);
 
                 if (path == null || path.isEmpty()) {
@@ -77,10 +77,17 @@ public class Crow extends Entity implements Runnable {
                     continue;
                 }
 
-                // Phase de VOL
+                // --- Phase de VOL vers la plante ---
                 this.currentState = State.FLYING;
                 for (Tile step : path) {
                     if (this.currentState == State.FLEEING) break;
+
+                    // VÉRIFICATION EN TEMPS RÉEL : Le corbeau a-t-il repéré un épouvantail ?
+                    if (isNearScarecrow()) {
+                        System.out.println("Croa ! Le corbeau a vu un épouvantail et panique !");
+                        flee();
+                        break;
+                    }
 
                     int newX = step.getX();
                     int newY = step.getY();
@@ -102,7 +109,6 @@ public class Crow extends Entity implements Runnable {
                     world.getTile(newX, newY).addEntity(this);
 
                     if (!hasCawed && Math.abs(newX - targetX) + Math.abs(newY - targetY) <= 10) {
-                        // Tu pourras ajouter un SoundManager.CROW_CRAW plus tard !
                         hasCawed = true;
                     }
 
@@ -116,7 +122,7 @@ public class Crow extends Entity implements Runnable {
                         // 1. IL SE POSE (IDLE)
                         this.currentState = State.IDLE;
                         System.out.println("Le corbeau se pose sur une plante...");
-                        Thread.sleep(1000); // Reste posé 1 seconde
+                        Thread.sleep(1000);
 
                         // 2. IL MANGE (EATING)
                         this.currentState = State.EATING;
@@ -129,14 +135,12 @@ public class Crow extends Entity implements Runnable {
 
                         if (plantsEaten >= 3) {
                             System.out.println("Le corbeau a le ventre plein (3 plantes) et repart !");
-                            // IL REPART (IDLE puis FLEEING)
                             this.currentState = State.IDLE;
                             Thread.sleep(800);
                             this.currentState = State.FLEEING;
                             continue;
                         } else {
                             System.out.println("Le corbeau digère et se prépare à voler vers une autre...");
-                            // IL REPART (IDLE puis se balade)
                             this.currentState = State.IDLE;
                             Thread.sleep(1000);
                             wanderRandomly();
@@ -156,15 +160,30 @@ public class Crow extends Entity implements Runnable {
         }
     }
 
+    /** Vérifie si le corbeau survole actuellement le rayon d'un épouvantail */
+    private boolean isNearScarecrow() {
+        if (world.getBuildings() != null) {
+            for (src.model.buildings.Building b : world.getBuildings()) {
+                if (b instanceof src.model.buildings.Scarecrow) {
+                    int radius = src.model.buildings.Scarecrow.RADIUS;
+                    // Vérifie si les coordonnées actuelles du corbeau sont dans le rayon
+                    if (Math.abs(b.getX() - this.x) <= radius && Math.abs(b.getY() - this.y) <= radius) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
-     * Génère un chemin en ligne droite vers la cible, en ignorant tous les obstacles (parce qu'il vole).
+     * Génère un chemin en ligne droite vers la cible, en ignorant tous les obstacles.
      */
     private List<Tile> getFlightPath(int tx, int ty) {
         List<Tile> path = new ArrayList<>();
         int currX = this.x;
         int currY = this.y;
 
-        // Tant qu'on n'est pas arrivé, on avance d'une case (horizontalement ou verticalement)
         while (currX != tx || currY != ty) {
             if (currX != tx) {
                 currX += Integer.compare(tx, currX);
@@ -172,7 +191,6 @@ public class Crow extends Entity implements Runnable {
                 currY += Integer.compare(ty, currY);
             }
 
-            // On vérifie qu'on ne sort pas de la carte
             if (currX >= 0 && currX < World.WIDTH && currY >= 0 && currY < World.HEIGHT) {
                 path.add(world.getTile(currX, currY));
             } else {
@@ -201,7 +219,7 @@ public class Crow extends Entity implements Runnable {
         List<Tile> path = getFlightPath(targetX, targetY);
 
         if (path != null && !path.isEmpty()) {
-            this.currentState = State.FLYING; // Il s'enfuit en volant
+            this.currentState = State.FLYING;
             for (Tile step : path) {
                 int newX = step.getX();
                 int newY = step.getY();
@@ -217,13 +235,12 @@ public class Crow extends Entity implements Runnable {
                 world.getTile(oldX, oldY).removeEntity(this);
                 world.getTile(newX, newY).addEntity(this);
 
-                Thread.sleep(120); // Vol rapide pour la fuite
+                Thread.sleep(120);
             }
         }
 
         world.getTile(this.x, this.y).removeEntity(this);
-        // /!\ NB: Il faudra peut-être adapter ta méthode removeEnemy(Chicken) dans World.java
-        // pour qu'elle accepte des (Entity) ou qu'elle ait une méthode removeCrow(Crow).
+        world.removeEnemy(this);
         this.isRunning = false;
     }
 
@@ -241,13 +258,8 @@ public class Crow extends Entity implements Runnable {
                     PlantTile pt = (PlantTile) tile;
                     Plant p = pt.getPlant();
 
+                    // On cible n'importe quelle plante en croissance (sans se soucier de l'épouvantail ici)
                     if (p != null && p.getState() != PlantState.MORT && p.getState() != PlantState.EATEN && !p.isHarvestable()) {
-
-                        // --- NOUVEAU : Le corbeau ignore les plantes près d'un épouvantail ---
-                        if (isProtectedByScarecrow(x, y)) {
-                            continue; // On passe à la plante suivante
-                        }
-
                         if (!hasCrow(pt) || (pt.getX() == this.x && pt.getY() == this.y)) {
                             int dist = Math.abs(x - getX()) + Math.abs(y - getY());
                             if (dist < minDistance) {
@@ -262,9 +274,8 @@ public class Crow extends Entity implements Runnable {
         return nearest;
     }
 
-
     private void wanderRandomly() throws InterruptedException {
-        int radius = 8; // Le corbeau vole plus loin qu'une poule
+        int radius = 8;
         int randomX = this.x + (int)(Math.random() * (radius * 2 + 1)) - radius;
         int randomY = this.y + (int)(Math.random() * (radius * 2 + 1)) - radius;
 
@@ -276,6 +287,12 @@ public class Crow extends Entity implements Runnable {
 
                 for (Tile step : path) {
                     if (!isRunning || this.currentState == State.FLEEING) break;
+
+                    // Le corbeau peut croiser un épouvantail pendant sa balade aussi !
+                    if (isNearScarecrow()) {
+                        flee();
+                        break;
+                    }
 
                     if (hasCrow(world.getTile(step.getX(), step.getY()))) break;
 
@@ -301,7 +318,6 @@ public class Crow extends Entity implements Runnable {
         }
     }
 
-    /** Vérifie s'il y a déjà un corbeau sur cette case pour éviter la superposition */
     private boolean hasCrow(Tile t) {
         for (Entity e : t.getEntities()) {
             if (e instanceof Crow) return true;
@@ -320,7 +336,6 @@ public class Crow extends Entity implements Runnable {
 
     public State getCurrentState() { return currentState; }
 
-    /** Renvoie l'index correspondant au CrowSpriteSheetLoader */
     public int getCurrentStateActionIndex() {
         switch (currentState) {
             case IDLE: return 0;
@@ -329,18 +344,5 @@ public class Crow extends Entity implements Runnable {
             case EATING: return 2;
             default: return 0;
         }
-    }
-
-    /** Vérifie si la case (px, py) est dans le rayon d'un épouvantail de la carte */
-    private boolean isProtectedByScarecrow(int px, int py) {
-        for (src.model.buildings.Building b : world.getBuildings()) {
-            if (b instanceof src.model.buildings.Scarecrow) {
-                int radius = src.model.buildings.Scarecrow.RADIUS;
-                if (Math.abs(b.getX() - px) <= radius && Math.abs(b.getY() - py) <= radius) {
-                    return true; // La plante est protégée !
-                }
-            }
-        }
-        return false;
     }
 }
