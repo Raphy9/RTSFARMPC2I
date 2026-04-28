@@ -38,6 +38,7 @@ public class PopupBarn extends PopupPanel {
     private static final Color SDV_TEXT = new Color(60, 30, 10);
     private static final Color SDV_BORDER_LIGHT = new Color(235, 185, 120);
     private static final Color SDV_BORDER_DARK = new Color(110, 45, 15);
+    private static final Color SDV_BORDER_LIGHTDARK = new Color(163, 123, 70);
 
     /**
      * Initialise le popup de la grange.
@@ -320,8 +321,8 @@ public class PopupBarn extends PopupPanel {
         JPanel panel = new JPanel(new BorderLayout(10, 0)); // 10px espace horizontal entre gauche/droite
         boolean unlocked = isItemUnlocked(item);
         boolean outOfStock = item.getQuantity() <= 0;
-        // si débloqué -> couleur claire, sinon gris
-        panel.setBackground(unlocked ? SDV_BORDER_LIGHT : Color.GRAY);
+        // si débloqué -> couleur claire, sinon foncé
+        panel.setBackground(unlocked ? SDV_BORDER_LIGHT : SDV_BORDER_LIGHTDARK);
         panel.setPreferredSize(new Dimension(slotWidth, slotHeight));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8)); // Marges
 
@@ -364,7 +365,7 @@ public class PopupBarn extends PopupPanel {
             JPanel dimmer = new JPanel();
             dimmer.setOpaque(true);
             // blanc semi-transparent pour éclaircir et donner l'effet grisé; on peut aussi utiliser noir transparent
-            dimmer.setBackground(new Color(150, 150, 150, 160));
+            dimmer.setBackground(new Color(71, 43, 20, 160));
             dimmer.setAlignmentX(0.5f);
             dimmer.setAlignmentY(0.5f);
             overlay.add(dimmer);
@@ -379,7 +380,7 @@ public class PopupBarn extends PopupPanel {
         quantityPanel.setAlignmentY(1.0f);
 
         JLabel quantityLabel = new JLabel("x" + item.getQuantity());
-        quantityLabel.setForeground(outOfStock ? Color.LIGHT_GRAY : Color.WHITE);
+        quantityLabel.setForeground(Color.WHITE);
         quantityLabel.setFont(quantityLabel.getFont().deriveFont(Font.BOLD, 11f));
         quantityPanel.add(quantityLabel);
 

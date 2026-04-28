@@ -65,15 +65,7 @@ public class Barn extends Inventory {
                 case CITROUILLE -> itemPrice = PlantType.CITROUILLE.getValue()/2 + 1;
                 case FRAISE -> itemPrice = PlantType.FRAISE.getValue()/2 + 1;
             }
-        } else if (item instanceof ItemPlant) {
-            switch (item.getPlantType()) {
-                case CHOUX -> itemPrice = PlantType.CHOUX.getValue() + 1;
-                case CAROTTE -> itemPrice = PlantType.CAROTTE.getValue() + 1;
-                case CITROUILLE -> itemPrice = PlantType.CITROUILLE.getValue() + 1;
-                case FRAISE -> itemPrice = PlantType.FRAISE.getValue() + 1;
-            }
         }
-
         if (qty > 0) {
             int cost = itemPrice * qty;
 
