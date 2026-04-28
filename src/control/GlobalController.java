@@ -79,7 +79,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
         Tile tile = world.getTile(coords.x, coords.y);
 
-        // 0. Si on clique sur la grange ou une case voisine -> Ouvrir PopupBarn
+        // 0. Si on clique sur la grange -> Ouvrir PopupBarn
         if (world.isBarnInside(coords.x, coords.y)) {
             System.out.println("Clic proche de la grange -> Ouverture PopupBarn");
             display.switchToPopup(new src.view.PopupBarn(display, world));
@@ -88,23 +88,15 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
         // 1. Si on clique sur une entité (Poule ou Jardinier)
         src.model.Chicken chickenToClick = null;
-        src.model.Gardener gardenerToClick = null;
         for (src.model.Entity entity : tile.getEntities()) {
             if (chickenToClick == null && entity instanceof src.model.Chicken) {
                 chickenToClick = (src.model.Chicken) entity;
-            } else if (gardenerToClick == null && entity instanceof src.model.Gardener) {
-                gardenerToClick = (src.model.Gardener) entity;
             }
         }
 
         if (chickenToClick != null) {
             chickenToClick.flee();
             world.registerQuestAction(Quests.ACTION_CHASE_CHICKEN);
-            return;
-        }
-        if (gardenerToClick != null) {
-            System.out.println("Clic sur le jardinier -> Ouverture du menu");
-            display.switchToPopup(new src.view.ActionsPopup(display, world, gardenerToClick));
             return;
         }
 
