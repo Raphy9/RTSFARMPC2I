@@ -37,6 +37,7 @@ public class Stats {
 
     public void removeMoney(int m) {
         this.money -= m;
+        SoundManager.playSound(SoundManager.BUY);
     }
 
     public int getExp() {

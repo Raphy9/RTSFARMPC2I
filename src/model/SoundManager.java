@@ -28,7 +28,9 @@ public class SoundManager {
     public static SoundData BG;
     public static SoundData MENU;
     public static SoundData LEVEL_UP;
+    public static SoundData QUEST_COMPLETE;
     public static SoundData SELL;
+    public static SoundData BUY;
 
     public static SoundData PLANT;
     public static SoundData WATER;
@@ -39,6 +41,8 @@ public class SoundManager {
 
     public static SoundData CHICKEN_AMBIENT;
     public static SoundData CHICKEN_RUN;
+    public static SoundData CROW_AMBIENT;
+    public static SoundData CROW_RUN;
 
     // Clips actifs et boucles
     private static final List<Clip> activeClips = Collections.synchronizedList(new ArrayList<>());
@@ -60,7 +64,9 @@ public class SoundManager {
         BG = loadSound("src/assets/sounds/background_3.wav");
         MENU = loadSound("src/assets/sounds/menu_1-1.wav");
         LEVEL_UP = loadSound("src/assets/sounds/level_up.wav");
-        SELL = loadSound("src/assets/sounds/coins.wav");
+        QUEST_COMPLETE = loadSound("src/assets/sounds/success_2.wav");
+        SELL = loadSound("src/assets/sounds/coins_1.wav");
+        BUY = loadSound("src/assets/sounds/coins_2.wav");
 
         PLANT = loadSound("src/assets/sounds/planting.wav");
         WATER = loadSound("src/assets/sounds/watering.wav");
@@ -71,6 +77,8 @@ public class SoundManager {
 
         CHICKEN_AMBIENT = loadSound("src/assets/sounds/chicken_ambient_1.wav");
         CHICKEN_RUN = loadSound("src/assets/sounds/chicken_cluck.wav");
+        CROW_AMBIENT = loadSound("src/assets/sounds/crow_ambient.wav");
+        CROW_RUN = loadSound("src/assets/sounds/crow_scared.wav");
     }
 
     /**
