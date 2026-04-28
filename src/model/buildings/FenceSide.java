@@ -20,12 +20,15 @@ public class FenceSide extends Building {
 
     private static void loadSprites() {
         if (loaded) return;
+
+        // Image de base pour la barrière de côté
         baseSprite = SpriteUtils.processFenceImage("src/assets/Obstacles/fence_side.png");
 
-        cornerTR = SpriteUtils.processFenceImage("src/assets/Obstacles/fence_corner.png");
-        cornerBR = SpriteUtils.rotateImageIcon(cornerTR, 90);
-        cornerBL = SpriteUtils.rotateImageIcon(cornerTR, 180);
-        cornerTL = SpriteUtils.rotateImageIcon(cornerTR, 270);
+        // On charge les 4 angles
+        cornerTR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_top_right.png");
+        cornerBR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_right.png");
+        cornerBL = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_left.png");
+        cornerTL = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_top_left.png");
 
         loaded = true;
     }
