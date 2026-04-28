@@ -40,6 +40,8 @@ public class SoundManager {
 
     public static SoundData CHICKEN_AMBIENT;
     public static SoundData CHICKEN_RUN;
+    public static SoundData CROW_AMBIENT;
+    public static SoundData CROW_RUN;
 
     // Clips actifs et boucles
     private static final List<Clip> activeClips = Collections.synchronizedList(new ArrayList<>());
@@ -73,6 +75,8 @@ public class SoundManager {
 
         CHICKEN_AMBIENT = loadSound("src/assets/sounds/chicken_ambient_1.wav");
         CHICKEN_RUN = loadSound("src/assets/sounds/chicken_cluck.wav");
+        CROW_AMBIENT = loadSound("src/assets/sounds/crow_ambient.wav");
+        CROW_RUN = loadSound("src/assets/sounds/crow_scared.wav");
     }
 
     /**

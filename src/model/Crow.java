@@ -109,6 +109,7 @@ public class Crow extends Entity implements Runnable {
                     world.getTile(newX, newY).addEntity(this);
 
                     if (!hasCawed && Math.abs(newX - targetX) + Math.abs(newY - targetY) <= 10) {
+                        SoundManager.playSound(SoundManager.CROW_AMBIENT);
                         hasCawed = true;
                     }
 
@@ -129,7 +130,7 @@ public class Crow extends Entity implements Runnable {
                         System.out.println("Le corbeau mange !");
                         Thread.sleep(3000);
                         plant.destroyByEnemy();
-                        hasCawed = false;
+//                        hasCawed = false;   // pour un peu plus de difficulte
 
                         plantsEaten++;
 
@@ -329,6 +330,7 @@ public class Crow extends Entity implements Runnable {
         if (this.currentState == State.FLEEING) return;
         System.out.println("Croa ! Le corbeau s'envole !");
         this.currentState = State.FLEEING;
+        SoundManager.playSound(SoundManager.CROW_RUN);
         if (crowThread != null) {
             crowThread.interrupt();
         }
