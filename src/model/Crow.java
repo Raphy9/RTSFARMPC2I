@@ -88,6 +88,7 @@ public class Crow extends Entity implements Runnable {
                         // On ne fait PAS appel à flee() pour ne pas s'interrompre soi-même,
                         // on modifie juste l'état et on coupe la boucle de vol.
                         this.currentState = State.FLEEING;
+                        SoundManager.playSound(SoundManager.CROW_RUN);
                         break;
                     }
 
@@ -111,6 +112,7 @@ public class Crow extends Entity implements Runnable {
                     world.getTile(newX, newY).addEntity(this);
 
                     if (!hasCawed && Math.abs(newX - targetX) + Math.abs(newY - targetY) <= 10) {
+                        SoundManager.playSound(SoundManager.CROW_AMBIENT);
                         hasCawed = true;
                     }
 
@@ -131,7 +133,7 @@ public class Crow extends Entity implements Runnable {
                         System.out.println("Le corbeau mange !");
                         Thread.sleep(3000);
                         plant.destroyByEnemy();
-                        hasCawed = false;
+//                        hasCawed = false;
 
                         plantsEaten++;
 
@@ -292,6 +294,7 @@ public class Crow extends Entity implements Runnable {
                     // Si on repère un épouvantail pendant qu'on se balade
                     if (isNearScarecrow()) {
                         this.currentState = State.FLEEING;
+                        SoundManager.playSound(SoundManager.CROW_RUN);
                         break;
                     }
 
@@ -330,6 +333,7 @@ public class Crow extends Entity implements Runnable {
         if (this.currentState == State.FLEEING) return;
         System.out.println("Croa ! Le corbeau s'envole !");
         this.currentState = State.FLEEING;
+        SoundManager.playSound(SoundManager.CROW_RUN);
 
         // Utilisé uniquement si ça vient de l'extérieur (ex: clic de la souris)
         if (crowThread != null) {
