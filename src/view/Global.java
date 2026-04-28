@@ -406,8 +406,48 @@ public class Global extends JPanel {
         // EXP + argent sur une seule ligne en haut a gauche.
         drawTopStatsRow(g);
 
+        // Ajout : si on est en mode suppression, afficher un petit panneau noir semi-transparent en bas
+        if (ghostManager != null && ghostManager.isDeletionMode()) {
+            drawDeletionModePanel(g);
+        }
+
         // --- Dessin de la barre d'action par dessus tout ! ---
         drawHotbar(g);
+    }
+    
+
+    private void drawDeletionModePanel(Graphics g) {
+        Graphics2D gPanel = (Graphics2D) g.create();
+        int panelHeight = 64;
+        int padding = 16;
+        int maxWidth = Math.min(getWidth() - 40, 760);
+        int panelWidth = Math.min(maxWidth, getWidth() - 40);
+        int hotbarOffset = (hotbarVisible ? 80 : 0); // éviter la hotbar si visible
+        int px = (getWidth() - panelWidth) / 2;
+        int py = getHeight() - panelHeight - 20 - hotbarOffset;
+
+        // Fond semi-transparent
+        gPanel.setColor(new Color(0, 0, 0, 180));
+        gPanel.fillRoundRect(px, py, panelWidth, panelHeight, 12, 12);
+
+        // Bordure légère
+        gPanel.setColor(new Color(200, 200, 200, 100));
+        gPanel.setStroke(new BasicStroke(2));
+        gPanel.drawRoundRect(px, py, panelWidth, panelHeight, 12, 12);
+
+        // Texte centré
+        String message = "Mode suppression - clic gauche: supprimer, clic droit: annuler";
+        Font font = (GameFonts.MINECRAFT_FONT != null) ? GameFonts.MINECRAFT_FONT.deriveFont(Font.PLAIN, 24f) : new Font("Arial", Font.BOLD, 16);
+        gPanel.setFont(font);
+        FontMetrics fm = gPanel.getFontMetrics(font);
+        int textWidth = fm.stringWidth(message);
+        int textX = px + (panelWidth - textWidth) / 2;
+        int textY = py + (panelHeight + fm.getAscent() - fm.getDescent()) / 2;
+
+        gPanel.setColor(new Color(255, 255, 255, 220));
+        gPanel.drawString(message, textX, textY);
+
+        gPanel.dispose();
     }
 
     // --- Méthode pour dessiner la Hotbar ---
