@@ -21,7 +21,7 @@ public class PlowActionBuilder extends ActionBuilder {
     }
 
     public int getCurrentPlowedTilesCount() {
-        return world.getPlowedTilesCount();
+        return world.getEffectivePlowedTilesCount();
     }
 
     /** Message affiché en mode sélection labour. */
@@ -35,6 +35,10 @@ public class PlowActionBuilder extends ActionBuilder {
 
     @Override
     public void buildAction() {
+        int reserved = getSelectedPoints().size();
+        if (reserved > 0) {
+            world.reservePlowTiles(reserved);
+        }
 
         for (Point p : getSelectedPoints()) {
             Point adjacent = world.findClosestWalkableAdjacent(p.x, p.y, getGardener());

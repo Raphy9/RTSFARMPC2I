@@ -9,9 +9,19 @@ public class Stats {
 
     /** Appelé chaque fois qu'un niveau est atteint, avec le nouveau niveau comme argument. */
     private IntConsumer levelUpCallback = null;
+    private java.util.function.IntConsumer moneyGainCallback = null;
+    private java.util.function.IntConsumer expGainCallback = null;
 
     public void setLevelUpCallback(IntConsumer callback) {
         this.levelUpCallback = callback;
+    }
+
+    public void setMoneyGainCallback(java.util.function.IntConsumer callback) {
+        this.moneyGainCallback = callback;
+    }
+
+    public void setExpGainCallback(java.util.function.IntConsumer callback) {
+        this.expGainCallback = callback;
     }
 
     public Stats() {
@@ -32,6 +42,9 @@ public class Stats {
 
     public void addMoney(int m) {
         this.money += m;
+        if (m > 0 && moneyGainCallback != null) {
+            moneyGainCallback.accept(m);
+        }
         SoundManager.playSound(SoundManager.SELL);
     }
 
@@ -46,6 +59,9 @@ public class Stats {
 
     public void addExp(int e) {
         this.exp += e;
+        if (e > 0 && expGainCallback != null) {
+            expGainCallback.accept(e);
+        }
         checkLevelUp();
     }
 

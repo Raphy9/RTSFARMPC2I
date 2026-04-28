@@ -43,5 +43,8 @@ public class PlowAction extends Action {
         } else {
             System.out.println("Échec : La case (" + plowX + ", " + plowY + ") est déjà labourée ou n'existe pas.");
         }
+
+        // Libère la réservation associée à cette action, même en cas d'échec.
+        world.releasePlowTiles(1);
     }
 }

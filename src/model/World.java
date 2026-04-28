@@ -34,6 +34,9 @@ public class World {
     private src.model.Quests quests;
     private java.util.function.IntConsumer levelUpCallback;
 
+    // Réservations de labour en attente (actions planifiées mais pas encore exécutées).
+    private int reservedPlowTiles = 0;
+
     // --- ENNEMIS ---
     private List<Chicken> enemies; // Poules
     private List<Crow> crows;      // Corbeaux (NOUVEAU)
@@ -663,6 +666,32 @@ public class World {
         return count;
     }
 
+    /** Nombre de cases labourées + réservées (actions en attente). */
+    public int getEffectivePlowedTilesCount() {
+        return getPlowedTilesCount() + getReservedPlowTilesCount();
+    }
+
+    /** Nombre de cases réservées pour labour (actions planifiées). */
+    public synchronized int getReservedPlowTilesCount() {
+        return reservedPlowTiles;
+    }
+
+    /** Réserve immédiatement des cases à labourer pour bloquer la limite. */
+    public synchronized void reservePlowTiles(int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        reservedPlowTiles += amount;
+    }
+
+    /** Libère des réservations de labour (ex: annulation ou fin d'action). */
+    public synchronized void releasePlowTiles(int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        reservedPlowTiles = Math.max(0, reservedPlowTiles - amount);
+    }
+
     /** Limite de labour : 5 de base + 5 par niveau, plafonné à 100. */
     public int getPlowLimit() {
         int level = (stats != null) ? stats.getLevel() : 1;
@@ -672,7 +701,7 @@ public class World {
 
     /** Vérifie si on peut encore ajouter additionalTiles cases labourées. */
     public boolean canAddPlowedTiles(int additionalTiles) {
-        return getPlowedTilesCount() + Math.max(0, additionalTiles) <= getPlowLimit();
+        return getEffectivePlowedTilesCount() + Math.max(0, additionalTiles) <= getPlowLimit();
     }
 
     /** Enregistre un callback appelé à chaque montée de niveau, avec le nouveau niveau. */

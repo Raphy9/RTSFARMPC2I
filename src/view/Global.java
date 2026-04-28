@@ -37,10 +37,15 @@ public class Global extends JPanel {
     // Compteur de références par case pour éviter qu'un jardinier retire la surbrillance d'un autre.
     private final Map<Point, Integer> highlights = new HashMap<>();
     private Set<Point> selectedTilesBlueHighlight = new HashSet<Point>();
+    private FloatingTextManager floatingTextManager;
 
     public void setSelectedTilesBlueHighlight(Set<Point> selectedTiles) {
         this.selectedTilesBlueHighlight = selectedTiles;
         this.repaint();
+    }
+
+    public void setFloatingTextManager(FloatingTextManager floatingTextManager) {
+        this.floatingTextManager = floatingTextManager;
     }
 
     public Global(World world, Camera camera) {
@@ -419,6 +424,12 @@ public class Global extends JPanel {
 
         // --- Dessin de la barre d'action par dessus tout ! ---
         drawHotbar(g);
+
+        if (floatingTextManager != null) {
+            Graphics2D g3 = (Graphics2D) g.create();
+            floatingTextManager.draw(g3);
+            g3.dispose();
+        }
     }
 
 

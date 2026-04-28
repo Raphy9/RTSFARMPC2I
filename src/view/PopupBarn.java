@@ -131,7 +131,14 @@ public class PopupBarn extends PopupPanel {
         }
 
         for (int i = 0; i < filtered.size(); i++) {
-            itemGrid.add(createPanelItem(filtered.get(i)));
+            if (filtered.get(i).getRequiredLevel() <= world.getStats().getLevel()) {
+                itemGrid.add(createPanelItem(filtered.get(i)));
+            }
+        }
+        for (int i = 0; i < filtered.size(); i++) {
+            if (filtered.get(i).getRequiredLevel() > world.getStats().getLevel()) {
+                itemGrid.add(createPanelItem(filtered.get(i)));
+            }
         }
 
         // Slots vides : panneau transparent sans bordure ni fond
@@ -244,24 +251,24 @@ public class PopupBarn extends PopupPanel {
                 
             } else {
                 int req = selectedItem.getPlantType().getLevelRequirement();
-                JLabel lockedMsg = new JLabel("<html><center>Cet objet se débloque<br>au <b>niveau " + req + "</b>.<br><br>Vendez des récoltes pour gagner de l'XP !</center></html>");
+                JLabel lockedMsg = new JLabel("<html><center>Cet objet se débloque<br>au niveau " + req + ".</center></html>");
                 lockedMsg.setFont(getCustomFont(14f));
-                lockedMsg.setForeground(new Color(150, 50, 50));
-                lockedMsg.setAlignmentX(Component.CENTER_ALIGNMENT);
-                detailsPanel.add(lockedMsg);
+                lockedMsg.setForeground(SDV_TEXT);
+                lockedMsg.setHorizontalAlignment(SwingConstants.CENTER);
+
+                JPanel lockedPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+                lockedPanel.setOpaque(false);
+                lockedPanel.add(lockedMsg);
+
+                detailsPanel.add(lockedPanel);
+                detailsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
             }
 
-            // 4. Argent du joueur
-            JLabel moneyLabel = new JLabel("Portefeuille : " + barn.getMoney() + " PO");
-            moneyLabel.setFont(getCustomFont(16f));
-            moneyLabel.setForeground(new Color(40, 100, 40));
-            moneyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             detailPanel.add(title);
             detailPanel.add(imgLabel);
             detailPanel.add(detailsPanel);
-            detailPanel.add(Box.createVerticalGlue());
-            detailPanel.add(moneyLabel);
+            detailPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             descriptionPanel.add(detailPanel, BorderLayout.CENTER);
         }

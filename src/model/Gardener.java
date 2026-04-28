@@ -1,6 +1,7 @@
 package src.model;
 
 import src.model.actions.Action;
+import src.model.actions.PlowAction;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -42,6 +43,19 @@ public class Gardener extends Entity implements Runnable {
         }
     }
 
+    public void teleportTo(int newX, int newY) {
+        if (newX < 0 || newX >= World.WIDTH || newY < 0 || newY >= World.HEIGHT) {
+            return;
+        }
+        Tile oldTile = world.getTile(this.x, this.y);
+        if (oldTile != null) {
+            oldTile.removeEntity(this);
+        }
+        this.x = newX;
+        this.y = newY;
+        world.getTile(newX, newY).addEntity(this);
+    }
+
     @Override
     public void run() {
         this.gardenerThread = Thread.currentThread();
@@ -69,6 +83,9 @@ public class Gardener extends Entity implements Runnable {
                 }
             } catch (InterruptedException e) {
                 System.out.println("Jardinier : Action annulée en cours de route.");
+                if (currentAction instanceof PlowAction) {
+                    world.releasePlowTiles(1);
+                }
                 this.currentState = State.WAITING;
             } catch (Exception e) {
                 System.err.println("ERREUR FATALE DANS LE THREAD DU JARDINIER !");
@@ -129,8 +146,17 @@ public class Gardener extends Entity implements Runnable {
     }
 
     public void interruptGardener() {
+        int canceledPlows = 0;
         synchronized (actionQueue) {
+            for (Action action : actionQueue) {
+                if (action instanceof PlowAction) {
+                    canceledPlows++;
+                }
+            }
             actionQueue.clear();
+        }
+        if (canceledPlows > 0) {
+            world.releasePlowTiles(canceledPlows);
         }
         if (this.currentState != State.WAITING && gardenerThread != null && gardenerThread.isAlive()) {
             gardenerThread.interrupt();

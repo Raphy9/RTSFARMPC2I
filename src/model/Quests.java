@@ -229,7 +229,9 @@ public class Quests {
 
             if (quest.addProgress(amount)) {
                 SoundManager.playSound(SoundManager.QUEST_COMPLETE);
-                quest.grantReward(stats);
+                if (quest.grantReward(stats)) {
+                    notifyChange();
+                }
             }
 
             if (line.isCompleted()) {

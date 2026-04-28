@@ -49,7 +49,12 @@ public class PopupInventory extends PopupPanel {
                 }
 
                 if (item.getImage() != null) {
-                    itemButton.setIcon(new ImageIcon(item.getImage().getImage().getScaledInstance(35, 35, Image.SCALE_SMOOTH)));
+                    if (item.getRequiredLevel() <= display.getWorld().getStats().getLevel()) {
+                        itemButton.setIcon(new ImageIcon(item.getImage().getImage().getScaledInstance(35, 35, Image.SCALE_SMOOTH)));
+                    } else {
+                        ImageIcon lock = new ImageIcon("src/assets/lock.png");
+                        itemButton.setIcon(new ImageIcon(lock.getImage().getScaledInstance(35, 35, Image.SCALE_SMOOTH)));
+                    }
                 }
 
                 if (item.getQuantity() > 0) {
