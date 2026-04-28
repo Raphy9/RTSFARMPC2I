@@ -47,6 +47,8 @@ public class WorldSaveData implements Serializable {
     private List<List<Integer>> questProgresses;        // Progression quêtes
     private int activeQuestLineIndex;                   // Chapitre actif
 
+    private List<GardenerSaveData> gardeners;           // Positions des jardiniers
+
     /**
      * ╔════════════════════════════════════════════════════════════════════╗
      * ║ Constructeur: Capture l'état complet du World                     ║
@@ -68,6 +70,7 @@ public class WorldSaveData implements Serializable {
         this.barnItems = new ArrayList<>();
         this.questProgresses = new ArrayList<>();
         this.activeQuestLineIndex = 0;
+        this.gardeners = new ArrayList<>();
 
         // Sauvegarder tous les bâtiments
         for (Building b : world.getBuildings()) {
@@ -96,6 +99,11 @@ public class WorldSaveData implements Serializable {
                 activeQuestLineIndex = world.getQuests().getActiveQuestLineIndex();
             }
         } catch (Exception ignored) {}
+
+        // Sauvegarder la position des jardiniers
+        for (Gardener gardener : world.getGardeners()) {
+            gardeners.add(new GardenerSaveData(gardener));
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -112,6 +120,7 @@ public class WorldSaveData implements Serializable {
     public List<ItemSaveData> getBarnItems() { return barnItems; }
     public List<List<Integer>> getQuestProgresses() { return questProgresses; }
     public int getActiveQuestLineIndex() { return activeQuestLineIndex; }
+    public List<GardenerSaveData> getGardeners() { return gardeners; }
 
     // ════════════════════════════════════════════════════════════════════
     // CLASSE INTERNE: BuildingSaveData
@@ -275,9 +284,25 @@ public class WorldSaveData implements Serializable {
             }
         }
     }
+
+    // ════════════════════════════════════════════════════════════════════
+    // CLASSE INTERNE: GardenerSaveData
+    // ════════════════════════════════════════════════════════════════════
+
+    /**
+     * DTO pour sauvegarder la position et la direction d'un jardinier.
+     */
+    public static class GardenerSaveData implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        public int x;
+        public int y;
+        public int facingDirection;
+
+        public GardenerSaveData(Gardener gardener) {
+            this.x = gardener.getX();
+            this.y = gardener.getY();
+            this.facingDirection = gardener.getFacingDirection();
+        }
+    }
 }
-
-
-
-
-

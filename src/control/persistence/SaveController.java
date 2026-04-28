@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.awt.Point;
 
 /**
  * Contrôleur responsable de la persistance (sauvegarde / chargement).
@@ -95,7 +96,33 @@ public class SaveController {
 				}
 			}
 
-			// Restaurer la progression des quêtes si disponible
+			// Restaurer la position des jardiniers (apres les batiments)
+			try {
+				if (data.getGardeners() != null && world.getGardeners() != null) {
+					int count = Math.min(data.getGardeners().size(), world.getGardeners().size());
+					for (int i = 0; i < count; i++) {
+						src.view.WorldSaveData.GardenerSaveData gsd = data.getGardeners().get(i);
+						src.model.Gardener gardener = world.getGardeners().get(i);
+						int targetX = gsd.x;
+						int targetY = gsd.y;
+						if (targetX >= 0 && targetX < World.WIDTH && targetY >= 0 && targetY < World.HEIGHT) {
+							if (!world.getTile(targetX, targetY).isWalkable()) {
+								Point fallback = world.findClosestWalkableAdjacent(targetX, targetY, gardener);
+								if (fallback != null) {
+									targetX = fallback.x;
+									targetY = fallback.y;
+								} else {
+									continue;
+								}
+							}
+							gardener.teleportTo(targetX, targetY);
+							gardener.setFacingDirection(gsd.facingDirection);
+						}
+					}
+				}
+			} catch (Exception ignored) {}
+
+			// Restaurer la progression des quetes si disponible
 			try {
 				if (data.getQuestProgresses() != null && world.getQuests() != null) {
 					world.getQuests().restoreProgress(data.getQuestProgresses(), data.getActiveQuestLineIndex());
