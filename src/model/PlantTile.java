@@ -101,7 +101,7 @@ public class PlantTile extends Tile {
      */
     public void water() {
         if (this.plant != null) {
-            this.plant.water(33.0f);
+            this.plant.water(Plant.WATERING_AMOUNT);
         }
     }
 

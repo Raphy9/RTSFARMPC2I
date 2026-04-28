@@ -41,7 +41,7 @@ class PlantTest {
         // 1. Passage de GRAINE à POUSSE (âge > 33% de 120, soit 39.6) -> Atteint à 40 ticks
         int ticksToPousse = (int) (duration * 0.33f) + 1; // 40 ticks
         for (int i = 0; i < ticksToPousse; i++) {
-            plant.water(100); // On garde l'eau à fond
+            plant.water(Plant.MAX_WATER_LEVEL); // On garde l'eau à fond
             plant.tick();
         }
         assertEquals(PlantState.POUSSE, plant.getState(), "Après " + ticksToPousse + " ticks, le chou doit être une POUSSE");
@@ -50,7 +50,7 @@ class PlantTest {
         // On est déjà à 40 ticks, il en faut 40 de plus.
         int ticksToCroissance = (int) (duration * 0.66f) + 1 - ticksToPousse; // 80 - 40 = 40 ticks
         for (int i = 0; i < ticksToCroissance; i++) {
-            plant.water(100);
+            plant.water(Plant.MAX_WATER_LEVEL);
             plant.tick();
         }
         assertEquals(PlantState.CROISSANCE, plant.getState(), "Après " + (ticksToPousse + ticksToCroissance) + " ticks, le chou doit être en CROISSANCE");
@@ -59,7 +59,7 @@ class PlantTest {
         // On est à 80 ticks, il en faut 40 de plus.
         int ticksToMature = duration - (ticksToPousse + ticksToCroissance); // 120 - 80 = 40 ticks
         for (int i = 0; i < ticksToMature; i++) {
-            plant.water(100);
+            plant.water(Plant.MAX_WATER_LEVEL);
             plant.tick();
         }
         assertEquals(PlantState.MATURE, plant.getState(), "Après " + duration + " ticks, le chou doit être MATURE");
@@ -91,7 +91,7 @@ class PlantTest {
         int ticksToMatureFertilized = duration / 2;
 
         for (int i = 0; i < ticksToMatureFertilized; i++) {
-            plant.water(100);
+            plant.water(Plant.MAX_WATER_LEVEL);
             plant.tick();
         }
 
@@ -101,6 +101,6 @@ class PlantTest {
     @Test
     void testWaterCap() {
         plant.water(1000.0f);
-        assertEquals(100.0f, plant.getWaterLevel(), "L'eau ne doit jamais dépasser 100");
+        assertEquals(Plant.MAX_WATER_LEVEL, plant.getWaterLevel(), "L'eau ne doit jamais dépasser 100");
     }
 }

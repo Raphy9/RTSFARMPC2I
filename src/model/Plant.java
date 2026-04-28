@@ -10,8 +10,10 @@ import javax.swing.ImageIcon;
 public class Plant {
 
     // --- Constantes ---
-    private static final float MAX_WATER_LEVEL = 100.0f;
-    private static final int TIME_BEFORE_DEATH = 300; // Temps (ticks) sans eau avant de mourir
+    public static final float MAX_WATER_LEVEL = 60.0f;
+    public static final float WATERING_AMOUNT = 33.0f; // Quantité d'eau ajoutée par arrosage
+    public static final float OVERWATER_THRESHOLD = 10.0f; // Seuil d'eau en trop qui fait pourrir la plante
+    public static final int TIME_BEFORE_DEATH = 45; // Temps (ticks) sans eau avant de mourir
 
     // --- Attributs ---
     private final PlantType type; // Le type de plante (Salade, Carotte, Tomate, etc.)
@@ -108,6 +110,11 @@ public class Plant {
     public void water(float amount) {
         this.currentWaterLevel += amount;
         if (this.currentWaterLevel > MAX_WATER_LEVEL) {
+            if (this.currentWaterLevel > MAX_WATER_LEVEL + OVERWATER_THRESHOLD) {
+                // Si on dépasse largement le niveau max, la plante pourrit et meurt
+                this.state = PlantState.MORT;
+                updateSprite();
+            }
             this.currentWaterLevel = MAX_WATER_LEVEL;
         }
         // Si on arrose, on reset le compteur de mort de soif (sauvetage in extremis)

@@ -1,5 +1,6 @@
 package src.model.buildings;
 
+import src.model.Plant;
 import src.model.PlantTile;
 import src.model.Tile;
 import src.model.World;
@@ -32,7 +33,11 @@ public class Arroseur extends Building {
 
                 Tile tile = world.getTile(x, y);
                 if (tile instanceof PlantTile) {
-                    ((PlantTile) tile).water();
+                    Plant plant = ((PlantTile) tile).getPlant();
+                    // On n'arrose que si cela ne fait pas pourir la plante
+                    if (plant != null && plant.getWaterLevel() + Plant.WATERING_AMOUNT <= Plant.MAX_WATER_LEVEL) {
+                        ((PlantTile) tile).water();
+                    }
                 }
             }
         }

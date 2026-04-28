@@ -396,8 +396,8 @@ public class Global extends JPanel {
                             g.setColor(Color.BLACK); g.drawRect(barX, waterBarY, barW, barH);
                         }
 
-                        // Le niveau d'eau maximum dans ta classe Plant est de 100.0f
-                        float waterProgress = plant.getWaterLevel() / 100.0f;
+                        // Le niveau d'eau maximum dans ta classe Plant est Plant.MAX_WATER_LEVEL
+                        float waterProgress = plant.getWaterLevel() / Plant.MAX_WATER_LEVEL;
                         if (waterProgress > 1.0f) waterProgress = 1.0f;
                         if (waterProgress < 0.0f) waterProgress = 0.0f;
 
