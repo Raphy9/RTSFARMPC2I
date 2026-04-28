@@ -20,15 +20,15 @@ public class FenceFace extends Building {
 
     private static void loadSprites() {
         if (loaded) return;
+
+        // Image de base pour la barrière de face
         baseSprite = SpriteUtils.processFenceImage("src/assets/Obstacles/fence_face.png");
 
-        // L'image de base (Haut-Droite) a ses poutres qui partent vers la GAUCHE (Ouest) et le BAS (Sud)
-        cornerTR = SpriteUtils.processFenceImage("src/assets/Obstacles/fence_corner.png");
-
-        // On génère les autres angles mathématiquement
-        cornerBR = SpriteUtils.rotateImageIcon(cornerTR, 90);  // Bas-Droite (Poutres vers Nord et Ouest)
-        cornerBL = SpriteUtils.rotateImageIcon(cornerTR, 180); // Bas-Gauche (Poutres vers Nord et Est)
-        cornerTL = SpriteUtils.rotateImageIcon(cornerTR, 270); // Haut-Gauche (Poutres vers Sud et Est)
+        // On charge manuellement les 4 angles des barrières
+        cornerTR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_top_right.png");
+        cornerBR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_right.png");
+        cornerBL = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_left.png");
+        cornerTL = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_top_left.png");
 
         loaded = true;
     }

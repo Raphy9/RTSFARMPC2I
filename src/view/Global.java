@@ -201,7 +201,10 @@ public class Global extends JPanel {
             if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                 int px = (relX * Display.RATIO_X) - pixelDiffX;
                 int py = (relY * Display.RATIO_Y) - pixelDiffY;
-                g3.drawImage(b.getSprite().getImage(), px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
+
+                // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, gx, gy) pour le fantôme des barrières
+                Image ghostImg = b.getSprite(world, gx, gy).getImage();
+                g3.drawImage(ghostImg, px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
             }
             g3.dispose();
         }
@@ -217,7 +220,10 @@ public class Global extends JPanel {
                 if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                     int px = (relX * Display.RATIO_X) - pixelDiffX;
                     int py = (relY * Display.RATIO_Y) - pixelDiffY;
-                    g.drawImage(b.getSprite().getImage(), px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
+
+                    // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, x, y) pour les bâtiments posés
+                    Image spriteImg = b.getSprite(world, b.getX(), b.getY()).getImage();
+                    g.drawImage(spriteImg, px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
                 }
             }
         }
@@ -334,7 +340,7 @@ public class Global extends JPanel {
         }
         g2.dispose();
 
-        // dessiner les entités (jardiniers) - Une seule fois !
+        // dessiner les entités (jardiniers, poules, corbeaux) - Une seule fois !
         drawEntities(g, fstTileX, fstTileY, pixelDiffX, pixelDiffY);
 
         // Dessin des jauges (Croissance + Eau) sur la case survolée
@@ -662,4 +668,3 @@ public class Global extends JPanel {
         }
     }
 }
-
