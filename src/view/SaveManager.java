@@ -112,6 +112,33 @@ public class SaveManager {
     }
 
     /**
+     * Renomme une sauvegarde
+     */
+    public static boolean renameSave(String oldName, String newName) {
+        try {
+            Path oldPath = Paths.get(SAVES_DIR, oldName + ".sav");
+            Path newPath = Paths.get(SAVES_DIR, newName + ".sav");
+
+            if (!Files.exists(oldPath)) {
+                System.err.println("La sauvegarde à renommer n'existe pas : " + oldName);
+                return false;
+            }
+
+            if (Files.exists(newPath)) {
+                System.err.println("Une sauvegarde avec ce nom existe déjà : " + newName);
+                return false;
+            }
+
+            Files.move(oldPath, newPath);
+            System.out.println("Sauvegarde renommée : " + oldName + " -> " + newName);
+            return true;
+        } catch (IOException ex) {
+            System.err.println("Erreur lors du renommage : " + ex.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Vérifie si une sauvegarde existe déjà
      */
     public static boolean savExists(String saveName) {
@@ -130,7 +157,3 @@ public class SaveManager {
         return "Partie " + index;
     }
 }
-
-
-
-

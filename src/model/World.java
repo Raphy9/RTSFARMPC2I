@@ -57,10 +57,11 @@ public class World {
         initalizeStats();
         computeParcels();
 
-        // Jardiniers
+        // Jardiniers - Commencer avec un seul jardinier
         this.testGardener = new Gardener(WIDTH/2, HEIGHT/2, this);
         this.gardeners.add(testGardener);
-        this.gardeners.add(new Gardener(WIDTH/2+1, HEIGHT/2, this));
+        // Les autres jardiniers seront débloqués aux niveaux 3 et 7
+
         for (Gardener gardener : gardeners) {
             Thread t = new Thread(gardener);
             t.start(); // Lance le thread du jardinier
@@ -128,6 +129,24 @@ public class World {
 
     private void onLevelUp(int newLevel) {
         syncLevelMilestones();
+
+        // Débloquer de nouveaux jardiniers aux niveaux 3 et 7
+        if (newLevel == 3 && gardeners.size() == 1) {
+            // Débloquer le deuxième jardinier au niveau 3
+            Gardener secondGardener = new Gardener(WIDTH/2+1, HEIGHT/2, this);
+            gardeners.add(secondGardener);
+            Thread t = new Thread(secondGardener);
+            t.start();
+            System.out.println("Deuxième jardinier débloqué au niveau 3 !");
+        } else if (newLevel == 7 && gardeners.size() == 2) {
+            // Débloquer le troisième jardinier au niveau 7
+            Gardener thirdGardener = new Gardener(WIDTH/2-1, HEIGHT/2, this);
+            gardeners.add(thirdGardener);
+            Thread t = new Thread(thirdGardener);
+            t.start();
+            System.out.println("Troisième jardinier débloqué au niveau 7 !");
+        }
+
         if (levelUpCallback != null) {
             levelUpCallback.accept(newLevel);
         }

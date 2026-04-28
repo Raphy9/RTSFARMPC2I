@@ -132,6 +132,19 @@ public class Quest {
     }
 
     /**
+     * Méthode pour réclamer la récompense manuellement (nécessite accès aux stats du monde).
+     * Cette méthode sera appelée depuis l'interface utilisateur.
+     */
+    public boolean claimReward() {
+        if (!completed || rewardClaimed) {
+            return false;
+        }
+        // Marquer comme réclamée - les stats seront mises à jour par le système de quêtes
+        rewardClaimed = true;
+        return true;
+    }
+
+    /**
      * Restaure l'état exact de la quête depuis une sauvegarde.
      */
     public void restoreState(int restoredProgress, boolean restoredCompleted, boolean restoredRewardClaimed) {

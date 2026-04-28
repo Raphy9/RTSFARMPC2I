@@ -17,6 +17,7 @@ public class Quests {
     public static final String ACTION_REACH_LEVEL_3 = "REACH_LEVEL_3";
     public static final String ACTION_REACH_LEVEL_4 = "REACH_LEVEL_4";
     public static final String ACTION_REACH_LEVEL_5 = "REACH_LEVEL_5";
+    public static final String ACTION_CLICK_CROW = "CLICK_CROW";
 
     /**
      * Une ligne de quêtes représente un chapitre : elle contient plusieurs quêtes et se débloque en bloc.
@@ -149,7 +150,7 @@ public class Quests {
                 "Finaliser la ferme fraise et automatiser.",
                 java.util.List.of(
                         Quest.createHarvestQuest("Q5_HARVEST_FRAISE", "Recolter des fraises", "Recolter 20 fraises.", PlantType.FRAISE, 20, 30, 30),
-                        Quest.createActionQuest("Q5_SELL_FRAISE", "Vendre des fraises", "Vendre 20 fraises.", ACTION_SELL_FRAISE, 20, 20, 30),
+                        Quest.createActionQuest("Q5_CLICK_CROW", "Chasser des corbeaux", "Cliquer sur 5 corbeaux pour les chasser.", ACTION_CLICK_CROW, 5, 20, 30),
                         Quest.createBuildQuest("Q5_BUILD_SPRINKLER", "Poser un arroseur", "Poser un arroseur automatique.", Arroseur.class, 1, 40, 35),
                         Quest.createBuildQuest("Q5_BUILD_10", "Poser des batiments", "Poser 10 batiments.", null, 10, 40, 35),
                         Quest.createActionQuest("Q5_LEVEL_5", "Passer niveau 5", "Atteindre le niveau 5.", ACTION_REACH_LEVEL_5, 1, 50, 40)
