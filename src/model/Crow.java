@@ -85,7 +85,9 @@ public class Crow extends Entity implements Runnable {
                     // VÉRIFICATION EN TEMPS RÉEL : Le corbeau a-t-il repéré un épouvantail ?
                     if (isNearScarecrow()) {
                         System.out.println("Croa ! Le corbeau a vu un épouvantail et panique !");
-                        flee();
+                        // On ne fait PAS appel à flee() pour ne pas s'interrompre soi-même,
+                        // on modifie juste l'état et on coupe la boucle de vol.
+                        this.currentState = State.FLEEING;
                         break;
                     }
 
@@ -153,6 +155,7 @@ public class Crow extends Entity implements Runnable {
                 }
 
             } catch (InterruptedException e) {
+                // Si l'erreur arrive, on vérifie bien l'état
                 if (this.currentState != State.FLEEING) {
                     isRunning = false;
                 }
@@ -166,7 +169,6 @@ public class Crow extends Entity implements Runnable {
             for (src.model.buildings.Building b : world.getBuildings()) {
                 if (b instanceof src.model.buildings.Scarecrow) {
                     int radius = src.model.buildings.Scarecrow.RADIUS;
-                    // Vérifie si les coordonnées actuelles du corbeau sont dans le rayon
                     if (Math.abs(b.getX() - this.x) <= radius && Math.abs(b.getY() - this.y) <= radius) {
                         return true;
                     }
@@ -219,7 +221,7 @@ public class Crow extends Entity implements Runnable {
         List<Tile> path = getFlightPath(targetX, targetY);
 
         if (path != null && !path.isEmpty()) {
-            this.currentState = State.FLYING;
+            // CORRECTION ICI : On laisse l'état à FLEEING ! L'animation utilisera quand même le sprite FLYING
             for (Tile step : path) {
                 int newX = step.getX();
                 int newY = step.getY();
@@ -241,7 +243,7 @@ public class Crow extends Entity implements Runnable {
 
         world.getTile(this.x, this.y).removeEntity(this);
         world.removeEnemy(this);
-        this.isRunning = false;
+        this.isRunning = false; // Fin propre du thread
     }
 
     private PlantTile findNearestPlant() {
@@ -258,7 +260,6 @@ public class Crow extends Entity implements Runnable {
                     PlantTile pt = (PlantTile) tile;
                     Plant p = pt.getPlant();
 
-                    // On cible n'importe quelle plante en croissance (sans se soucier de l'épouvantail ici)
                     if (p != null && p.getState() != PlantState.MORT && p.getState() != PlantState.EATEN && !p.isHarvestable()) {
                         if (!hasCrow(pt) || (pt.getX() == this.x && pt.getY() == this.y)) {
                             int dist = Math.abs(x - getX()) + Math.abs(y - getY());
@@ -288,9 +289,9 @@ public class Crow extends Entity implements Runnable {
                 for (Tile step : path) {
                     if (!isRunning || this.currentState == State.FLEEING) break;
 
-                    // Le corbeau peut croiser un épouvantail pendant sa balade aussi !
+                    // Si on repère un épouvantail pendant qu'on se balade
                     if (isNearScarecrow()) {
-                        flee();
+                        this.currentState = State.FLEEING;
                         break;
                     }
 
@@ -329,6 +330,8 @@ public class Crow extends Entity implements Runnable {
         if (this.currentState == State.FLEEING) return;
         System.out.println("Croa ! Le corbeau s'envole !");
         this.currentState = State.FLEEING;
+
+        // Utilisé uniquement si ça vient de l'extérieur (ex: clic de la souris)
         if (crowThread != null) {
             crowThread.interrupt();
         }
@@ -340,7 +343,7 @@ public class Crow extends Entity implements Runnable {
         switch (currentState) {
             case IDLE: return 0;
             case FLYING:
-            case FLEEING : return 1;
+            case FLEEING : return 1; // La fuite utilise l'animation FLYING !
             case EATING: return 2;
             default: return 0;
         }
