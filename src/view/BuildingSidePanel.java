@@ -282,7 +282,7 @@ public class BuildingSidePanel extends JPanel {
                 out.add(new Entry("Arroseur auto",    "src/assets/arroseur.png",            () -> new Arroseur(), 120, 3));
                 out.add(new Entry("Boîte aux lettres","src/assets/Buildings/mailbox1.png",  () -> new Mailbox1(),  30, 4, 1));
                 out.add(new Entry("Linge",            "src/assets/Buildings/linge.png",    () -> new Linge(),    50, 5,2));
-
+                out.add(new Entry("Epouvantail",      "src/assets/Buildings/scarecrow.png", () -> new Scarecrow(), 100, 2));
                 break;
             case "Décoration":
 
