@@ -74,7 +74,7 @@ public class SpriteSheetLoader {
         // Ligne 2 : Haut
         if (direction == src.model.Entity.UP) return 2;
         if (direction == src.model.Entity.LEFT || direction == src.model.Entity.RIGHT) return 1;
-        if (direction == src.model.Entity.DOWN) return 0; // Correction logique ici
+        if (direction == src.model.Entity.DOWN) return 2;
         return 0;
     }
 
