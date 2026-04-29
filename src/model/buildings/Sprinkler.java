@@ -7,11 +7,11 @@ import src.model.World;
 
 import javax.swing.ImageIcon;
 
-public class Arroseur extends Building {
+public class Sprinkler extends Building {
 
     private static final int RANGE = 2;
 
-    public Arroseur() {
+    public Sprinkler() {
         super(1, 1, false, PlacementRule.PLANTABLE_ONLY, new ImageIcon("src/assets/arroseur.png"));
         this.buyPrice = 120;
         this.levelRequirement = 3;

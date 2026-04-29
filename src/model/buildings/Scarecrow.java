@@ -13,7 +13,7 @@ public class Scarecrow extends Building {
         // PlacementRule.ANYWHERE permet de le poser sur l'herbe OU sur la terre labourée !
         super(1, 1, false, PlacementRule.ANYWHERE, new ImageIcon("src/assets/Buildings/scarecrow.png"));
         this.buyPrice = 100;
-        this.levelRequirement = 2; // Débloqué au niveau 2
+        this.levelRequirement = 5; // Débloqué au niveau 5
     }
 
     @Override

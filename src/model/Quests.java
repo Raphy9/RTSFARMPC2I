@@ -1,6 +1,6 @@
 package src.model;
 
-import src.model.buildings.Arroseur;
+import src.model.buildings.Sprinkler;
 
 public class Quests {
     public static final String ACTION_PLOW_TILE = "PLOW_TILE";
@@ -151,7 +151,7 @@ public class Quests {
                 java.util.List.of(
                         Quest.createHarvestQuest("Q5_HARVEST_FRAISE", "Recolter des fraises", "Recolter 20 fraises.", PlantType.FRAISE, 20, 30, 30),
                         Quest.createActionQuest("Q5_CLICK_CROW", "Chasser des corbeaux", "Cliquer sur 5 corbeaux pour les chasser.", ACTION_CLICK_CROW, 5, 20, 30),
-                        Quest.createBuildQuest("Q5_BUILD_SPRINKLER", "Poser un arroseur", "Poser un arroseur automatique.", Arroseur.class, 1, 40, 35),
+                        Quest.createBuildQuest("Q5_BUILD_SPRINKLER", "Poser un arroseur", "Poser un arroseur automatique.", Sprinkler.class, 1, 40, 35),
                         Quest.createBuildQuest("Q5_BUILD_10", "Poser des batiments", "Poser 10 batiments.", null, 10, 40, 35),
                         Quest.createActionQuest("Q5_LEVEL_5", "Passer niveau 5", "Atteindre le niveau 5.", ACTION_REACH_LEVEL_5, 1, 50, 40)
                 )

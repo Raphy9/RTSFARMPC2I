@@ -7,6 +7,7 @@ import src.model.buildings.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -160,11 +161,11 @@ public class BuildingSidePanel extends JPanel {
 
 
     private JComponent createCard(Entry e) {
+        int builtCount = countBuiltInstances(e);
         int currentLevel = world.getStats().getLevel();
         boolean locked = e.levelRequirement > currentLevel;
-        boolean isNew  = e.levelRequirement == currentLevel;
+        boolean isNew  = e.levelRequirement == currentLevel && builtCount == 0;
 
-        int builtCount = countBuiltInstances(e);
         String countText = (e.maxCount != -1) ? " (" + builtCount + "/" + e.maxCount + ")" : " (" + builtCount + ")";
 
         JPanel card = new JPanel(new BorderLayout(10, 10));
@@ -182,9 +183,8 @@ public class BuildingSidePanel extends JPanel {
             // Chargement synchrone pour eviter l'image vide (ImageIcon asynchrone)
             java.awt.image.BufferedImage baseImg = loadSync(e.iconPath);
             if (NEW_BADGE_ICON == null) NEW_BADGE_ICON = new ImageIcon("src/assets/new.png");
-            java.awt.image.BufferedImage badgeImg = loadSync("src/assets/new.png");
-
-            java.awt.image.BufferedImage buf = new java.awt.image.BufferedImage(iconSz, iconSz, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            BufferedImage badgeImg = loadSync("src/assets/new.png");
+            BufferedImage buf = new BufferedImage(iconSz, iconSz, BufferedImage.TYPE_INT_ARGB);
             Graphics2D bg = buf.createGraphics();
             if (baseImg != null) bg.drawImage(baseImg, 0, 0, iconSz, iconSz, null);
             if (badgeImg != null) {
@@ -307,7 +307,7 @@ public class BuildingSidePanel extends JPanel {
         switch (category) {
             case "Batiments":
                 out.add(new Entry("Grange", "src/assets/Buildings/barn.png", "Le batiment principal de votre ferme qui permet de \nstocker/vendre/acheter les objets/plantes", () -> new BarnBuilding(), 0, 1, 1));
-                out.add(new Entry("Arroseur auto",    "src/assets/arroseur.png", "Le meilleur ami du fermier paresseux. \nIl arrose automatiquement toutes les plantations dans un rayon de 2 cases. (zone de 5x5)", () -> new Arroseur(), 120, 3));
+                out.add(new Entry("Arroseur auto",    "src/assets/arroseur.png", "Le meilleur ami du fermier paresseux. \nIl arrose automatiquement toutes les plantations dans un rayon de 2 cases. (zone de 5x5)", () -> new Sprinkler(), 120, 3));
                 out.add(new Entry("Epouvantail",      "src/assets/Buildings/scarecrow.png", "Le protecteur de vos champs. Il effraie et fait \nfuir instantanement les corbeaux dans un rayon de 3 cases (zone de 7x7).",() -> new Scarecrow(), 100, 5));
                 break;
             case "Decoration":

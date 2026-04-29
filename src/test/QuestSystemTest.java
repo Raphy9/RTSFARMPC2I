@@ -5,7 +5,7 @@ import src.model.PlantType;
 import src.model.Quests;
 import src.model.Quest;
 import src.model.Stats;
-import src.model.buildings.Arroseur;
+import src.model.buildings.Sprinkler;
 import src.model.buildings.Well;
 
 import java.util.List;
@@ -101,7 +101,7 @@ public class QuestSystemTest {
 			quests.onHarvest(PlantType.FRAISE, stats);
 		}
 		quests.onAction(Quests.ACTION_SELL_FRAISE, stats, 20);
-		quests.onBuild(new Arroseur(), stats);
+		quests.onBuild(new Sprinkler(), stats);
 		quests.onBuild(new Well(), stats);
 		quests.onBuild(new Well(), stats);
 		quests.onBuild(new Well(), stats);

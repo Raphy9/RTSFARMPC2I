@@ -201,9 +201,9 @@ public class Global extends JPanel {
             g3.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
 
             // 3. Dessiner l'image du batiment au-dessus de la zone surlignee
-            int relX = gx - fstTileX;
-            int relY = gy - fstTileY;
-            if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+            if (isBuildingVisibleInCamera(gx, gy, b.getWidth(), b.getHeight(), fstTileX, fstTileY)) {
+                int relX = gx - fstTileX;
+                int relY = gy - fstTileY;
                 int px = (relX * Display.RATIO_X) - pixelDiffX;
                 int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
@@ -218,11 +218,10 @@ public class Global extends JPanel {
         if (world.getBuildings() != null) {
             for (src.model.buildings.Building b : world.getBuildings()) {
 
-                int relX = b.getX() - fstTileX;
-                int relY = b.getY() - fstTileY;
-
-                // Si le batiment est dans le champ de la caméra
-                if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
+                // Si au moins une partie du batiment est dans le champ de la caméra
+                if (isBuildingVisibleInCamera(b.getX(), b.getY(), b.getWidth(), b.getHeight(), fstTileX, fstTileY)) {
+                    int relX = b.getX() - fstTileX;
+                    int relY = b.getY() - fstTileY;
                     int px = (relX * Display.RATIO_X) - pixelDiffX;
                     int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
@@ -598,6 +597,20 @@ public class Global extends JPanel {
         int moneyTextX = coinX + iconSize + 8;
         g2.drawString(moneyText, moneyTextX, textY);
         g2.dispose();
+    }
+
+    /**
+     * Retourne true si au moins une partie de l'emprise du batiment intersecte la zone visible de la caméra.
+     */
+    private boolean isBuildingVisibleInCamera(int x, int y, int width, int height, int fstTileX, int fstTileY) {
+        int buildingMaxX = x + width - 1;
+        int buildingMaxY = y + height - 1;
+
+        int cameraMaxX = fstTileX + Camera.WIDTH;
+        int cameraMaxY = fstTileY + Camera.HEIGHT;
+
+        return buildingMaxX >= fstTileX && x <= cameraMaxX
+                && buildingMaxY >= fstTileY && y <= cameraMaxY;
     }
 
     /** Méthode pour dessiner les entités (jardiniers et ennemis) a l'écran, en fonction de leur position dans le monde et de la caméra.

@@ -21,6 +21,7 @@ public abstract class Building {
     protected int buyPrice = 0;
     /** Niveau requis pour débloquer ce batiment dans le shop (0 = disponible des le départ) */
     protected int levelRequirement = 0;
+    protected boolean placed = false;
 
     public Building(int width, int height, boolean isPassable, PlacementRule rule, ImageIcon sprite) {
         this.width = width;
@@ -32,12 +33,15 @@ public abstract class Building {
 
     public void setPosition(int x, int y) { this.anchorX = x; this.anchorY = y; }
 
+    public void placed() { this.placed = true; }
+
     public abstract void applyEffect(World world);
 
     public int getX()                       { return anchorX; }
     public int getY()                       { return anchorY; }
     public int getWidth()                   { return width; }
     public int getHeight()                  { return height; }
+    public boolean wasIsPlaced()                   { return placed; }
     public boolean isPassable()             { return isPassable; }
     public PlacementRule getPlacementRule() { return placementRule; }
     public ImageIcon getSprite()            { return sprite; }
