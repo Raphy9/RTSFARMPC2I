@@ -12,6 +12,7 @@ public class ChickenSpawner implements Runnable {
     private boolean isRunning;
     private Thread spawnerThread;
     private final Random random;
+    private static boolean isActive = true; // Permet de désactiver temporairement le spawner (ex: pendant le tutoriel) sans arrêter complètement le thread
 
     //  Parametres d'apparition
     // Temps entre chaque apparition (en millisecondes)
@@ -37,6 +38,10 @@ public class ChickenSpawner implements Runnable {
         }
     }
 
+    public static void setActive(boolean active) {
+        isActive = active;
+    }
+
     @Override
     public void run() {
         System.out.println("Générateur de poules activé !");
@@ -46,8 +51,8 @@ public class ChickenSpawner implements Runnable {
                 // On attend X secondes avant de faire apparaître la prochaine poule
                 Thread.sleep(SPAWN_INTERVAL);
 
-                // On ne fait spawn une poule que si on n'a pas atteint la limite
-                if (world.getEnemies().size() < MAX_CHICKENS) {
+                // On ne fait spawn une poule que si on n'a pas atteint la limite et si on est en mode actif
+                if (isActive && world.getEnemies().size() < MAX_CHICKENS) {
                     spawnChickenAtEdge();
                 }
 

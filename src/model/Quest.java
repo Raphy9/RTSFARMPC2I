@@ -24,6 +24,7 @@ public class Quest {
     private final int goal;
     private final int rewardMoney;
     private final int rewardExp;
+    private Runnable onComplete; // Optionnel : action a executer une fois la quete terminee (ex: pour le tuto)
 
     private int progress;
     private boolean completed;
@@ -39,7 +40,8 @@ public class Quest {
             String targetActionKey,
             int goal,
             int rewardMoney,
-            int rewardExp
+            int rewardExp,
+            Runnable onComplete
     ) {
         this.id = id;
         this.title = title;
@@ -54,26 +56,58 @@ public class Quest {
         this.progress = 0;
         this.completed = false;
         this.rewardClaimed = false;
+        this.onComplete = onComplete;
+    }
+
+    private Quest(
+            String id,
+            String title,
+            String description,
+            Type type,
+            PlantType targetPlantType,
+            String targetBuildingClassName,
+            String targetActionKey,
+            int goal,
+            int rewardMoney,
+            int rewardExp
+    ) {
+        this(id, title, description, type, targetPlantType, targetBuildingClassName, targetActionKey, goal, rewardMoney, rewardExp, null);
     }
 
     /** Crée une quete liée a une plantation. */
+    public static Quest createPlantQuest(String id, String title, String description, PlantType plantType, int goal, int rewardMoney, int rewardExp, Runnable onComplete) {
+        return new Quest(id, title, description, Type.PLANT, plantType, null, null, goal, rewardMoney, rewardExp, onComplete);
+    }
+
     public static Quest createPlantQuest(String id, String title, String description, PlantType plantType, int goal, int rewardMoney, int rewardExp) {
-        return new Quest(id, title, description, Type.PLANT, plantType, null, null, goal, rewardMoney, rewardExp);
+        return createPlantQuest(id, title, description, plantType, goal, rewardMoney, rewardExp, null);
     }
 
     /** Crée une quete liée a une récolte. */
+    public static Quest createHarvestQuest(String id, String title, String description, PlantType plantType, int goal, int rewardMoney, int rewardExp, Runnable onComplete) {
+        return new Quest(id, title, description, Type.HARVEST, plantType, null, null, goal, rewardMoney, rewardExp, onComplete);
+    }
+
     public static Quest createHarvestQuest(String id, String title, String description, PlantType plantType, int goal, int rewardMoney, int rewardExp) {
-        return new Quest(id, title, description, Type.HARVEST, plantType, null, null, goal, rewardMoney, rewardExp);
+        return createHarvestQuest(id, title, description, plantType, goal, rewardMoney, rewardExp, null);
     }
 
     /** Crée une quete liée a une construction. Si targetBuildingClass est null, n'importe quel batiment valide. */
+    public static Quest createBuildQuest(String id, String title, String description, Class<? extends Building> targetBuildingClass, int goal, int rewardMoney, int rewardExp, Runnable onComplete) {
+        return new Quest(id, title, description, Type.BUILD, null, targetBuildingClass != null ? targetBuildingClass.getName() : null, null, goal, rewardMoney, rewardExp, onComplete);
+    }
+
     public static Quest createBuildQuest(String id, String title, String description, Class<? extends Building> targetBuildingClass, int goal, int rewardMoney, int rewardExp) {
-        return new Quest(id, title, description, Type.BUILD, null, targetBuildingClass != null ? targetBuildingClass.getName() : null, null, goal, rewardMoney, rewardExp);
+        return createBuildQuest(id, title, description, targetBuildingClass, goal, rewardMoney, rewardExp, null);
     }
 
     /** Crée une quete pilotée par un événement de gameplay (labour, vente, niveau, etc.). */
+    public static Quest createActionQuest(String id, String title, String description, String actionKey, int goal, int rewardMoney, int rewardExp, Runnable onComplete) {
+        return new Quest(id, title, description, Type.ACTION, null, null, actionKey, goal, rewardMoney, rewardExp, onComplete);
+    }
+
     public static Quest createActionQuest(String id, String title, String description, String actionKey, int goal, int rewardMoney, int rewardExp) {
-        return new Quest(id, title, description, Type.ACTION, null, null, actionKey, goal, rewardMoney, rewardExp);
+        return createActionQuest(id, title, description, actionKey, goal, rewardMoney, rewardExp, null);
     }
 
     public boolean matchesPlantEvent(PlantType plantType) {
@@ -128,6 +162,15 @@ public class Quest {
             stats.addExp(rewardExp);
         }
         rewardClaimed = true;
+
+        System.out.println("Quete completee : " + id);
+
+        // Lancer l'action de completion si elle existe (ex: pour le tuto)
+        if (onComplete != null) {
+            System.out.println("Executing quest completion action for quest: " + id);
+            onComplete.run();
+        }
+
         return true;
     }
 

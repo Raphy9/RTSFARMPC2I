@@ -43,14 +43,17 @@ public class GameDialog {
     /**
      * Affiche un message d'information stylise avec un bouton "OK".
      */
-    public static void showMessage(Component parent, String title, String message) {
+    public static void showMessage(Component parent, String title, String message, Runnable onOk) {
         JDialog dialog = buildDialog(parent, title);
         dialog.add(buildMessage(message), BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
         buttons.setOpaque(false);
         JButton ok = buildButton("OK", new Color(80, 120, 170), new Color(50, 80, 130));
-        ok.addActionListener(e -> dialog.dispose());
+        ok.addActionListener(e -> {
+            dialog.dispose();
+            onOk.run();
+        });
         buttons.add(ok);
         dialog.add(buttons, BorderLayout.SOUTH);
 
@@ -58,6 +61,10 @@ public class GameDialog {
         dialog.setMinimumSize(new Dimension(360, dialog.getPreferredSize().height));
         dialog.setLocationRelativeTo(parent);
         dialog.setVisible(true);
+    }
+
+    public static void showMessage(Component parent, String title, String message) {
+        showMessage(parent, title, message, () -> {});
     }
 
     /**
@@ -165,8 +172,8 @@ public class GameDialog {
     /** Cree le label de message HTML centre. */
     private static JPanel buildMessage(String message) {
         Font textFont = GameFonts.MINECRAFT_FONT != null
-                ? GameFonts.MINECRAFT_FONT.deriveFont(13f)
-                : new Font("Arial", Font.PLAIN, 13);
+                ? GameFonts.MINECRAFT_FONT.deriveFont(16f)
+                : new Font("Arial", Font.PLAIN, 16);
         JLabel label = new JLabel(
                 "<html><center>" + message.replace("\n", "<br>") + "</center></html>",
                 SwingConstants.CENTER);

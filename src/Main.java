@@ -2,10 +2,8 @@ package src;
 
 import src.model.Camera;
 import src.model.SoundManager;
-import src.view.Display;
-import src.view.HomeScreenPanel;
-import src.view.Rendering;
-import src.view.SaveManager;
+import src.model.Tutorial;
+import src.view.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +11,7 @@ import java.util.Timer;
 
 public class Main {
 
-    private static JFrame frame;
+    public static JFrame frame;
     private static Display currentDisplay;
     private static Timer currentTimer;
 
@@ -111,6 +109,11 @@ public class Main {
         if (SaveManager.savExists(saveName)) {
             SaveManager.loadGame(saveName, currentDisplay.getWorld());
         }
+        else {
+            // nouvelle partie, lancer le tutoriel
+            Tutorial.tuto1();
+        }
+
         currentDisplay.setCurrentSaveName(saveName);
 
         // C'est le Display qui s'occupe désormais d'utiliser les calques et d'afficher le terrain

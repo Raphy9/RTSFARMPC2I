@@ -1,6 +1,7 @@
 package src.model;
 
 import src.model.buildings.Sprinkler;
+import src.view.GameDialog;
 
 public class Quests {
     public static final String ACTION_PLOW_TILE = "PLOW_TILE";
@@ -102,11 +103,16 @@ public class Quests {
                 "Chapitre 1 - Premiers pas",
                 "Lancer la ferme et maitriser les bases.",
                 java.util.List.of(
-                        Quest.createBuildQuest("Q1_BUILD_BARN", "Poser une grange", "Poser 1 grange.", null, 1, 20, 10),
-                        Quest.createActionQuest("Q1_PLOW_10", "Labourer des parcelles", "Labourer 10 plant tiles.", ACTION_PLOW_TILE, 10, 10, 10),
-                        Quest.createPlantQuest("Q1_PLANT_CAROTTE", "Planter des carottes", "Planter 5 carottes.", PlantType.CAROTTE, 5, 10, 10),
-                        Quest.createActionQuest("Q1_WATER_5", "Arroser des cases", "Arroser 5 cases.", ACTION_WATER_TILE, 5, 10, 10),
-                        Quest.createActionQuest("Q1_CHASE_CHICKEN", "Chasser des poules", "Chasser 3 poules.", ACTION_CHASE_CHICKEN, 3, 15, 15)
+                        Quest.createBuildQuest("Q1_BUILD_BARN", "Poser une grange", "Poser 1 grange.", null, 1, 20, 10,
+                            Tutorial::tuto3),
+                        Quest.createActionQuest("Q1_PLOW_10", "Labourer des parcelles", "Labourer 10 plant tiles.", ACTION_PLOW_TILE, 10, 10, 10,
+                            Tutorial::tuto4),
+                        Quest.createPlantQuest("Q1_PLANT_CAROTTE", "Planter des carottes", "Planter 10 carottes.", PlantType.CAROTTE, 10, 10, 10,
+                            Tutorial::tuto5),
+                        Quest.createActionQuest("Q1_WATER_5", "Arroser des cases", "Arroser 10 cases.", ACTION_WATER_TILE, 10, 10, 10,
+                                Tutorial::tuto6),
+                        Quest.createActionQuest("Q1_CHASE_CHICKEN", "Chasser des poules", "Chasser 3 poules.", ACTION_CHASE_CHICKEN, 3, 15, 15,
+                                Tutorial::tuto7)
                 )
         ));
 
@@ -114,10 +120,14 @@ public class Quests {
                 "Chapitre 2 - Nettoyage de la ferme",
                 "Vendre, chasser et amenager le terrain.",
                 java.util.List.of(
-                        Quest.createHarvestQuest("Q2_HARVEST_CAROTTE", "Recolter des carottes", "Recolter 3 carottes mures.", PlantType.CAROTTE, 3, 10, 15),
-                        Quest.createActionQuest("Q2_SELL_CAROTTE", "Vendre des carottes", "Vendre 3 carottes.", ACTION_SELL_CAROTTE, 3, 20, 10),
-                        Quest.createActionQuest("Q2_DESTROY_OBSTACLE", "Detruire des obstacles", "Detruire 7 obstacles.", ACTION_DESTROY_OBSTACLE, 7, 10, 20),
-                        Quest.createBuildQuest("Q2_BUILD_2", "Poser des batiments", "Poser 2 batiments.", null, 2, 20, 15),
+                        Quest.createHarvestQuest("Q2_HARVEST_CAROTTE", "Recolter des carottes", "Recolter 3 carottes mures.", PlantType.CAROTTE, 3, 10, 15,
+                                Tutorial::tuto8),
+                        Quest.createActionQuest("Q2_SELL_CAROTTE", "Vendre des carottes", "Vendre 3 carottes.", ACTION_SELL_CAROTTE, 3, 20, 10,
+                                Tutorial::tuto9),
+                        Quest.createActionQuest("Q2_DESTROY_OBSTACLE", "Detruire des obstacles", "Detruire 5 obstacles.", ACTION_DESTROY_OBSTACLE, 5, 10, 20,
+                                Tutorial::tuto10),
+                        Quest.createBuildQuest("Q2_BUILD_2", "Poser des batiments", "Poser 2 batiments.", null, 2, 20, 15,
+                                Tutorial::tuto11),
                         Quest.createActionQuest("Q2_DESTROY_BUILDING", "Detruire un batiment", "Detruire 1 batiment.", ACTION_DESTROY_BUILDING, 1, 15, 20)
                 )
         ));

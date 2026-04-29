@@ -392,7 +392,7 @@ public class World {
             barn.addItem(new ItemSeed(plantType, 0));
         }
         // Initial seeds
-        barn.addItem(new ItemSeed(PlantType.CAROTTE, 10));
+        barn.addItem(new ItemSeed(PlantType.CAROTTE, 15));
 
     }
 
