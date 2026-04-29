@@ -60,8 +60,8 @@ public class Main {
         currentDisplay = null;
 
         // Transition musicale : on coupe la musique du jeu (bg) et on lance celle du menu
-        SoundManager.stopLoop("bg", 1000);
-        SoundManager.playLoop("menu", SoundManager.MENU, 1000);
+        SoundManager.stopLoop("bg");
+        SoundManager.playLoop("menu", SoundManager.MENU);
 
         // Créer l'écran d'accueil avec son comportement au clic sur "Jouer"
         HomeScreenPanel homeScreen = new HomeScreenPanel(() -> {
