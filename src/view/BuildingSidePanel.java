@@ -12,16 +12,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+/**
+ * Panneau latéral de construction (Shop/Catalogue).
+ * Permet de naviguer par catégories et de choisir des bâtiments à placer dans le monde.
+ */
 public class BuildingSidePanel extends JPanel {
 
-    private final BuildingManager manager;
-    private final Display display;
-    private final World world;
-    private final JPanel itemsPanel;
-    private JScrollPane scrollPane; // champ pour pouvoir revalider depuis showCategory
-    private Runnable onClose;
-    private String currentCategory = "Batiment";
+    // --- Champs de données et contrôleurs ---
+    private final BuildingManager manager; // Gère la logique de placement (fantôme de construction)
+    private final Display display;         // Référence à la vue principale
+    private final World world;             // Référence au modèle pour vérifier les stats (niveau, or)
+    private final JPanel itemsPanel;       // Conteneur vertical pour les "cartes" de bâtiments
+    private JScrollPane scrollPane;        // Barre de défilement pour naviguer dans la liste
+    private Runnable onClose;              // Action à exécuter lors de la fermeture (callback)
+    private String currentCategory = "Batiment"; // Catégorie d'affichage active
 
+    /**
+     * Constructeur : Initialise la structure du panneau, les onglets et la zone de défilement.
+     */
     public BuildingSidePanel(BuildingManager manager, Display display, World world, Runnable onClose) {
         this.manager = manager;
         this.display = display;
@@ -29,25 +37,25 @@ public class BuildingSidePanel extends JPanel {
         this.onClose = onClose;
 
         this.setLayout(new BorderLayout(0, 0));
-        this.setOpaque(false); // On dessine le fond nous-memes
+        this.setOpaque(false); // Fond personnalisé via paintComponent
 
-        // --- Barre du haut : Onglets + Fermeture ---
+        // --- Barre du haut : Onglets + Bouton de Fermeture ---
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
         topBar.setBorder(new EmptyBorder(15, 15, 5, 15));
 
-        // Conteneur pour les categories
+        // Panneau contenant les boutons d'onglets (catégories)
         JPanel categories = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         categories.setOpaque(false);
 
-        // Onglets — noms SANS accents, coherents avec getEntriesFor()
+        // Définition des catégories de construction
         String[] cats = new String[]{"Batiment", "Decoration", "Nature", "Divers"};
         for (String c : cats) {
             categories.add(createTabButton(c));
         }
         topBar.add(categories, BorderLayout.WEST);
 
-        // Bouton FERMER (le "X" rouge Stardew)
+        // Bouton FERMER : Style "X" rouge inspiré de Stardew Valley
         JButton btnClose = new JButton("X");
         btnClose.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 16f) : new Font("Arial", Font.BOLD, 16));
         btnClose.setBackground(new Color(210, 60, 50));
@@ -59,7 +67,7 @@ public class BuildingSidePanel extends JPanel {
         ));
         btnClose.addActionListener(e -> {
             this.setVisible(false);
-            display.onBuildingPanelClose(); // Restaure l'icone de construction
+            display.onBuildingPanelClose(); // Restaure l'icône de construction dans l'UI principale
             if (this.onClose != null) this.onClose.run();
         });
 
@@ -70,10 +78,10 @@ public class BuildingSidePanel extends JPanel {
 
         this.add(topBar, BorderLayout.NORTH);
 
-        // Zone des items — UN SEUL JScrollPane
+        // --- Zone centrale : Liste défilante des articles ---
         itemsPanel = new JPanel();
         itemsPanel.setOpaque(false);
-        itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
+        itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS)); // Alignement vertical des cartes
 
         scrollPane = new JScrollPane(itemsPanel,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -81,13 +89,16 @@ public class BuildingSidePanel extends JPanel {
         scrollPane.setOpaque(false);
         scrollPane.getViewport().setOpaque(false);
         scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Fluidité du scroll
         this.add(scrollPane, BorderLayout.CENTER);
 
-        // CORRECTION DE L'ACCENT : Ouvre bien l'onglet par defaut !
+        // Chargement initial de la catégorie par défaut
         showCategory("Batiment");
     }
 
+    /**
+     * Crée un bouton d'onglet stylisé.
+     */
     private JButton createTabButton(String text) {
         JButton b = new JButton(text);
         b.setFocusable(false);
@@ -102,42 +113,48 @@ public class BuildingSidePanel extends JPanel {
         return b;
     }
 
+    /**
+     * Rafraîchit l'affichage actuel (utile en cas de level-up ou changement de ressources).
+     */
     public void refresh() {
-        // SwingUtilities assure que l'UI se met a jour sans lag ni glitch
         SwingUtilities.invokeLater(() -> {
             if (currentCategory != null) {
                 showCategory(currentCategory);
             }
-            // On force le panneau entier a recalculer ses dimensions et a se repeindre
             this.revalidate();
             this.repaint();
         });
     }
 
+    /**
+     * Filtre et affiche les bâtiments de la catégorie sélectionnée.
+     */
     private void showCategory(String category) {
         this.currentCategory = category;
         itemsPanel.removeAll();
         List<Entry> list = getEntriesFor(category);
         for (Entry e : list) {
-            itemsPanel.add(createCard(e));
-            itemsPanel.add(Box.createVerticalStrut(10));
+            itemsPanel.add(createCard(e)); // Ajoute la carte visuelle de l'article
+            itemsPanel.add(Box.createVerticalStrut(10)); // Espacement
         }
 
-        // On force la mise a jour en cascade
         itemsPanel.revalidate();
         itemsPanel.repaint();
 
         if (scrollPane != null) {
             scrollPane.revalidate();
-            scrollPane.getViewport().revalidate(); // On force le rafraîchissement de la vue interne
+            scrollPane.getViewport().revalidate();
             scrollPane.repaint();
         }
     }
 
+    // --- Ressources statiques pour les icônes d'état ---
     private static ImageIcon LOCK_ICON = null;
     private static ImageIcon NEW_BADGE_ICON = null;
 
-    /** Charge une image de façon synchrone via ImageIO (evite les artefacts de chargement asynchrone). */
+    /**
+     * Chargement synchrone d'image pour éviter les scintillements à l'affichage.
+     */
     private static java.awt.image.BufferedImage loadSync(String path) {
         try {
             return javax.imageio.ImageIO.read(new java.io.File(path));
@@ -146,11 +163,14 @@ public class BuildingSidePanel extends JPanel {
         }
     }
 
+    /**
+     * Compte combien d'exemplaires de ce bâtiment existent déjà dans le monde.
+     */
     private int countBuiltInstances(Entry e) {
         int count = 0;
-        // Verifiez que getBuildings() correspond bien a la methode de votre classe World
         if (world.getBuildings() != null) {
             for (Building b : world.getBuildings()) {
+                // Comparaison par classe pour identifier le type de bâtiment
                 if (b.getClass().equals(e.creator.get().getClass())) {
                     count++;
                 }
@@ -159,13 +179,17 @@ public class BuildingSidePanel extends JPanel {
         return count;
     }
 
-
+    /**
+     * Crée le composant visuel (Card) pour un article du catalogue.
+     * Gère les états : Débloqué, Verrouillé (niveau), Nouveau, ou Limite atteinte.
+     */
     private JComponent createCard(Entry e) {
         int builtCount = countBuiltInstances(e);
         int currentLevel = world.getStats().getLevel();
-        boolean locked = e.levelRequirement > currentLevel;
-        boolean isNew  = e.levelRequirement == currentLevel && builtCount == 0;
+        boolean locked = e.levelRequirement > currentLevel; // Trop bas niveau
+        boolean isNew  = e.levelRequirement == currentLevel && builtCount == 0; // Vient d'être débloqué
 
+        // Texte indicateur de quantité (ex: 1/1 pour la grange)
         String countText = (e.maxCount != -1) ? " (" + builtCount + "/" + e.maxCount + ")" : " (" + builtCount + ")";
 
         JPanel card = new JPanel(new BorderLayout(10, 10));
@@ -173,14 +197,15 @@ public class BuildingSidePanel extends JPanel {
         card.setBackground(locked ? new Color(170, 160, 150) : new Color(235, 185, 120));
         card.setBorder(BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 2));
 
-        // Image a gauche
+        // --- Section Image (Gauche) ---
         int iconSz = 50;
         ImageIcon rawIcon;
         if (locked) {
+            // Affichage du cadenas
             if (LOCK_ICON == null) LOCK_ICON = new ImageIcon("src/assets/lock.png");
             rawIcon = new ImageIcon(LOCK_ICON.getImage().getScaledInstance(iconSz, iconSz, Image.SCALE_SMOOTH));
         } else if (isNew) {
-            // Chargement synchrone pour eviter l'image vide (ImageIcon asynchrone)
+            // Composition : Image du bâtiment + badge "New" superposé
             java.awt.image.BufferedImage baseImg = loadSync(e.iconPath);
             if (NEW_BADGE_ICON == null) NEW_BADGE_ICON = new ImageIcon("src/assets/new.png");
             BufferedImage badgeImg = loadSync("src/assets/new.png");
@@ -194,6 +219,7 @@ public class BuildingSidePanel extends JPanel {
             bg.dispose();
             rawIcon = new ImageIcon(buf);
         } else {
+            // Icône standard
             Image img = new ImageIcon(e.iconPath).getImage().getScaledInstance(iconSz, iconSz, Image.SCALE_SMOOTH);
             rawIcon = new ImageIcon(img);
         }
@@ -202,16 +228,20 @@ public class BuildingSidePanel extends JPanel {
         imgLabel.setBorder(new EmptyBorder(0, 10, 0, 0));
         card.add(imgLabel, BorderLayout.WEST);
 
-        // Infos au centre
+        // --- Section Infos (Centre) ---
         JPanel info = new JPanel(new GridLayout(3, 1));
         info.setOpaque(false);
         JLabel title = new JLabel(locked ? "???" : e.title + countText);
         title.setForeground(PopupPanel.SDV_TEXT);
         title.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 14f) : new Font("Arial", Font.BOLD, 14));
+
         JLabel sub = new JLabel(locked ? "Niveau " + e.levelRequirement : e.price + " PO");
         sub.setForeground(locked ? new Color(100, 80, 150) : new Color(110, 60, 20));
         sub.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(12f) : new Font("Arial", Font.PLAIN, 12));
+
         info.add(title);
+
+        // Petit bouton "i" pour les détails
         JButton btnInfo = getJButton(e);
         if (locked) {
             btnInfo.setEnabled(false);
@@ -219,29 +249,30 @@ public class BuildingSidePanel extends JPanel {
         JPanel flowPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         flowPanel.setOpaque(false);
         flowPanel.add(btnInfo);
+
         info.add(flowPanel);
         info.add(sub);
         card.add(info, BorderLayout.CENTER);
 
-
-        // Bouton Poser (grise et desactive si bloque)
+        // --- Section Bouton "Poser" (Droite) ---
         JButton place = new JButton("Poser");
         place.setFocusable(false);
         place.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 12f) : new Font("Arial", Font.BOLD, 12));
         place.setBorder(BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 1));
 
         if (locked) {
+            // État désactivé (Niveau)
             place.setEnabled(false);
             place.setBackground(new Color(150, 145, 140));
             place.setForeground(new Color(100, 95, 90));
         } else if (e.maxCount != -1 && builtCount >= e.maxCount) {
-            // Le batiment est debloque mais la limite est atteinte
+            // État désactivé (Limite atteinte)
             place.setEnabled(false);
             place.setText("Max atteint");
             place.setBackground(new Color(150, 145, 140));
             place.setForeground(new Color(100, 95, 90));
         } else {
-            // Comportement normal
+            // État actif
             Color selLight = new Color(160, 100, 60);
             Color selDark  = new Color(80, 40, 10);
             place.setBackground(selLight);
@@ -251,6 +282,7 @@ public class BuildingSidePanel extends JPanel {
                 public void mouseExited (java.awt.event.MouseEvent evt) { place.setBackground(selLight); }
             });
             place.addActionListener(a -> {
+                // Déclenche le mode placement du bâtiment sélectionné
                 manager.startPlacement(e.creator.get(), e.maxCount, () -> this.refresh());
                 display.getGlobalView().requestFocusInWindow();
             });
@@ -265,12 +297,15 @@ public class BuildingSidePanel extends JPanel {
         return card;
     }
 
+    /**
+     * Crée le petit bouton d'information (?).
+     */
     private JButton getJButton(Entry e) {
         JButton btnInfo = new JButton();
         btnInfo.setIcon(new ImageIcon(new ImageIcon("src/assets/btninfo.png").getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH)));
         btnInfo.setFocusable(false);
         btnInfo.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 8f) : new Font("Arial", Font.BOLD, 10));
-        btnInfo.setPreferredSize(new Dimension(20,20    ));
+        btnInfo.setPreferredSize(new Dimension(20,20));
         btnInfo.setOpaque(false);
         btnInfo.setContentAreaFilled(false);
         btnInfo.setBorder(BorderFactory.createEmptyBorder());
@@ -279,19 +314,22 @@ public class BuildingSidePanel extends JPanel {
     }
 
     /**
-     * Methode qui construit un panel au milieu de l'ecran pour afficher la description de l'entree
-    */
+     * Affiche une boîte de dialogue avec la description longue du bâtiment.
+     */
     private void createDescriptionPanel(Entry e) {
         GameDialog.showMessage(display.getGlobalView(), e.title, e.description);
     }
 
+    /**
+     * Rendu graphique du fond du panneau (style Stardew Valley : triple bordure).
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
         int w = getWidth();
         int h = getHeight();
-        int b = 4;
+        int b = 4; // épaisseur de bordure
 
         g2.setColor(PopupPanel.SDV_BORDER_DARK);
         g2.fillRect(0, 0, w, h);
@@ -302,6 +340,9 @@ public class BuildingSidePanel extends JPanel {
         g2.dispose();
     }
 
+    /**
+     * Définit le contenu du catalogue (base de données des articles).
+     */
     private List<Entry> getEntriesFor(String category) {
         List<Entry> out = new ArrayList<>();
         switch (category) {
@@ -339,10 +380,14 @@ public class BuildingSidePanel extends JPanel {
         return out;
     }
 
+    /**
+     * Classe interne représentant une entrée du catalogue.
+     */
     private static class Entry {
         final String title, iconPath, description;
-        final Supplier<Building> creator;
+        final Supplier<Building> creator; // Fournit une nouvelle instance du bâtiment
         final int price, levelRequirement, maxCount;
+
         Entry(String t, String i, String d, Supplier<Building> c, int p, int lvl) {
             this.title = t; this.iconPath = i; this.creator = c; this.price = p; this.levelRequirement = lvl; maxCount = -1;
             this.description = d;
