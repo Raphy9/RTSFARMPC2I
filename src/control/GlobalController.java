@@ -58,6 +58,9 @@ public class GlobalController implements MouseListener, MouseMotionListener{
                 for (int i = 0; i < nbSlots; i++) {
                     int slotX = startX + i * (slotSize + spacing);
                     if (e.getX() >= slotX && e.getX() <= slotX + slotSize) {
+                        if (!Tutorial.isHotbarSlotActive(i)) {
+                            return; // Action desactivee temporairement
+                        }
                         Gardener gardener = world.getAvailableGardener();
                         if (gardener == null) return;
                         // Indicateur visuel sur le jardinier 0

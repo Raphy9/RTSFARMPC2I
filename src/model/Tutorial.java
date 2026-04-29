@@ -2,6 +2,7 @@ package src.model;
 
 import src.view.Display;
 import src.view.GameDialog;
+import src.view.Global;
 
 import javax.swing.*;
 import static src.Main.frame;
@@ -12,9 +13,33 @@ import static src.Main.frame;
  */
 public class Tutorial {
 
+    private static final boolean[] activeHotbarSlots = {true, true, true, true}; // Pour indiquer quels slots sont actifs
+    private static boolean droughtEnabled = true; // Pour le tuto, on ne veut pas que les plantes meurent de soif
+    public static boolean droughtWarningShown = false; // Pour éviter de spam le joueur avec des messages de sécheresse pendant le tuto
+
+    public static boolean isDroughtEnabled() {
+        return droughtEnabled;
+    }
+
+    public static boolean isHotbarSlotActive(int index) {
+        if (index < 0 || index >= activeHotbarSlots.length) {
+            throw new IllegalArgumentException("Index de slot invalide : " + index);
+        }
+        return activeHotbarSlots[index];
+    }
+
+    public static void setHotbarSlotActive(int index, boolean active) {
+        if (index < 0 || index >= activeHotbarSlots.length) {
+            throw new IllegalArgumentException("Index de slot invalide : " + index);
+        }
+        activeHotbarSlots[index] = active;
+    }
+
     /** Message de bienvenue */
     public static void tuto1() {
         ChickenSpawner.setActive(false); // Désactiver le spawner de poules sauvages pendant le tutoriel pour éviter les distractions
+        for (int i = 0; i < 4; i++) setHotbarSlotActive(i, false);
+        droughtEnabled = false; // éviter que les plantes meurent de soif avant que le joueur ait appris à les arroser
         GameDialog.showMessage(frame, "Tutoriel (1/10)", "Bienvenue dans Saclay Valley !\n\n" +
                     "Vous venez d'heriter de la ferme de votre grand-pere dans la region de Saclay.\n" +
                     "Votre objectif est de relancer la ferme a l'aide de votre fidele jardinier. \n" +
@@ -34,6 +59,7 @@ public class Tutorial {
 
     /** Explique les actions de base et incite le joueur a labourer sa premiere parcelle */
     public static void tuto3() {
+        setHotbarSlotActive(0, true); // Activer le slot 1 (labourer) pour le tuto
         GameDialog.showMessage(frame, "Tutoriel (3/10)",
             "Maintenant que vous avez une grange, il est temps de cultiver votre premiere parcelle !\n" +
                     "Pour cela, il faut demander a votre jardinier de le faire. \n\n" +
@@ -45,8 +71,10 @@ public class Tutorial {
         );
     }
 
-    /** Apres avoir labouré, incite a planter et arroser la parcelle */
+    /** Apres avoir labouré, incite a planter sur la parcelle */
     public static void tuto4() {
+        setHotbarSlotActive(1, true); // Activer le slot 2 (arroser) pour le tuto
+        setHotbarSlotActive(2, true); // Activer le slot 3 (planter) pour le tuto
         GameDialog.showMessage(frame, "Tutoriel (4/10)",
                 "Bravo, vous avez laboure votre premiere parcelle !\n" +
                         "Maintenant, il est temps de la planter pour faire pousser vos premieres plantes.\n" +
@@ -78,6 +106,7 @@ public class Tutorial {
 
     /** Apres les poulets, parler de recolter */
     public static void tuto7() {
+        setHotbarSlotActive(3, true); // Activer le slot 4 (recolter) pour le tuto
         GameDialog.showMessage(frame, "Tutoriel (7/10)",
                 "Vos carottes sont bientot pretes a etre recoltees!\n" +
                         "Des qu'elles sont mures, choisissez l'action 4 (recolter), puis selectionnez leur parcelle.\n" +
@@ -87,6 +116,7 @@ public class Tutorial {
 
     /** Apres la recolte, vendre le carottes */
     public static void tuto8() {
+        droughtEnabled = true; // réactiver la sécheresse pour le reste du jeu
         GameDialog.showMessage(frame, "Tutoriel (8/10)",
                 "Bravo, vous avez recolte vos premieres carottes !\n" +
                         "Maintenant, il est temps de les vendre pour gagner de l'argent.\n\n" +

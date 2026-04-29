@@ -1,5 +1,8 @@
 package src.model;
 
+import src.Main;
+import src.view.GameDialog;
+
 import javax.swing.ImageIcon;
 
 /**
@@ -58,7 +61,7 @@ public class Plant {
         }
 
         //  Vérification des conditions de Mort (Soif)
-        if (ticksWithoutWater >= TIME_BEFORE_DEATH) {
+        if (Tutorial.isDroughtEnabled() && ticksWithoutWater >= TIME_BEFORE_DEATH) {
             state = PlantState.MORT;
             updateSprite();
             return; // Fin de la mise a jour
@@ -111,6 +114,15 @@ public class Plant {
         this.currentWaterLevel += amount;
         if (this.currentWaterLevel > MAX_WATER_LEVEL) {
             if (this.currentWaterLevel > MAX_WATER_LEVEL + OVERWATER_THRESHOLD) {
+                if (!Tutorial.isDroughtEnabled()) {
+                    // On pardonne si c'est le tuto
+                    this.currentWaterLevel = MAX_WATER_LEVEL; // On limite à la quantité max pour éviter la mort
+                    if (!Tutorial.droughtWarningShown) {
+                        Tutorial.droughtWarningShown = true;
+                        GameDialog.showMessage(Main.frame, "Attention!", "Vous avez trop arrosé la plante, normalement elle devrait mourir.\n Faites attention à ne pas trop l'arroser à l'avenir !");
+                    }
+                    return;
+                }
                 // Si on dépasse largement le niveau max, la plante pourrit et meurt
                 this.state = PlantState.MORT;
                 updateSprite();

@@ -114,6 +114,10 @@ public class Display {
                 public void actionPerformed(ActionEvent e) {
                     // Ne rien faire si la hotbar est masquée (menu ouvert)
                     if (!globalView.isHotbarVisible()) return;
+
+                    // Ne rien faire si le slot est inactif
+                    if (!Tutorial.isHotbarSlotActive(slotIndex)) return;
+
                     Gardener g = world.getAvailableGardener();
                     if (g == null) return;
                     // Indicateur visuel sur le jardinier 0 (hotbar centrée sur le joueur 0)

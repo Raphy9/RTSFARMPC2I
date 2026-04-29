@@ -494,11 +494,25 @@ public class Global extends JPanel {
         for (int i = 0; i < nbSlots; i++) {
             int x = startX + i * (slotSize + spacing);
 
+            // Déterminer si le slot est actif
+            boolean slotActive = Tutorial.isHotbarSlotActive(i);
+
             // 1. Fond de la case
-            g2.setColor(slotBg);
+            if (slotActive) {
+                g2.setColor(slotBg);
+            } else {
+                // Slot inactif -> fond gris plus sombre
+                g2.setColor(new Color(120, 120, 120, 200));
+            }
             g2.fillRect(x, startY, slotSize, slotSize);
 
             // 2. Contenu de la case (Outils)
+            float prevAlpha = 1f;
+            Composite prevComp = g2.getComposite();
+            if (!slotActive) {
+                // réduire l'opacité des icônes pour indiquer inactivité
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
+            }
             if (i == 0) {
                 // Emplacement 1 : La Houe
                 if (houeImg != null) g2.drawImage(houeImg, x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
@@ -512,6 +526,8 @@ public class Global extends JPanel {
                 // Emplacement 4 : Récolter
                 if (recolterImg != null) g2.drawImage(recolterImg, x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
             }
+            // restore composite
+            g2.setComposite(prevComp);
 
             // 3. Dessiner la bordure
             if (selectedIndex >= 0 && i == selectedIndex) {
@@ -519,14 +535,19 @@ public class Global extends JPanel {
                 g2.setColor(Color.WHITE);
                 g2.setStroke(new BasicStroke(5));
             } else {
-                // Case normale : Petit contour Marron (Style Stardew)
-                g2.setColor(darkBorder);
+                // Case normale : Petit contour Marron (Style Stardew) ; si inactif, bordure grise
+                if (slotActive) {
+                    g2.setColor(darkBorder);
+                } else {
+                    g2.setColor(new Color(90, 90, 90));
+                }
                 g2.setStroke(new BasicStroke(3));
             }
             g2.drawRect(x, startY, slotSize, slotSize);
 
             // 4. Dessiner le chiffre de raccourci (1 a 4) en haut a gauche
-            g2.setColor(new Color(255, 255, 255, 180));
+            // Si inactif, dessiner le numéro en gris pale
+            g2.setColor(slotActive ? new Color(255, 255, 255, 180) : new Color(200, 200, 200, 160));
             if (GameFonts.MINECRAFT_FONT != null) {
                 g2.setFont(GameFonts.MINECRAFT_FONT.deriveFont(12f));
             } else {
@@ -732,3 +753,4 @@ public class Global extends JPanel {
         }
     }
 }
+
