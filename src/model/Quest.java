@@ -24,6 +24,7 @@ public class Quest {
     private final int goal;
     private final int rewardMoney;
     private final int rewardExp;
+    private Runnable onComplete; // Optionnel : action a executer une fois la quete terminee (ex: pour le tuto)
 
     private int progress;
     private boolean completed;
@@ -39,7 +40,8 @@ public class Quest {
             String targetActionKey,
             int goal,
             int rewardMoney,
-            int rewardExp
+            int rewardExp,
+            Runnable onComplete
     ) {
         this.id = id;
         this.title = title;
@@ -54,6 +56,21 @@ public class Quest {
         this.progress = 0;
         this.completed = false;
         this.rewardClaimed = false;
+    }
+
+    private Quest(
+            String id,
+            String title,
+            String description,
+            Type type,
+            PlantType targetPlantType,
+            String targetBuildingClassName,
+            String targetActionKey,
+            int goal,
+            int rewardMoney,
+            int rewardExp
+    ) {
+        this(id, title, description, type, targetPlantType, targetBuildingClassName, targetActionKey, goal, rewardMoney, rewardExp, null);
     }
 
     /** Crée une quete liée a une plantation. */
@@ -128,6 +145,12 @@ public class Quest {
             stats.addExp(rewardExp);
         }
         rewardClaimed = true;
+
+        // Lancer l'action de completion si elle existe (ex: pour le tuto)
+        if (onComplete != null) {
+            onComplete.run();
+        }
+
         return true;
     }
 
