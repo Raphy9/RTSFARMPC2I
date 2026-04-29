@@ -79,7 +79,8 @@ public class Tutorial {
                 "Bravo, vous avez laboure votre premiere parcelle !\n" +
                         "Maintenant, il est temps de la planter pour faire pousser vos premieres plantes.\n" +
                         "Choisissez l'action 3 (planter), puis choisissez les graines a planter (carottes), \n" +
-                        "puis selectionnez la parcelle labouree (shift+clic pour tout selectionner d'un coup)\n"
+                        "puis selectionnez la parcelle labouree (shift+clic pour tout selectionner d'un coup).\n" +
+                        "Confirmez votre selection avec la touche entree."
         );
     }
 
@@ -90,7 +91,8 @@ public class Tutorial {
                         "Pour les faire pousser, il faut les arroser regulierement.\n" +
                         "Ne les laissez pas sans eau trop longtemps car elles risquent de mourir, " +
                         "mais ne les innondez pas non plus!\n" +
-                        "Choisissez l'action 2 (arroser), puis selectionnez la parcelle (shift+clic pour selectionner tout d'un coup)\n"
+                        "Choisissez l'action 2 (arroser), puis selectionnez la parcelle (shift+clic pour selectionner tout d'un coup).\n" +
+                        "Confirmez votre selection avec la touche entree."
         );
     }
 
@@ -116,7 +118,6 @@ public class Tutorial {
 
     /** Apres la recolte, vendre le carottes */
     public static void tuto8() {
-        droughtEnabled = true; // réactiver la sécheresse pour le reste du jeu
         GameDialog.showMessage(frame, "Tutoriel (8/10)",
                 "Bravo, vous avez recolte vos premieres carottes !\n" +
                         "Maintenant, il est temps de les vendre pour gagner de l'argent.\n\n" +
@@ -128,12 +129,14 @@ public class Tutorial {
 
     /** Apres avoir vendu, parler de la destruction de batiments */
     public static void tuto9() {
+        droughtEnabled = true; // réactiver la sécheresse pour le reste du jeu
         GameDialog.showMessage(frame, "Tutoriel (9/10)",
                 "Maintenant que vous avez vendu vos produits, vous avez de l'argent pour investir dans votre ferme !\n" +
                         "Vous pouvez construire de nouveaux batiments utiles, ou decorer votre ferme pour la rendre plus belle.\n" +
                         "Mais il faudrait d'abord faire un peu de place!\n\n" +
                         "Pour cela, vous pouvez detruire des batiments et obstacles en cliquant sur la poubelle a droite de l'ecran,\n" +
-                        "puis en selectionnant les batiments et obstacles a detruire (faites glisser la souris pour en selectionner plusieurs)\n\n" +
+                        "puis en selectionnant les batiments et obstacles a detruire (faites glisser la souris pour en selectionner plusieurs).\n" +
+                        "Clic droit ou esc pour sortir du mode suppression\n\n" +
                         "Commencez par en detruire 5."
         );
     }

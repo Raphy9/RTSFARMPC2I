@@ -111,7 +111,7 @@ public class Quests {
                             Tutorial::tuto5),
                         Quest.createActionQuest("Q1_WATER_5", "Arroser des cases", "Arroser 10 cases.", ACTION_WATER_TILE, 10, 10, 10,
                                 Tutorial::tuto6),
-                        Quest.createActionQuest("Q1_CHASE_CHICKEN", "Chasser des poules", "Chasser 3 poules.", ACTION_CHASE_CHICKEN, 3, 15, 15,
+                        Quest.createActionQuest("Q1_CHASE_CHICKEN", "Chasser des poules", "Chasser 4 poules.", ACTION_CHASE_CHICKEN, 4, 15, 15,
                                 Tutorial::tuto7)
                 )
         ));
