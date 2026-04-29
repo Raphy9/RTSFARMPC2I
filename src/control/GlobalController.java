@@ -89,15 +89,12 @@ public class GlobalController implements MouseListener, MouseMotionListener{
         // 1. Si on clique sur une entité (Poule, Corbeau ou Jardinier)
         src.model.Chicken chickenToClick = null;
         src.model.Crow crowToClick = null; // --- NOUVEAU : Corbeau ---
-        src.model.Gardener gardenerToClick = null;
 
         for (src.model.Entity entity : tile.getEntities()) {
             if (chickenToClick == null && entity instanceof src.model.Chicken) {
                 chickenToClick = (src.model.Chicken) entity;
             } else if (crowToClick == null && entity instanceof src.model.Crow) {
                 crowToClick = (src.model.Crow) entity;
-            } else if (gardenerToClick == null && entity instanceof src.model.Gardener) {
-                gardenerToClick = (src.model.Gardener) entity;
             }
         }
 
@@ -111,12 +108,6 @@ public class GlobalController implements MouseListener, MouseMotionListener{
         if (crowToClick != null) {
             crowToClick.flee();
             world.registerQuestAction(Quests.ACTION_CLICK_CROW); // Enregistrer l'action de cliquer sur un corbeau
-            return;
-        }
-
-        if (gardenerToClick != null) {
-            System.out.println("Clic sur le jardinier -> Ouverture du menu");
-            display.switchToPopup(new src.view.ActionsPopup(display, world, gardenerToClick));
             return;
         }
 
