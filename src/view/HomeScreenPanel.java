@@ -33,8 +33,14 @@ public class HomeScreenPanel extends JPanel {
 
         JButton playButton = new JButton("Jouer");
         playButton.setFocusPainted(false);
+
+        // --- CORRECTION : Pour éviter la transparence ---
+        playButton.setOpaque(true);
+        playButton.setContentAreaFilled(true);
+        // ------------------------------------------------
+
         playButton.setForeground(Color.WHITE);
-        playButton.setBackground(new Color(160, 100, 60));
+        playButton.setBackground(new Color(160, 100, 60)); // Ton marron
         playButton.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 3),
                 BorderFactory.createEmptyBorder(12, 28, 12, 28)
@@ -49,13 +55,13 @@ public class HomeScreenPanel extends JPanel {
             @Override
             public void mouseEntered(MouseEvent e) {
                 if (playButton.isEnabled()) {
-                    playButton.setBackground(new Color(120, 70, 40));
+                    playButton.setBackground(new Color(120, 70, 40)); // Marron plus foncé au survol
                 }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                playButton.setBackground(new Color(160, 100, 60));
+                playButton.setBackground(new Color(160, 100, 60)); // Retour au marron normal
             }
         });
 
@@ -124,6 +130,3 @@ public class HomeScreenPanel extends JPanel {
         }
     }
 }
-
-
-
