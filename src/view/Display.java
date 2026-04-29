@@ -333,7 +333,7 @@ public class Display {
                 } else if (questSidePanel.isVisible()) {
                     questSidePanel.setVisible(false);
                     onQuestPanelClose();
-                } else {
+                } else if (!selectionView.hasFocus()) {
                     // NOUVEAU : Si rien n'est ouvert, Echap ouvre le menu Pause !
                     switchToPopup(new PauseMenuPopup(Display.this));
                 }
