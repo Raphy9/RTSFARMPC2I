@@ -27,13 +27,13 @@ public class Stats {
     public Stats() {
         this.money = 0;
         this.exp = 0;
-        this.level = 10;
+        this.level = 1;
     }
 
     public Stats(int money) {
         this.money = money;
         this.exp = 0;
-        this.level = 10;
+        this.level = 1;
     }
 
     public int getMoney() {

@@ -118,7 +118,7 @@ public class World {
      * Initialise les statistiques du monde
      */
     private void initalizeStats() {
-        stats = new Stats(1000); // Commence avec 0 pieces d'argent
+        stats = new Stats(0); // Commence avec 0 pieces d'argent
         quests = new src.model.Quests();
         stats.setLevelUpCallback(this::onLevelUp);
     }
