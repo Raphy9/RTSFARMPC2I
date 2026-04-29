@@ -1,6 +1,6 @@
 package src.model.buildings;
 
-public class GateSide extends Fence {
+public class GateSide extends Gate {
     public GateSide() {
         super();
         this.buyPrice = 15;

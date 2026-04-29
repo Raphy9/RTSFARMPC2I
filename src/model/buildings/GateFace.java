@@ -1,10 +1,10 @@
 package src.model.buildings;
 
-public class GateFace extends Fence {
+public class GateFace extends Gate {
     public GateFace() {
         super();
         this.buyPrice = 15;
-        this.levelRequirement = 4; // Porte plus chere que la simple barriere
+        this.levelRequirement = 4;
     }
 
     @Override

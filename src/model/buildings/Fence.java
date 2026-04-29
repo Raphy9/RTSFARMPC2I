@@ -29,17 +29,31 @@ public class Fence extends Building {
 
     // Petite méthode pour détecter si un voisin est une barriere (face ou coté)
     private boolean isFence(Building b) {
-        return b instanceof Fence;
+        return b instanceof Fence && !(b instanceof Gate);
     }
 
     public boolean hasFenceRight(World world, int x, int y) {
+        if (x<0 || x >= World.WIDTH || y<0 || y>= World.HEIGHT) return false;
         // Renvoie vrai s'il y a une autre barrière à droite
         return isFence(world.getBuildingAt(x + 1, y));
     }
 
+    public boolean hasFenceLeft(World world, int x, int y) {
+        if (x<0 || x >= World.WIDTH || y<0 || y>= World.HEIGHT) return false;
+        // Renvoie vrai s'il y a une autre barrière à droite
+        return isFence(world.getBuildingAt(x - 1, y));
+    }
+
     public boolean hasFenceBelow(World world, int x, int y) {
+        if (x<0 || x >= World.WIDTH || y<0 || y>= World.HEIGHT) return false;
         // Renvoie vrai s'il y a une autre barrière en dessous
         return isFence(world.getBuildingAt(x, y + 1));
+    }
+
+    public boolean hasFenceAbove(World world, int x, int y) {
+        if (x<0 || x >= World.WIDTH || y<0 || y>= World.HEIGHT) return false;
+        // Renvoie vrai s'il y a une autre barrière au dessus
+        return isFence(world.getBuildingAt(x, y - 1));
     }
 
     public ImageIcon getFaceSprite() {

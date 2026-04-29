@@ -1,8 +1,7 @@
 package src.view;
 
 import src.model.*;
-import src.model.buildings.Building;
-import src.model.buildings.Fence;
+import src.model.buildings.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -228,16 +227,46 @@ public class Global extends JPanel {
 
                     // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, x, y) pour les batiments posés
                     Image spriteImg = b.getSprite(world, b.getX(), b.getY()).getImage();
-                    if (b instanceof Fence) {
-                        if (((Fence) b).hasFenceRight(world, b.getX(), b.getY())) {
-                            g.drawImage(((Fence) b).getFaceSprite().getImage(), 6+px + Display.RATIO_X / 2, py, (Display.RATIO_X * b.getWidth())-10, Display.RATIO_Y * b.getHeight(), null);
+                    if (b instanceof GateFace) {
+                        if (((Gate) b).hasFenceRight(world, b.getX(), b.getY())) {
+                            g.drawImage(((Gate) b).getFaceSprite().getImage(), 8+px + Display.RATIO_X , py, (Display.RATIO_X * b.getWidth()/3), Display.RATIO_Y * b.getHeight(), null);
                         }
-                    }
-                    g.drawImage(spriteImg, px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
-                    if (b instanceof Fence) {
-                       if (((Fence) b).hasFenceBelow(world, b.getX(), b.getY())) {
-                           g.drawImage(((Fence) b).getSideSprite().getImage(), 2+px, py + Display.RATIO_Y/2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight())-16, null);
-                       }
+                        if (((Gate) b).hasFenceLeft(world, b.getX(), b.getY())) {
+                            g.drawImage(((Gate) b).getFaceSprite().getImage(), 6 + px - Display.RATIO_X / 2, py, (Display.RATIO_X * b.getWidth())/3, Display.RATIO_Y * b.getHeight(), null);
+                        }
+                        g.drawImage(((Gate)b).getGateLeftSprite().getImage(),  px +5, py, (int) ((Display.RATIO_X * b.getWidth())/1.5), Display.RATIO_Y * b.getHeight(), null);
+                        g.drawImage(((Gate)b).getGateRightSprite().getImage(), px + Display.RATIO_X/2-10, py, (int) (Display.RATIO_X * b.getWidth()/1.5), Display.RATIO_Y * b.getHeight(), null);
+                        g.drawImage(spriteImg, px-Display.RATIO_Y/2, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
+                        g.drawImage(spriteImg, px+Display.RATIO_Y/2, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
+//                        if (((Gate) b).hasFenceBelow(world, b.getX(), b.getY())) {
+//                            g.drawImage(((Gate) b).getSideSprite().getImage(), 2 + px, py + Display.RATIO_Y / 2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight())/2, null);
+//                        }
+                    } else if (b instanceof GateSide) {
+                        if (((Fence)b).hasFenceAbove(world, b.getX(), b.getY())) {
+                            g.drawImage(((Fence) b).getSideSprite().getImage(), 2 + px, py - Display.RATIO_Y / 2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight()) /3, null);
+                        }
+                        g.drawImage(((Fence)b).getSideSprite().getImage(), px +3, py+Display.RATIO_Y/2, (Display.RATIO_X * b.getWidth()), Display.RATIO_Y * b.getHeight()/3, null);
+                        g.drawImage(spriteImg, px, py-Display.RATIO_Y/2, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
+                        g.drawImage(((Fence) b).getSideSprite().getImage(),  px+3 , py, ((Display.RATIO_X * b.getWidth())), Display.RATIO_Y * b.getHeight()/3, null);
+                        g.drawImage(spriteImg, px, py+Display.RATIO_Y/2, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
+//                        if (((Gate) b).hasFenceBelow(world, b.getX(), b.getY())) {
+//                            g.drawImage(((Gate) b).getSideSprite().getImage(), 2 + px, py + Display.RATIO_Y / 2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight())/2, null);
+//                        }
+                        if (((Fence) b).hasFenceBelow(world, b.getX(), b.getY())) {
+                            g.drawImage(((Fence) b).getSideSprite().getImage(), 2 + px, py + Display.RATIO_Y, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight())/3, null);
+                        }
+                    } else {
+                        if (b instanceof Fence) {
+                            if (((Fence) b).hasFenceRight(world, b.getX(), b.getY())) {
+                                g.drawImage(((Fence) b).getFaceSprite().getImage(), 6 + px + Display.RATIO_X / 2, py, (Display.RATIO_X * b.getWidth()) - 10, Display.RATIO_Y * b.getHeight(), null);
+                            }
+                        }
+                        g.drawImage(spriteImg, px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
+                        if (b instanceof Fence) {
+                            if (((Fence) b).hasFenceBelow(world, b.getX(), b.getY())) {
+                                g.drawImage(((Fence) b).getSideSprite().getImage(), 2 + px, py + Display.RATIO_Y / 2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight()) - 16, null);
+                            }
+                        }
                     }
                 }
             }

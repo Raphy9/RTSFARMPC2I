@@ -311,7 +311,7 @@ public class BuildingSidePanel extends JPanel {
                 out.add(new Entry("Epouvantail",      "src/assets/Buildings/scarecrow.png", "Le protecteur de vos champs. Il effraie et fait \nfuir instantanement les corbeaux dans un rayon de 3 cases (zone de 7x7).",() -> new Scarecrow(), 100, 5));
                 break;
             case "Decoration":
-                out.add(new Entry("Chemin pierre", "src/assets/Buildings/path.png", "Un petit chemin en pierre pour décorer votre ferme.", () -> new Path(), 10, 1));
+                out.add(new Entry("Chemin pierre", "src/assets/Buildings/path.png", "Un petit chemin en pierre pour décorer votre ferme.", () -> new Path(), 5, 1));
                 out.add(new Entry("Tonneau 1", "src/assets/Buildings/barrel1.png", "De simples tonneaux en bois concu pour decorer votre terrain.", () -> new Barrel1(), 10, 1,30));
                 out.add(new Entry("Tonneau 2", "src/assets/Buildings/barrel2.png", "De simples tonneaux en bois concu pour decorer votre terrain.", () -> new Barrel2(), 10, 1,30));
                 out.add(new Entry("Poteau",    "src/assets/Buildings/poto.png",  "Un simple poteau decoratif",  () -> new Poto(),    20, 2,30));
@@ -332,7 +332,8 @@ public class BuildingSidePanel extends JPanel {
                 out.add(new Entry("Enseigne citrouille",  "src/assets/Buildings/pumpkinsign.png", "Une petite pancarte pour baliser \nvos plantations de citrouilles et preparer sereinement Halloween.",  () -> new pumpkinsign(),   10, 3,3));
                 out.add(new Entry("Grande enseigne",  "src/assets/Buildings/bigsign.png", "Un grand panneau imposant \npour marquer votre territoire.",  () -> new Bigsign(),   20, 3,3));
                 out.add(new Entry("Enseigne fraise",  "src/assets/Buildings/strawberrysign.png", "Pour ne jamais perdre de vue \nvos precieux plants de fraises.",  () -> new strawberrysign(),   10, 4,3));
-                out.add(new Entry("Porte",    "src/assets/Obstacles/fence.png", "Une version amelioree de la barriere qui permet a \nvos jardiniers de circuler librement dans vos enclos.", () -> new GateFace(),  15, 4));
+                out.add(new Entry("Porte (face)",    "src/assets/Obstacles/fence.png", "Une version amelioree de la barriere qui permet a \nvos jardiniers de circuler librement dans vos enclos.", () -> new GateFace(),  15, 4));
+                out.add(new Entry("Porte (cote)",    "src/assets/Obstacles/fence.png", "Une version amelioree de la barriere qui permet a \nvos jardiniers de circuler librement dans vos enclos.", () -> new GateSide(),  15, 4));
                 break;
         }
         return out;
