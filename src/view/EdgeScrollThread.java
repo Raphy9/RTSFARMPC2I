@@ -6,24 +6,27 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Thread dedie a l'edge-scrolling. Gere en exclusivite la detection de position de la souris
- * et le deplacement de la camera a intervalle fixe.
- *
- * Usage : instancier en fournissant les composants necessaires, appeler start() et stop().
+ * Thread dédié à l'edge-scrolling (défilement par les bords).
+ * Il surveille en permanence la position de la souris par rapport aux dimensions de la vue
+ * et déplace la caméra de manière fluide sans impacter les performances de l'affichage principal.
  */
 public class EdgeScrollThread {
-    private final Camera camera;
-    private final Global globalView;
-    private volatile int fps;
-    private volatile int edgeThreshold;
-    private volatile float edgeSpeed;
+    // --- Dépendances ---
+    private final Camera camera;      // La caméra à manipuler
+    private final Global globalView; // La vue de référence pour les coordonnées souris
 
-    private volatile int rightSidebarWidth = 0;
-    private volatile java.util.List<Rectangle> ignoredRegions = new java.util.ArrayList<>();
-    private volatile boolean overlayActive = false; // true quand un menu/popup est ouvert
-    private volatile boolean enabled = true;
+    // --- Paramètres de défilement (volatiles pour la sécurité entre threads) ---
+    private volatile int fps;           // Fréquence de mise à jour (ex: 60)
+    private volatile int edgeThreshold; // Taille de la zone réactive au bord (ex: 20 pixels)
+    private volatile float edgeSpeed;   // Vitesse de déplacement
 
-    private Thread thread;
+    // --- Gestion du HUD et des menus ---
+    private volatile int rightSidebarWidth = 0; // Ignore le bord droit si un menu est ouvert (ex: Shop)
+    private volatile java.util.List<Rectangle> ignoredRegions = new java.util.ArrayList<>(); // Zones HUD cliquables
+    private volatile boolean overlayActive = false; // Désactive le scroll si un popup central est ouvert
+    private volatile boolean enabled = true;        // Interrupteur général
+
+    private Thread thread; // Instance du thread d'exécution
 
     public EdgeScrollThread(Camera camera, Global globalView, int fps, int edgeThreshold, float edgeSpeed) {
         this.camera = camera;
@@ -33,63 +36,78 @@ public class EdgeScrollThread {
         this.edgeSpeed = edgeSpeed;
     }
 
+    /** Démarre le thread s'il n'est pas déjà actif. */
     public synchronized void start() {
         if (thread != null && thread.isAlive()) return;
         thread = new Thread(this::runLoop, "EdgeScrollThread");
-        thread.setDaemon(true);
+        thread.setDaemon(true); // Le thread s'arrêtera automatiquement si l'app se ferme
         thread.start();
     }
 
+    /** Boucle principale de détection. */
     private void runLoop() {
         try {
-            int sleepMs = Math.max(1, 1000 / this.fps);
+            int sleepMs = Math.max(1, 1000 / this.fps); // Calcul de l'intervalle selon les FPS
             while (!Thread.currentThread().isInterrupted()) {
+
+                // Conditions pour autoriser le scroll : activé + caméra présente + pas de menu ouvert
                 if (enabled && camera != null && !overlayActive) {
-                    // Ne scroller que si la fenetre contenant la vue a le focus
+
+                    // Sécurité : Ne scroller que si le joueur utilise activement la fenêtre du jeu
                     try {
                         java.awt.Window w = SwingUtilities.getWindowAncestor(globalView);
                         if (w == null || !w.isFocused()) {
                             Thread.sleep(sleepMs);
-                            continue; // ne fait rien si la fenetre n'a pas le focus
+                            continue;
                         }
-                    } catch (Throwable t) {
-                        // en cas d'erreur lors de la recuperation de la fenetre, on continue normalement
-                    }
+                    } catch (Throwable t) {}
+
                     try {
+                        // Récupération de la position de la souris sur l'écran
                         PointerInfo pi = MouseInfo.getPointerInfo();
                         if (pi != null) {
                             Point mouseOnScreen = pi.getLocation();
-                            // Convert to coordinates relative to globalView
+
+                            // Conversion de la position écran vers la position locale dans le jeu
                             Point gLocal = new Point(mouseOnScreen);
                             SwingUtilities.convertPointFromScreen(gLocal, globalView);
+
                             int gvW = globalView.getWidth();
                             int gvH = globalView.getHeight();
+
+                            // Vérifie que la souris est bien à l'intérieur de la zone de jeu
                             if (gLocal.x >= 0 && gLocal.y >= 0 && gLocal.x < gvW && gLocal.y < gvH) {
                                 int mouseX = gLocal.x;
                                 int mouseY = gLocal.y;
-                                // ignore explicit regions
+
+                                // Vérification : la souris est-elle sur un bouton HUD ou une zone à ignorer ?
                                 boolean inIgnoredRegion = false;
-                                java.util.List<Rectangle> irs = this.ignoredRegions;
-                                if (irs != null) {
-                                    for (Rectangle ir : irs) {
-                                        if (ir != null && ir.contains(mouseX, mouseY)) {
-                                            inIgnoredRegion = true;
-                                            break;
-                                        }
+                                for (Rectangle ir : this.ignoredRegions) {
+                                    if (ir != null && ir.contains(mouseX, mouseY)) {
+                                        inIgnoredRegion = true;
+                                        break;
                                     }
                                 }
+
                                 if (!inIgnoredRegion) {
+                                    // Calcul de la zone de jeu effective (ex: sans le menu latéral droit)
                                     int effectiveW = Math.max(0, gvW - rightSidebarWidth);
+
                                     if (mouseX < effectiveW) {
                                         float dx = 0f, dy = 0f;
+
+                                        // Détection bords gauche/droite
                                         if (mouseX < edgeThreshold) dx = -edgeSpeed;
                                         else if (mouseX > effectiveW - edgeThreshold && mouseX < effectiveW) dx = edgeSpeed;
 
+                                        // Détection bords haut/bas
                                         if (mouseY < edgeThreshold) dy = -edgeSpeed;
                                         else if (mouseY > gvH - edgeThreshold) dy = edgeSpeed;
 
+                                        // Si un mouvement est détecté, on déplace la caméra
                                         if (dx != 0f || dy != 0f) {
                                             camera.move(dx, dy);
+                                            // On demande un rafraîchissement graphique immédiat
                                             SwingUtilities.invokeLater(globalView::repaint);
                                         }
                                     }
@@ -97,17 +115,17 @@ public class EdgeScrollThread {
                             }
                         }
                     } catch (Throwable t) {
-                        // don't kill the thread on unexpected exceptions
-                        t.printStackTrace();
+                        t.printStackTrace(); // Évite que le thread crash sur une erreur de conversion
                     }
                 }
-                Thread.sleep(sleepMs);
+                Thread.sleep(sleepMs); // Attend le prochain "cycle"
             }
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            Thread.currentThread().interrupt(); // Sortie propre du thread
         }
     }
 
+    /** Arrête le thread proprement. */
     public synchronized void stop() {
         if (thread != null) {
             thread.interrupt();
@@ -115,7 +133,7 @@ public class EdgeScrollThread {
         }
     }
 
-    // API de configuration (thread-safe via volatile fields)
+    // --- Getters & Setters ---
     public void setRightSidebarWidth(int widthPx) { this.rightSidebarWidth = Math.max(0, widthPx); }
     public void setIgnoredRegions(java.util.List<Rectangle> r) { this.ignoredRegions = r; }
     public void setOverlayActive(boolean active) { this.overlayActive = active; }
