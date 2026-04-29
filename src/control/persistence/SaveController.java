@@ -71,6 +71,7 @@ public class SaveController {
 			try { world.getStats().setLevel(data.getLevel()); } catch (Exception ignored) {}
 			try { world.getStats().setMoney(data.getMoney()); } catch (Exception ignored) {}
 			try { world.getStats().setExp(data.getExp()); } catch (Exception ignored) {}
+			try { world.syncGardenersForLevel(data.getLevel()); } catch (Exception ignored) {}
 
 			if (data.getBarnItems() != null) {
 				world.getBarn().getItems().clear();
@@ -98,6 +99,7 @@ public class SaveController {
 			}
 
 			// Restaurer la position des jardiniers (apres les batiments)
+			// Le nombre actif est celui debloque par le niveau (1/2/3).
 			try {
 				if (data.getGardeners() != null && world.getGardeners() != null) {
 					int count = Math.min(data.getGardeners().size(), world.getGardeners().size());
@@ -118,6 +120,13 @@ public class SaveController {
 							}
 							gardener.teleportTo(targetX, targetY);
 							gardener.setFacingDirection(gsd.facingDirection);
+						}
+
+						// Restaurer l'inventaire du jardinier
+						if (gsd.inventoryItems != null && !gsd.inventoryItems.isEmpty()) {
+							for (src.view.WorldSaveData.ItemSaveData itemData : gsd.inventoryItems) {
+								itemData.restoreToBarn(world);  // Transférer à la grange
+							}
 						}
 					}
 				}

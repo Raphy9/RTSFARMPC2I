@@ -25,8 +25,8 @@ public class Scarecrow extends Building {
                 if (Math.abs(crow.getX() - this.getX()) <= RADIUS &&
                         Math.abs(crow.getY() - this.getY()) <= RADIUS) {
 
-                    // On le force a s'enfuir immédiatement !
-                    crow.flee();
+                    // On le force a s'enfuir immediatement + credit de quete corbeau.
+                    crow.flee(true);
                 }
             }
         }

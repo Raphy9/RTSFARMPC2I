@@ -85,10 +85,7 @@ public class Crow extends Entity implements Runnable {
                     // VÉRIFICATION EN TEMPS RÉEL : Le corbeau a-t-il repéré un épouvantail ?
                     if (isNearScarecrow()) {
                         System.out.println("Croa ! Le corbeau a vu un épouvantail et panique !");
-                        // On ne fait PAS appel a flee() pour ne pas s'interrompre soi-meme,
-                        // on modifie juste l'état et on coupe la boucle de vol.
-                        this.currentState = State.FLEEING;
-                        SoundManager.playSound(SoundManager.CROW_RUN);
+                        setFleeing(true, false);
                         break;
                     }
 
@@ -293,8 +290,7 @@ public class Crow extends Entity implements Runnable {
 
                     // Si on repere un épouvantail pendant qu'on se balade
                     if (isNearScarecrow()) {
-                        this.currentState = State.FLEEING;
-                        SoundManager.playSound(SoundManager.CROW_RUN);
+                        setFleeing(true, false);
                         break;
                     }
 
@@ -330,13 +326,26 @@ public class Crow extends Entity implements Runnable {
     }
 
     public void flee() {
+        setFleeing(false, true);
+    }
+
+    public void flee(boolean countForQuest) {
+        setFleeing(countForQuest, true);
+    }
+
+    private void setFleeing(boolean countForQuest, boolean interruptThread) {
         if (this.currentState == State.FLEEING) return;
         System.out.println("Croa ! Le corbeau s'envole !");
+
+        if (countForQuest && world != null) {
+            world.registerQuestAction(Quests.ACTION_CLICK_CROW);
+        }
+
         this.currentState = State.FLEEING;
         SoundManager.playSound(SoundManager.CROW_RUN);
 
-        // Utilisé uniquement si ça vient de l'extérieur (ex: clic de la souris)
-        if (crowThread != null) {
+        // Utilise l'interruption uniquement pour un appel externe (clic, effet batiment, etc.)
+        if (interruptThread && crowThread != null && Thread.currentThread() != crowThread) {
             crowThread.interrupt();
         }
     }

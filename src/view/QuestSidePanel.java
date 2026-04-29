@@ -162,12 +162,12 @@ public class QuestSidePanel extends JPanel {
                     card.add(createInvisibleSlot());
                 }
                 centerContent.add(card, BorderLayout.CENTER);
-            } else {
+             } else {
                 JPanel card = new JPanel(new GridLayout(QUEST_SLOTS, 1, 0, 8));
                 card.setOpaque(false);
 
-                for (QuestPanelState.QuestCardState questState : chapter.quests) {
-                    card.add(createQuestCardFromState(questState));
+                for (int i = 0; i < chapter.quests.size(); i++) {
+                    card.add(createQuestCardFromState(chapter.quests.get(i)));
                 }
                 for (int i = chapter.quests.size(); i < QUEST_SLOTS; i++) {
                     card.add(createInvisibleSlot());
@@ -462,6 +462,7 @@ public class QuestSidePanel extends JPanel {
         desc.setFont(GameFonts.MINECRAFT_FONT != null
                 ? GameFonts.MINECRAFT_FONT.deriveFont(10f)
                 : new Font("Arial", Font.PLAIN, 10));
+        
         questCard.add(desc, BorderLayout.CENTER);
 
         return questCard;

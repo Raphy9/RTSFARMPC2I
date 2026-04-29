@@ -217,7 +217,8 @@ public class LevelUpPopup {
         new BuildingEntry("Enseigne fraise",  "src/assets/Buildings/strawberrysign.png",   4),
         new BuildingEntry("Enseigne choux",  "src/assets/Buildings/chouxsign.png",  2),
         new BuildingEntry("Enseigne citrouille",  "src/assets/Buildings/pumpkinsign.png",  3),
-        new BuildingEntry("Epouvantail",      "src/assets/Buildings/scarecrow.png",  4)
+        new BuildingEntry("Epouvantail",      "src/assets/Buildings/scarecrow.png",  4),
+        new BuildingEntry("Statue",           "src/assets/Buildings/statue.png",     6)
     );
 
     public record UnlockEntry(String name, String iconPath) {}

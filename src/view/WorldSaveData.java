@@ -290,7 +290,7 @@ public class WorldSaveData implements Serializable {
     // ════════════════════════════════════════════════════════════════════
 
     /**
-     * DTO pour sauvegarder la position et la direction d'un jardinier.
+     * DTO pour sauvegarder la position, la direction et l'inventaire d'un jardinier.
      */
     public static class GardenerSaveData implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -298,11 +298,20 @@ public class WorldSaveData implements Serializable {
         public int x;
         public int y;
         public int facingDirection;
+        public List<ItemSaveData> inventoryItems;
 
         public GardenerSaveData(Gardener gardener) {
             this.x = gardener.getX();
             this.y = gardener.getY();
             this.facingDirection = gardener.getFacingDirection();
+            this.inventoryItems = new ArrayList<>();
+
+            // Sauvegarder l'inventaire du jardinier
+            if (gardener.getInventory() != null) {
+                for (Item item : gardener.getInventory().getItems()) {
+                    inventoryItems.add(new ItemSaveData(item));
+                }
+            }
         }
     }
 }

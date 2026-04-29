@@ -176,6 +176,15 @@ public class Quest {
         this.rewardClaimed = restoredRewardClaimed || this.completed;
     }
 
+    /**
+     * Réinitialise la quête (pour les quêtes répétables du chapitre 6).
+     */
+    public void reset() {
+        this.progress = 0;
+        this.completed = false;
+        this.rewardClaimed = false;
+    }
+
     public String getId() {
         return id;
     }
