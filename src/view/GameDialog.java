@@ -172,8 +172,8 @@ public class GameDialog {
     /** Cree le label de message HTML centre. */
     private static JPanel buildMessage(String message) {
         Font textFont = GameFonts.MINECRAFT_FONT != null
-                ? GameFonts.MINECRAFT_FONT.deriveFont(14f)
-                : new Font("Arial", Font.PLAIN, 14);
+                ? GameFonts.MINECRAFT_FONT.deriveFont(16f)
+                : new Font("Arial", Font.PLAIN, 16);
         JLabel label = new JLabel(
                 "<html><center>" + message.replace("\n", "<br>") + "</center></html>",
                 SwingConstants.CENTER);

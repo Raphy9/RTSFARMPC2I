@@ -2,6 +2,7 @@ package src;
 
 import src.model.Camera;
 import src.model.SoundManager;
+import src.model.Tutorial;
 import src.view.*;
 
 import javax.swing.*;
@@ -10,7 +11,7 @@ import java.util.Timer;
 
 public class Main {
 
-    private static JFrame frame;
+    public static JFrame frame;
     private static Display currentDisplay;
     private static Timer currentTimer;
 
@@ -109,18 +110,8 @@ public class Main {
             SaveManager.loadGame(saveName, currentDisplay.getWorld());
         }
         else {
-            // nouvelle partie
-            GameDialog.showMessage(frame, "Tutoriel (1/2)", "Bienvenue dans Saclay Valley !\n\n" +
-                    "Vous venez d'heriter de la ferme de votre grand-pere dans la region de Saclay.\n" +
-                    "Votre objectif est de relancer la ferme a l'aide de votre fidele jardinier. \n" +
-                    "Cultivez des plantes, construisez des batiments, et decorez votre ferme pour la rendre plus belle et plus rentable !",
-                    () -> {
-                        GameDialog.showMessage(frame, "Tutoriel (2/2)",
-                            "Pour commencer, il vous faudra une grange pour stocker vos produits.\n" +
-                            "Pour cela, cliquez sur le marteau pour ouvrir le menu de construction, puis posez la grange."
-                        );
-                    }
-                    );
+            // nouvelle partie, lancer le tutoriel
+            Tutorial.tuto1();
         }
 
         currentDisplay.setCurrentSaveName(saveName);
