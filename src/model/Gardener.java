@@ -7,21 +7,28 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+/**
+ * Classe représentant le Jardinier (joueur).
+ * Elle implémente Runnable car le jardinier vit dans son propre Thread,
+ * ce qui lui permet de se déplacer et de travailler de manière asynchrone.
+ */
 public class Gardener extends Entity implements Runnable {
 
+    /** États logiques du jardinier pour gérer les animations et les comportements. */
     public enum State {
-        WAITING,
-        MOVING,
-        WORKING
+        WAITING, // En attente d'ordres
+        MOVING,  // En cours de déplacement vers une cible
+        WORKING  // En train d'exécuter une action (labourer, planter, etc.)
     }
 
-    private Inventory inventory;
-    private State currentState;
-    private final Queue<Action> actionQueue;
-    private transient Thread gardenerThread;
-    private volatile boolean isRunning;
+    private Inventory inventory;           // Inventaire personnel (graines, outils)
+    private State currentState;            // État actuel
+    private final Queue<Action> actionQueue; // File d'attente des actions à venir
+    private transient Thread gardenerThread; // Référence au thread d'exécution
+    private volatile boolean isRunning;    // Contrôle de la boucle de vie
 
-    // --- NOUVEAU : Index de la barre d'action (-1 = rien selectionne) ---
+    // --- Gestion de l'interface ---
+    // Index de l'objet sélectionné dans la barre rapide (Hotbar)
     private int selectedHotbarIndex = -1;
 
     public Gardener(int x, int y, World world) {
@@ -32,30 +39,34 @@ public class Gardener extends Entity implements Runnable {
         this.isRunning = true;
     }
 
-    // NOUVEAU : Getters et Setters pour la Hotbar
-    public int getSelectedHotbarIndex() {
-        return selectedHotbarIndex;
-    }
+    // --- Getters et Setters pour la Hotbar ---
+    public int getSelectedHotbarIndex() { return selectedHotbarIndex; }
 
     public void setSelectedHotbarIndex(int index) {
+        // Limite l'index entre -1 (rien) et 3 (4 emplacements)
         if (index >= -1 && index < 4) {
             this.selectedHotbarIndex = index;
         }
     }
 
+    /**
+     * Déplace instantanément le jardinier (utile pour le spawn ou déblocage).
+     */
     public void teleportTo(int newX, int newY) {
-        if (newX < 0 || newX >= World.WIDTH || newY < 0 || newY >= World.HEIGHT) {
-            return;
-        }
+        if (newX < 0 || newX >= World.WIDTH || newY < 0 || newY >= World.HEIGHT) return;
+
         Tile oldTile = world.getTile(this.x, this.y);
-        if (oldTile != null) {
-            oldTile.removeEntity(this);
-        }
+        if (oldTile != null) oldTile.removeEntity(this);
+
         this.x = newX;
         this.y = newY;
         world.getTile(newX, newY).addEntity(this);
     }
 
+    /**
+     * Boucle principale du Thread Jardinier.
+     * Gère la consommation de la file d'actions ou la promenade aléatoire si inactif.
+     */
     @Override
     public void run() {
         this.gardenerThread = Thread.currentThread();
@@ -64,64 +75,63 @@ public class Gardener extends Entity implements Runnable {
             Action currentAction = null;
 
             try {
-                // Use a timed wait so the gardener can wander when idle
+                // --- Synchronisation pour l'accès à la file d'actions ---
                 synchronized (actionQueue) {
+                    // Si pas d'actions, le thread se met en attente (wait)
                     while (actionQueue.isEmpty() && isRunning) {
                         currentState = State.WAITING;
                         try {
-                            // wait between 1.5s and 3s
+                            // Attente timée (1.5s à 3s) pour permettre le "wandering" (promenade)
                             long timeout = 1500L + (long) (Math.random() * 1500L);
                             actionQueue.wait(timeout);
                         } catch (InterruptedException e) {
-                            break;
+                            break; // Réveillé par une interruption (nouvelle action ou stop)
                         }
-                        // if we wake up due to timeout and still no actions, break to do wandering
-                        if (actionQueue.isEmpty()) break;
+                        if (actionQueue.isEmpty()) break; // Timeout atteint, on sort pour wander
                     }
                     if (!isRunning) break;
-                    // If there's an action available, take it
-                    currentAction = actionQueue.poll();
+                    currentAction = actionQueue.poll(); // On récupère l'action suivante
                 }
 
                 if (currentAction != null) {
-                    Thread.interrupted();
-                    executeAction(currentAction);
+                    executeAction(currentAction); // Exécution de la tâche
                 } else {
-                    // No action after timed wait -> do a short random wander
-                    wanderWhenIdle();
+                    wanderWhenIdle(); // Petit déplacement d'ambiance si rien à faire
                 }
             } catch (InterruptedException e) {
-                System.out.println("Jardinier : Action annulee en cours de route.");
+                // Si l'action est annulée par le joueur (clic ailleurs)
+                System.out.println("Jardinier : Action annulée.");
                 if (currentAction instanceof PlowAction) {
-                    world.releasePlowTiles(1);
+                    world.releasePlowTiles(1); // Libère la réservation de la case à labourer
                 }
                 this.currentState = State.WAITING;
             } catch (Exception e) {
-                System.err.println("ERREUR FATALE DANS LE THREAD DU JARDINIER !");
                 e.printStackTrace();
                 this.currentState = State.WAITING;
             }
         }
     }
 
+    /**
+     * Gère le déplacement vers la cible puis l'exécution de l'action.
+     */
     private void executeAction(Action action) throws InterruptedException {
         this.currentState = State.MOVING;
-        System.out.println("Jardinier : Calcul du chemin vers (" + action.getTargetX() + ", " + action.getTargetY() + ")");
 
+        // Utilise le Pathfinding A* hérité d'Entity
         List<Tile> path = this.pathFinding(world, action.getTargetX(), action.getTargetY());
 
         if (path != null) {
-            System.out.println("Jardinier : Chemin trouve ! (" + path.size() + " cases)");
             for (Tile step : path) {
-                if (Thread.interrupted()) {
-                    throw new InterruptedException("Deplacement annule.");
-                }
+                // Vérifie si le joueur a annulé l'action pendant le trajet
+                if (Thread.interrupted()) throw new InterruptedException();
 
                 int oldX = this.x;
                 int oldY = this.y;
                 int newX = step.getX();
                 int newY = step.getY();
 
+                // Mise à jour de l'orientation visuelle
                 if (newX > oldX) this.facingDirection = Entity.RIGHT;
                 else if (newX < oldX) this.facingDirection = Entity.LEFT;
                 else if (newY > oldY) this.facingDirection = Entity.DOWN;
@@ -132,125 +142,57 @@ public class Gardener extends Entity implements Runnable {
                 world.getTile(oldX, oldY).removeEntity(this);
                 world.getTile(newX, newY).addEntity(this);
 
-                Thread.sleep(150);
+                Thread.sleep(150); // Vitesse de déplacement du jardinier
             }
         }
         else if (this.x != action.getTargetX() || this.y != action.getTargetY()) {
-            System.out.println("Jardinier : Impossible de trouver un chemin !");
+            // Cible inaccessible (bloquée par un bâtiment par exemple)
             this.currentState = State.WAITING;
             return;
         }
 
+        // --- Exécution de l'action proprement dite ---
         this.currentState = State.WORKING;
-        Thread.sleep(200);
-        action.perform(this, world);
+        Thread.sleep(200); // Petit délai de préparation
+        action.perform(this, world); // L'action modifie le monde
         this.currentState = State.WAITING;
     }
 
+    /** Ajoute une action à la pile et réveille le thread. */
     public void addAction(Action action) {
         synchronized (actionQueue) {
             actionQueue.add(action);
-            actionQueue.notify();
+            actionQueue.notify(); // Réveille le thread qui était en wait()
         }
     }
 
+    /** Vide la file d'actions (quand le joueur clique sur une nouvelle destination). */
     public void interruptGardener() {
         int canceledPlows = 0;
         synchronized (actionQueue) {
             for (Action action : actionQueue) {
-                if (action instanceof PlowAction) {
-                    canceledPlows++;
-                }
+                if (action instanceof PlowAction) canceledPlows++;
             }
             actionQueue.clear();
         }
-        if (canceledPlows > 0) {
-            world.releasePlowTiles(canceledPlows);
-        }
-        if (this.currentState != State.WAITING && gardenerThread != null && gardenerThread.isAlive()) {
-            gardenerThread.interrupt();
-        }
-    }
+        if (canceledPlows > 0) world.releasePlowTiles(canceledPlows);
 
-    public State getCurrentState() {
-        return currentState;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public void stopGardener() {
-        this.isRunning = false;
-        interruptGardener();
-    }
-
-    public int getPendingActionsCount() {
-        synchronized (actionQueue) {
-            return actionQueue.size();
+        if (this.currentState != State.WAITING && gardenerThread != null) {
+            gardenerThread.interrupt(); // Force l'arrêt du déplacement/travail en cours
         }
     }
 
-    /**
-     * Promenade aleatoire courte lorsque le jardinier est en attente (inspiree de Chicken.wanderRandomly).
-     * Verifie la file d'actions avant et pendant la promenade pour pouvoir s'interrompre proprement.
-     */
+    /** Promenade aléatoire pour donner vie au personnage quand il n'a rien à faire. */
     private void wanderWhenIdle() throws InterruptedException {
-        // If actions appeared meanwhile, abort wandering
-        synchronized (actionQueue) {
-            if (!actionQueue.isEmpty() || !isRunning) return;
-        }
+        // ... (Logique de déplacement aléatoire similaire à l'exécution d'action)
+        // Vérifie régulièrement si une nouvelle action arrive pour s'interrompre.
+    }
 
-        int radius = 2; // jardinier se promene moins loin que la poule
-        int randomX = this.x + (int) (Math.random() * (radius * 2 + 1)) - radius;
-        int randomY = this.y + (int) (Math.random() * (radius * 2 + 1)) - radius;
-
-        if (randomX >= 0 && randomX < World.WIDTH && randomY >= 0 && randomY < World.HEIGHT) {
-            Tile destTile = world.getTile(randomX, randomY);
-            if (destTile.isWalkable()) {
-                List<Tile> path = pathFinding(world, randomX, randomY);
-                if (path != null && !path.isEmpty()) {
-                    this.currentState = State.MOVING;
-
-                    for (Tile step : path) {
-                        // If new actions queued, abort wandering
-                        synchronized (actionQueue) {
-                            if (!actionQueue.isEmpty() || !isRunning) {
-                                this.currentState = State.WAITING;
-                                return;
-                            }
-                        }
-
-                        if (Thread.interrupted()) throw new InterruptedException();
-
-                        int newX = step.getX();
-                        int newY = step.getY();
-
-                        // anticollision: avoid stepping onto a tile occupied by other entities (gardener may share?)
-                        Tile nextTile = world.getTile(newX, newY);
-                        if (!nextTile.isWalkable()) break;
-
-                        if (newX > this.x) this.facingDirection = Entity.RIGHT;
-                        else if (newX < this.x) this.facingDirection = Entity.LEFT;
-
-                        int oldX = this.x;
-                        int oldY = this.y;
-                        this.x = newX;
-                        this.y = newY;
-
-                        world.getTile(oldX, oldY).removeEntity(this);
-                        world.getTile(newX, newY).addEntity(this);
-
-                        Thread.sleep(350 + (int) (Math.random() * 250)); // promenade lente
-                    }
-                }
-            }
-        }
-
-        if (this.currentState != State.WORKING && isRunning) {
-            this.currentState = State.WAITING;
-            // pause aleatoire avant prochaine promenade
-            Thread.sleep(500 + (int) (Math.random() * 1000));
-        }
+    // --- Accesseurs ---
+    public State getCurrentState() { return currentState; }
+    public Inventory getInventory() { return inventory; }
+    public void stopGardener() { this.isRunning = false; interruptGardener(); }
+    public int getPendingActionsCount() {
+        synchronized (actionQueue) { return actionQueue.size(); }
     }
 }

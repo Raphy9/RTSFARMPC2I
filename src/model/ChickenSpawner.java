@@ -4,7 +4,8 @@ import java.util.Random;
 
 /**
  * Générateur d'ennemis (Poules).
- * Tourne dans son propre Thread et fait apparaître des poules sur les bords de la carte a intervalles réguliers.
+ * Tourne dans son propre Thread et fait apparaître des poules sur les bords
+ * de la carte à intervalles réguliers.
  */
 public class ChickenSpawner implements Runnable {
 
@@ -12,12 +13,19 @@ public class ChickenSpawner implements Runnable {
     private boolean isRunning;
     private Thread spawnerThread;
     private final Random random;
-    private static boolean isActive = true; // Permet de désactiver temporairement le spawner (ex: pendant le tutoriel) sans arrêter complètement le thread
 
-    //  Parametres d'apparition
-    // Temps entre chaque apparition (en millisecondes)
+    /**
+     * Permet de mettre le spawn en pause (ex: pendant un dialogue ou le tuto)
+     * sans détruire le thread.
+     */
+    private static boolean isActive = true;
+
+    // --- Paramètres d'apparition ---
+
+    /** Temps d'attente entre deux tentatives d'apparition (20 secondes). */
     private static final int SPAWN_INTERVAL = 20000;
-    // Nombre maximum de poules en meme temps sur la carte (pour éviter de surcharger le jeu)
+
+    /** Limite de population pour ne pas transformer le jeu en simulateur de basse-cour. */
     private static final int MAX_CHICKENS = 3;
 
     public ChickenSpawner(World world) {
@@ -26,11 +34,13 @@ public class ChickenSpawner implements Runnable {
         this.random = new Random();
     }
 
+    /** Initialise et lance le thread dédié au spawn. */
     public void start() {
         this.spawnerThread = new Thread(this, "ChickenSpawnerThread");
         this.spawnerThread.start();
     }
 
+    /** Arrête proprement la boucle de génération. */
     public void stop() {
         this.isRunning = false;
         if (this.spawnerThread != null) {
@@ -42,30 +52,31 @@ public class ChickenSpawner implements Runnable {
         isActive = active;
     }
 
+    /** Boucle de contrôle du générateur. */
     @Override
     public void run() {
         System.out.println("Générateur de poules activé !");
 
         while (isRunning) {
             try {
-                // On attend X secondes avant de faire apparaître la prochaine poule
+                // Rythme de croisière du générateur
                 Thread.sleep(SPAWN_INTERVAL);
 
-                // On ne fait spawn une poule que si on n'a pas atteint la limite et si on est en mode actif
+                // Conditions de spawn : activité activée ET limite de population non atteinte
                 if (isActive && world.getEnemies().size() < MAX_CHICKENS) {
                     spawnChickenAtEdge();
                 }
 
             } catch (InterruptedException e) {
-                // Si le jeu se ferme, on arrete le thread
+                // Interruption propre lors de la fermeture du jeu
                 isRunning = false;
             }
         }
     }
 
     /**
-     * Calcule des coordonnées aléatoires sur l'un des 4 bords de la carte
-     * et y crée une nouvelle poule.
+     * Sélectionne aléatoirement un point d'entrée sur les bordures du monde.
+     * S'assure que la poule n'apparaît pas coincée dans un mur ou un objet.
      */
     private void spawnChickenAtEdge() {
         int x = 0;
@@ -73,41 +84,43 @@ public class ChickenSpawner implements Runnable {
         boolean validSpot = false;
         int attempts = 0;
 
-        // On cherche une case marchable sur un bord (max 10 tentatives pour éviter une boucle infinie si le bord est un gros mur)
+        // Tentative de trouver une case "marchable" sur un bord (max 10 essais)
         while (!validSpot && attempts < 10) {
             int edge = random.nextInt(4); // 0 = Haut, 1 = Bas, 2 = Gauche, 3 = Droite
 
             switch (edge) {
-                case 0: // Bord Haut
+                case 0: // Bordure supérieure
                     x = random.nextInt(World.WIDTH);
                     y = 0;
                     break;
-                case 1: // Bord Bas
+                case 1: // Bordure inférieure
                     x = random.nextInt(World.WIDTH);
                     y = World.HEIGHT - 1;
                     break;
-                case 2: // Bord Gauche
+                case 2: // Bordure gauche
                     x = 0;
                     y = random.nextInt(World.HEIGHT);
                     break;
-                case 3: // Bord Droite
+                case 3: // Bordure droite
                     x = World.WIDTH - 1;
                     y = random.nextInt(World.HEIGHT);
                     break;
             }
 
-            // On vérifie que la case choisie n'est pas un obstacle bloquant
+            // Vérification de la collision : la case doit être libre (isWalkable)
             if (world.getTile(x, y).isWalkable()) {
                 validSpot = true;
             }
             attempts++;
         }
 
-        // Si on a trouvé une bonne case, on fait apparaître la poule !
+        // Si un emplacement valide est trouvé, on instancie et lance l'entité
         if (validSpot) {
             Chicken newChicken = new Chicken(x, y, world);
-            world.getEnemies().add(newChicken); // CopyOnWriteArrayList protege contre les crashs !
-            newChicken.start(); // Lance le script de la poule dans son propre thread
+            // Ajout sécurisé à la liste globale des ennemis
+            world.getEnemies().add(newChicken);
+            // Chaque poule commence sa propre routine d'IA (Thread)
+            newChicken.start();
         }
     }
 }
