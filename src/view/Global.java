@@ -9,41 +9,49 @@ import javax.swing.*;
 import java.util.*;
 import java.util.Set;
 
+/**
+ * Vue principale du jeu (le terrain).
+ * Gère le rendu des tuiles, des bâtiments, des entités et de l'interface (hotbar, stats).
+ */
 public class Global extends JPanel {
     private final World world;
     private final Camera camera;
 
+    // --- Chargeurs de Sprites ---
     private final SpriteSheetLoader gardenerLoader;
-    private final long startTime;
+    private final long startTime; // Temps de référence pour synchroniser les animations
     private ChickenSpriteSheetLoader chickenLoader;
     private CrowSpriteSheetLoader crowLoader;
 
+    // --- Assets Graphiques UI ---
     private Image progressBarEmpty;
     private ImageIcon slowCoinGif;
-
-    // --- Images des outils et actions ---
     private Image houeImg;
     private Image arrosoirImg;
     private Image planterImg;
     private Image recolterImg;
 
-    private int hoveredX = -1;
-    private int hoveredY = -1;
-
+    // --- États d'affichage ---
+    private int hoveredX = -1; // Coordonnée X de la souris sur la grille
+    private int hoveredY = -1; // Coordonnée Y de la souris sur la grille
     private boolean hotbarVisible = true;
 
+    // Gère la prévisualisation (fantôme) lors de la pose d'un bâtiment
     private src.control.popups.BuildingManager ghostManager;
 
-    // Compteur de references par case pour eviter qu'un jardinier retire la surbrillance d'un autre.
+    // Système de surbrillance pour les actions en cours des jardiniers
     private final Map<Point, Integer> highlights = new HashMap<>();
+    // Système de surbrillance bleue pour la sélection de zone par le joueur
     private Set<Point> selectedTilesBlueHighlight = new HashSet<Point>();
     private FloatingTextManager floatingTextManager;
 
+    /** Définit les cases à surligner en bleu (sélection manuelle) */
     public void setSelectedTilesBlueHighlight(Set<Point> selectedTiles) {
         this.selectedTilesBlueHighlight = selectedTiles;
         this.repaint();
     }
 
+    /** Injecte le gestionnaire de textes flottants (+XP, +PO) */
     public void setFloatingTextManager(FloatingTextManager floatingTextManager) {
         this.floatingTextManager = floatingTextManager;
     }
@@ -55,19 +63,22 @@ public class Global extends JPanel {
         this.setOpaque(true);
 
         this.startTime = System.currentTimeMillis();
+
+        // Initialisation des outils de chargement d'images
         this.gardenerLoader = new SpriteSheetLoader("src/assets/Tiny Wonder Farm Free/characters/main character/walk and idle.png");
         this.chickenLoader = new ChickenSpriteSheetLoader();
         this.progressBarEmpty = new ImageIcon("src/assets/progress_bar_ui.png").getImage();
         this.slowCoinGif = new ImageIcon("src/assets/money.gif");
         this.crowLoader = new CrowSpriteSheetLoader();
 
-        // --- Chargement des outils et actions ---
+        // Chargement des icônes de la Hotbar
         this.houeImg = new ImageIcon("src/assets/UI/houe.png").getImage();
         this.arrosoirImg = new ImageIcon("src/assets/UI/arrosoir.png").getImage();
         this.planterImg = new ImageIcon("src/assets/UI/seeds.png").getImage();
         this.recolterImg = new ImageIcon("src/assets/UI/growingplant.png").getImage();
     }
 
+    /** Ajoute une surbrillance (jaune) sur une case. Utilise un compteur pour gérer les accès concurrents. */
     public void setHighlight(int wx, int wy) {
         synchronized (highlights) {
             Point p = new Point(wx, wy);
@@ -77,18 +88,14 @@ public class Global extends JPanel {
         repaint();
     }
 
+    /** Retire une surbrillance (jaune). Supprime l'entrée si le compteur tombe à zéro. */
     public void clearHighlight(int wx, int wy) {
         synchronized (highlights) {
             Point p = new Point(wx, wy);
             Integer count = highlights.get(p);
-            if (count == null) {
-                return;
-            }
-            if (count <= 1) {
-                highlights.remove(p);
-            } else {
-                highlights.put(p, count - 1);
-            }
+            if (count == null) return;
+            if (count <= 1) highlights.remove(p);
+            else highlights.put(p, count - 1);
         }
         repaint();
     }
@@ -119,6 +126,7 @@ public class Global extends JPanel {
         repaint();
     }
 
+    /** Met à jour la case survolée par la souris pour l'affichage des jauges */
     public void setHoveredTile(int x, int y) {
         if (this.hoveredX != x || this.hoveredY != y) {
             this.hoveredX = x;
@@ -131,11 +139,14 @@ public class Global extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        // --- CALCUL DU SCROLLING ---
+        // On récupère la position de la caméra et le décalage fin en pixels pour un rendu fluide
         int fstTileX = (int) camera.getX();
         int fstTileY = (int) camera.getY();
         int pixelDiffX = (int) ((camera.getX() - fstTileX) * Display.RATIO_X);
         int pixelDiffY = (int) ((camera.getY() - fstTileY) * Display.RATIO_Y);
 
+        // --- RENDU DU TERRAIN ET DES PLANTES ---
         for (int x = 0; x <= Camera.WIDTH; x++) {
             for (int y = 0; y <= Camera.HEIGHT; y++) {
                 int worldX = fstTileX + x;
@@ -144,11 +155,13 @@ public class Global extends JPanel {
                     Tile tile = world.getTile(worldX, worldY);
                     int paintX = (x * Display.RATIO_X) - pixelDiffX;
                     int paintY = (y * Display.RATIO_Y) - pixelDiffY;
+
+                    // Dessin de la tuile (Herbe, Terre labourée, etc.)
                     g.drawImage(tile.getSprite().getImage(), paintX, paintY, Display.RATIO_X, Display.RATIO_Y, this);
 
+                    // Dessin de la plante si la tuile en contient une
                     if (tile instanceof PlantTile) {
-                        PlantTile casePlantable = (PlantTile) tile;
-                        Plant plant = casePlantable.getPlant();
+                        Plant plant = ((PlantTile) tile).getPlant();
                         if (plant != null) {
                             g.drawImage(plant.getSprite().getImage(), paintX, paintY, Display.RATIO_X, Display.RATIO_Y, this);
                         }
@@ -157,6 +170,7 @@ public class Global extends JPanel {
             }
         }
 
+        // --- RENDU DU FANTÔME DE CONSTRUCTION (GHOST) ---
         if (ghostManager != null && ghostManager.getGhostBuilding() != null) {
             Graphics2D g3 = (Graphics2D) g.create();
             g3.setStroke(new BasicStroke(3));
@@ -166,68 +180,52 @@ public class Global extends JPanel {
             int gy = ghostManager.getGhostY();
             boolean isValid = ghostManager.canPlace(gx, gy, b);
 
-            Color fillColor;
-            Color borderColor;
-            if (isValid) {
-                fillColor = new Color(0, 200, 255, 100);
-                borderColor = new Color(0, 150, 255);
-            } else {
-                fillColor = new Color(255, 0, 0, 100);
-                borderColor = new Color(255, 0, 0);
-            }
+            Color fillColor = isValid ? new Color(0, 200, 255, 100) : new Color(255, 0, 0, 100);
+            Color borderColor = isValid ? new Color(0, 150, 255) : new Color(255, 0, 0);
 
-            // 1. Dessiner la surbrillance sur chaque case de l'empreinte
+            // Dessin de l'empreinte au sol (rectangles bleus ou rouges)
             for (int dx = 0; dx < b.getWidth(); dx++) {
                 for (int dy = 0; dy < b.getHeight(); dy++) {
                     int relX = (gx + dx) - fstTileX;
                     int relY = (gy + dy) - fstTileY;
-
                     if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                         int px = (relX * Display.RATIO_X) - pixelDiffX;
                         int py = (relY * Display.RATIO_Y) - pixelDiffY;
-
-                        // Remplissage semi-transparent
                         g3.setColor(fillColor);
                         g3.fillRect(px, py, Display.RATIO_X, Display.RATIO_Y);
-
-                        // Bordure opaque (avec +1 et -3 pour ne pas deborder, comme tes highlights)
                         g3.setColor(borderColor);
                         g3.drawRect(px + 1, py + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
                     }
                 }
             }
 
-            // 2. Appliquer la transparence (50%) *uniquement* pour le sprite du batiment
+            // Dessin du sprite du bâtiment avec 50% d'opacité
             g3.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-
-            // 3. Dessiner l'image du batiment au-dessus de la zone surlignee
             if (isBuildingVisibleInCamera(gx, gy, b.getWidth(), b.getHeight(), fstTileX, fstTileY)) {
                 int relX = gx - fstTileX;
                 int relY = gy - fstTileY;
                 int px = (relX * Display.RATIO_X) - pixelDiffX;
                 int py = (relY * Display.RATIO_Y) - pixelDiffY;
-
-                // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, gx, gy) pour le fantome des barrieres
                 Image ghostImg = b.getSprite(world, gx, gy).getImage();
                 g3.drawImage(ghostImg, px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
             }
             g3.dispose();
         }
 
-        // === DESSIN DES BATIMENTS DÉJA CONSTRUITS ===
+        // --- RENDU DES BÂTIMENTS DÉJÀ CONSTRUITS ---
         if (world.getBuildings() != null) {
             for (src.model.buildings.Building b : world.getBuildings()) {
-
-                // Si au moins une partie du batiment est dans le champ de la caméra
                 if (isBuildingVisibleInCamera(b.getX(), b.getY(), b.getWidth(), b.getHeight(), fstTileX, fstTileY)) {
                     int relX = b.getX() - fstTileX;
                     int relY = b.getY() - fstTileY;
                     int px = (relX * Display.RATIO_X) - pixelDiffX;
                     int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                    // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, x, y) pour les batiments posés
                     Image spriteImg = b.getSprite(world, b.getX(), b.getY()).getImage();
+
+                    // Logique spécifique pour les Barrières et Portes (connexions visuelles)
                     if (b instanceof GateFace) {
+                        // Rendu complexe des poteaux et battants de porte
                         if (((Gate) b).hasFenceRight(world, b.getX(), b.getY())) {
                             g.drawImage(((Gate) b).getFaceSprite().getImage(), 8+px + Display.RATIO_X , py, (Display.RATIO_X * b.getWidth()/3), Display.RATIO_Y * b.getHeight(), null);
                         }
@@ -238,10 +236,8 @@ public class Global extends JPanel {
                         g.drawImage(((Gate)b).getGateRightSprite().getImage(), px + Display.RATIO_X/2-10, py, (int) (Display.RATIO_X * b.getWidth()/1.5), Display.RATIO_Y * b.getHeight(), null);
                         g.drawImage(spriteImg, px-Display.RATIO_Y/2, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
                         g.drawImage(spriteImg, px+Display.RATIO_Y/2, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
-//                        if (((Gate) b).hasFenceBelow(world, b.getX(), b.getY())) {
-//                            g.drawImage(((Gate) b).getSideSprite().getImage(), 2 + px, py + Display.RATIO_Y / 2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight())/2, null);
-//                        }
                     } else if (b instanceof GateSide) {
+                        // Rendu des portes de côté
                         if (((Fence)b).hasFenceAbove(world, b.getX(), b.getY())) {
                             g.drawImage(((Fence) b).getSideSprite().getImage(), 2 + px, py - Display.RATIO_Y / 2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight()) /3, null);
                         }
@@ -249,34 +245,29 @@ public class Global extends JPanel {
                         g.drawImage(spriteImg, px, py-Display.RATIO_Y/2, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
                         g.drawImage(((Fence) b).getSideSprite().getImage(),  px+3 , py, ((Display.RATIO_X * b.getWidth())), Display.RATIO_Y * b.getHeight()/3, null);
                         g.drawImage(spriteImg, px, py+Display.RATIO_Y/2, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
-//                        if (((Gate) b).hasFenceBelow(world, b.getX(), b.getY())) {
-//                            g.drawImage(((Gate) b).getSideSprite().getImage(), 2 + px, py + Display.RATIO_Y / 2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight())/2, null);
-//                        }
                         if (((Fence) b).hasFenceBelow(world, b.getX(), b.getY())) {
                             g.drawImage(((Fence) b).getSideSprite().getImage(), 2 + px, py + Display.RATIO_Y, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight())/3, null);
                         }
                     } else {
-                        if (b instanceof Fence) {
-                            if (((Fence) b).hasFenceRight(world, b.getX(), b.getY())) {
-                                g.drawImage(((Fence) b).getFaceSprite().getImage(), 6 + px + Display.RATIO_X / 2, py, (Display.RATIO_X * b.getWidth()) - 10, Display.RATIO_Y * b.getHeight(), null);
-                            }
+                        // Rendu standard pour les clôtures et autres bâtiments
+                        if (b instanceof Fence && ((Fence) b).hasFenceRight(world, b.getX(), b.getY())) {
+                            g.drawImage(((Fence) b).getFaceSprite().getImage(), 6 + px + Display.RATIO_X / 2, py, (Display.RATIO_X * b.getWidth()) - 10, Display.RATIO_Y * b.getHeight(), null);
                         }
                         g.drawImage(spriteImg, px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
-                        if (b instanceof Fence) {
-                            if (((Fence) b).hasFenceBelow(world, b.getX(), b.getY())) {
-                                g.drawImage(((Fence) b).getSideSprite().getImage(), 2 + px, py + Display.RATIO_Y / 2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight()) - 16, null);
-                            }
+                        if (b instanceof Fence && ((Fence) b).hasFenceBelow(world, b.getX(), b.getY())) {
+                            g.drawImage(((Fence) b).getSideSprite().getImage(), 2 + px, py + Display.RATIO_Y / 2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight()) - 16, null);
                         }
                     }
                 }
             }
         }
 
-        // === DELETION HIGHLIGHT (si on est en mode suppression) ===
+        // --- RENDU DU MODE SUPPRESSION (Bulldozer) ---
         if (ghostManager != null && ghostManager.isDeletionMode()) {
             Graphics2D g4 = (Graphics2D) g.create();
             g4.setStroke(new BasicStroke(3));
 
+            // Surligne en rouge les bâtiments sélectionnés pour suppression
             for (src.model.buildings.Building selected : ghostManager.getPendingDeletionBuildings()) {
                 for (int dx = 0; dx < selected.getWidth(); dx++) {
                     for (int dy = 0; dy < selected.getHeight(); dy++) {
@@ -294,6 +285,7 @@ public class Global extends JPanel {
                 }
             }
 
+            // Surligne les tuiles de plantation sélectionnées pour suppression
             for (Point selectedTile : ghostManager.getPendingDeletionPlantTiles()) {
                 int relX = selectedTile.x - fstTileX;
                 int relY = selectedTile.y - fstTileY;
@@ -307,7 +299,7 @@ public class Global extends JPanel {
                 }
             }
 
-
+            // Surligne en rouge clair l'élément actuellement survolé par la souris
             int gx = ghostManager.getGhostX();
             int gy = ghostManager.getGhostY();
             src.model.buildings.Building hovered = world.getBuildingAt(gx, gy);
@@ -327,37 +319,30 @@ public class Global extends JPanel {
                     }
                 }
             }
-
             g4.dispose();
         }
 
-        // Highlight : on utilise un Graphics2D pour pouvoir dessiner des rectangles avec une bordure plus épaisse, et des couleurs semi-transparentes pour le remplissage
+        // --- RENDU DES HIGHLIGHTS (SÉLECTION JOUEUR ET CIBLES IA) ---
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setStroke(new BasicStroke(3));
 
-        // Dessiner d'abord le surlignement BLEU (Sélection en cours de l'utilisateur)
+        // 1. Surbrillance BLEUE (Mode sélection de cases)
         if (selectedTilesBlueHighlight != null && !selectedTilesBlueHighlight.isEmpty()) {
             for (Point p : selectedTilesBlueHighlight) {
                 int relX = p.x - fstTileX;
                 int relY = p.y - fstTileY;
-
-                // Vérifier si la case est visible a l'écran
                 if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                     int hx = (relX * Display.RATIO_X) - pixelDiffX;
                     int hy = (relY * Display.RATIO_Y) - pixelDiffY;
-
-                    // Remplissage bleu semi-transparent pour la selection de cases
                     g2.setColor(new Color(60, 140, 255, 110));
                     g2.fillRect(hx, hy, Display.RATIO_X, Display.RATIO_Y);
-
-                    // Bordure bleue opaque
                     g2.setColor(new Color(20, 90, 220));
                     g2.drawRect(hx + 1, hy + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
                 }
             }
         }
 
-        // Dessiner ENSUITE le surlignement JAUNE classique (Cible des actions du jardinier)
+        // 2. Surbrillance JAUNE (Cases ciblées par les actions des jardiniers)
         Set<Point> highlightSnapshot;
         synchronized (highlights) {
             highlightSnapshot = new HashSet<>(highlights.keySet());
@@ -366,17 +351,11 @@ public class Global extends JPanel {
             for (Point p : highlightSnapshot) {
                 int relX = p.x - fstTileX;
                 int relY = p.y - fstTileY;
-
-                // Vérifier si la case est visible a l'écran
                 if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                     int hx = (relX * Display.RATIO_X) - pixelDiffX;
                     int hy = (relY * Display.RATIO_Y) - pixelDiffY;
-
-                    // Remplissage jaune semi-transparent
                     g2.setColor(new Color(255, 255, 0, 80));
                     g2.fillRect(hx, hy, Display.RATIO_X, Display.RATIO_Y);
-
-                    // Bordure jaune opaque
                     g2.setColor(new Color(255, 200, 0));
                     g2.drawRect(hx + 1, hy + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
                 }
@@ -384,22 +363,18 @@ public class Global extends JPanel {
         }
         g2.dispose();
 
-        // dessiner les entités (jardiniers, poules, corbeaux) - Une seule fois !
+        // --- RENDU DES ENTITÉS ---
         drawEntities(g, fstTileX, fstTileY, pixelDiffX, pixelDiffY);
 
-        // Dessin des jauges (Croissance + Eau) sur la case survolée
+        // --- RENDU DES JAUGES AU SURVOL (CROISSANCE + EAU) ---
         if (hoveredX >= 0 && hoveredY >= 0 && hoveredX < World.WIDTH && hoveredY < World.HEIGHT) {
             Tile hoveredTile = world.getTile(hoveredX, hoveredY);
-
-            // Vérifier si c'est une case plantable
             if (hoveredTile instanceof PlantTile) {
-                PlantTile plantTile = (PlantTile) hoveredTile;
-                Plant plant = plantTile.getPlant();
+                Plant plant = ((PlantTile) hoveredTile).getPlant();
+                // N'affiche les barres que si la plante est vivante et non récoltable
                 if (plant != null && plant.getState() != PlantState.MORT && plant.getState() != PlantState.EATEN && !plant.isHarvestable()) {
                     int relX = hoveredX - fstTileX;
                     int relY = hoveredY - fstTileY;
-
-                    // On vérifie que la case survolée est bien visible a l'écran
                     if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                         int drawX = (relX * Display.RATIO_X) - pixelDiffX;
                         int drawY = (relY * Display.RATIO_Y) - pixelDiffY;
@@ -410,42 +385,31 @@ public class Global extends JPanel {
                         int innerW = barW - 4;
                         int innerH = barH - 4;
 
+                        // Jauge de croissance (Verte)
                         int growthBarY = drawY - 15;
-                        if (progressBarEmpty != null) {
-                            g.drawImage(progressBarEmpty, barX, growthBarY, barW, barH, this);
-                        } else {
-                            g.setColor(Color.BLACK); g.drawRect(barX, growthBarY, barW, barH);
-                        }
+                        if (progressBarEmpty != null) g.drawImage(progressBarEmpty, barX, growthBarY, barW, barH, this);
+                        else { g.setColor(Color.BLACK); g.drawRect(barX, growthBarY, barW, barH); }
 
                         float growthProgress = plant.getGrowthPercentage();
                         int fillGrowthW = (int) (innerW * growthProgress);
-
                         if (fillGrowthW > 0) {
                             g.setColor(new Color(50, 205, 50));
                             g.fillRect(barX + 2, growthBarY + 2, fillGrowthW, innerH);
-                            g.setColor(new Color(144, 238, 144, 180));
+                            g.setColor(new Color(144, 238, 144, 180)); // Reflet
                             g.fillRect(barX + 2, growthBarY + 2, fillGrowthW, innerH / 2);
                         }
-                        // 2eme JAUGE : L'EAU (BLEUE)
-                        int waterBarY = growthBarY + barH + 3; // Placée juste en dessous de la barre verte (+2px d'écart)
 
-                        if (progressBarEmpty != null) {
-                            g.drawImage(progressBarEmpty, barX, waterBarY, barW, barH, this);
-                        } else {
-                            g.setColor(Color.BLACK); g.drawRect(barX, waterBarY, barW, barH);
-                        }
+                        // Jauge d'eau (Bleue)
+                        int waterBarY = growthBarY + barH + 3;
+                        if (progressBarEmpty != null) g.drawImage(progressBarEmpty, barX, waterBarY, barW, barH, this);
+                        else { g.setColor(Color.BLACK); g.drawRect(barX, waterBarY, barW, barH); }
 
-                        // Le niveau d'eau maximum dans ta classe Plant est Plant.MAX_WATER_LEVEL
                         float waterProgress = plant.getWaterLevel() / Plant.MAX_WATER_LEVEL;
-                        if (waterProgress > 1.0f) waterProgress = 1.0f;
-                        if (waterProgress < 0.0f) waterProgress = 0.0f;
-
-                        int fillWaterW = (int) (innerW * waterProgress);
-
+                        int fillWaterW = (int) (innerW * Math.min(1.0f, Math.max(0.0f, waterProgress)));
                         if (fillWaterW > 0) {
                             g.setColor(new Color(30, 144, 255));
                             g.fillRect(barX + 2, waterBarY + 2, fillWaterW, innerH);
-                            g.setColor(new Color(135, 206, 250, 180));
+                            g.setColor(new Color(135, 206, 250, 180)); // Reflet
                             g.fillRect(barX + 2, waterBarY + 2, fillWaterW, innerH / 2);
                         }
                     }
@@ -453,17 +417,18 @@ public class Global extends JPanel {
             }
         }
 
-        // EXP + argent sur une seule ligne en haut a gauche.
+        // Stats (XP/Or) en haut de l'écran
         drawTopStatsRow(g);
 
-        // Ajout : si on est en mode suppression, afficher un petit panneau noir semi-transparent en bas
+        // Panneau d'information en bas si le bulldozer est actif
         if (ghostManager != null && ghostManager.isDeletionMode()) {
             drawDeletionModePanel(g);
         }
 
-        // --- Dessin de la barre d'action par dessus tout ! ---
+        // Barre d'outils (Hotbar)
         drawHotbar(g);
 
+        // Dessin des textes flottants (gains d'or, etc.)
         if (floatingTextManager != null) {
             Graphics2D g3 = (Graphics2D) g.create();
             floatingTextManager.draw(g3);
@@ -471,141 +436,95 @@ public class Global extends JPanel {
         }
     }
 
-
+    /** Affiche un bandeau d'aide lors du mode suppression */
     private void drawDeletionModePanel(Graphics g) {
         Graphics2D gPanel = (Graphics2D) g.create();
         int panelHeight = 64;
-        int padding = 16;
-        int maxWidth = Math.min(getWidth() - 40, 760);
-        int panelWidth = Math.min(maxWidth, getWidth() - 40);
-        int hotbarOffset = (hotbarVisible ? 80 : 0); // éviter la hotbar si visible
+        int panelWidth = Math.min(Math.min(getWidth() - 40, 760), getWidth() - 40);
+        int hotbarOffset = (hotbarVisible ? 80 : 0);
         int px = (getWidth() - panelWidth) / 2;
         int py = getHeight() - panelHeight - 20 - hotbarOffset;
 
-        // Fond semi-transparent
         gPanel.setColor(new Color(0, 0, 0, 180));
         gPanel.fillRoundRect(px, py, panelWidth, panelHeight, 12, 12);
-
-        // Bordure légere
         gPanel.setColor(new Color(200, 200, 200, 100));
         gPanel.setStroke(new BasicStroke(2));
         gPanel.drawRoundRect(px, py, panelWidth, panelHeight, 12, 12);
 
-        // Texte centré
         String message = "Mode suppression - clic gauche: supprimer, clic droit: annuler";
         Font font = (GameFonts.MINECRAFT_FONT != null) ? GameFonts.MINECRAFT_FONT.deriveFont(Font.PLAIN, 24f) : new Font("Arial", Font.BOLD, 16);
         gPanel.setFont(font);
         FontMetrics fm = gPanel.getFontMetrics(font);
-        int textWidth = fm.stringWidth(message);
-        int textX = px + (panelWidth - textWidth) / 2;
+        int textX = px + (panelWidth - fm.stringWidth(message)) / 2;
         int textY = py + (panelHeight + fm.getAscent() - fm.getDescent()) / 2;
 
         gPanel.setColor(new Color(255, 255, 255, 220));
         gPanel.drawString(message, textX, textY);
-
         gPanel.dispose();
     }
 
-    // --- Méthode pour dessiner la Hotbar ---
+    /** Dessine la Hotbar (Barre d'outils) centrée en bas */
     private void drawHotbar(Graphics g) {
         if (!hotbarVisible) return;
 
         Graphics2D g2 = (Graphics2D) g.create();
-
         int nbSlots = 4;
-        int slotSize = 52; // Taille d'une case
-        int spacing = 8;   // Espacement entre les cases
-
+        int slotSize = 52;
+        int spacing = 8;
         int totalWidth = (slotSize * nbSlots) + (spacing * (nbSlots - 1));
-        int startX = (getWidth() - totalWidth) / 2; // Centré horizontalement
-        int startY = getHeight() - slotSize - 50;   // En bas de l'écran
+        int startX = (getWidth() - totalWidth) / 2;
+        int startY = getHeight() - slotSize - 50;
 
-        // Récupérer le premier jardinier (le joueur)
-        Gardener player = null;
-        if (world.getGardeners() != null && !world.getGardeners().isEmpty()) {
-            player = world.getGardeners().get(0);
-        }
+        Gardener player = (world.getGardeners() != null && !world.getGardeners().isEmpty()) ? world.getGardeners().get(0) : null;
         int selectedIndex = (player != null) ? player.getSelectedHotbarIndex() : -1;
 
-        // Couleurs de style Stardew Valley
-        Color slotBg = new Color(235, 185, 120, 230); // Sable semi-transparent
-        Color darkBorder = new Color(110, 45, 15);    // Marron foncé
+        Color slotBg = new Color(235, 185, 120, 230);
+        Color darkBorder = new Color(110, 45, 15);
 
         for (int i = 0; i < nbSlots; i++) {
             int x = startX + i * (slotSize + spacing);
-
-            // Déterminer si le slot est actif
             boolean slotActive = Tutorial.isHotbarSlotActive(i);
 
-            // 1. Fond de la case
-            if (slotActive) {
-                g2.setColor(slotBg);
-            } else {
-                // Slot inactif -> fond gris plus sombre
-                g2.setColor(new Color(120, 120, 120, 200));
-            }
+            // Fond
+            g2.setColor(slotActive ? slotBg : new Color(120, 120, 120, 200));
             g2.fillRect(x, startY, slotSize, slotSize);
 
-            // 2. Contenu de la case (Outils)
-            float prevAlpha = 1f;
+            // Icônes
             Composite prevComp = g2.getComposite();
-            if (!slotActive) {
-                // réduire l'opacité des icônes pour indiquer inactivité
-                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
-            }
-            if (i == 0) {
-                // Emplacement 1 : La Houe
-                if (houeImg != null) g2.drawImage(houeImg, x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
-            } else if (i == 1) {
-                // Emplacement 2 : L'Arrosoir
-                if (arrosoirImg != null) g2.drawImage(arrosoirImg, x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
-            } else if (i == 2) {
-                // Emplacement 3 : Planter
-                if (planterImg != null) g2.drawImage(planterImg, x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
-            } else if (i == 3) {
-                // Emplacement 4 : Récolter
-                if (recolterImg != null) g2.drawImage(recolterImg, x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
-            }
-            // restore composite
+            if (!slotActive) g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
+
+            Image icon = null;
+            if (i == 0) icon = houeImg;
+            else if (i == 1) icon = arrosoirImg;
+            else if (i == 2) icon = planterImg;
+            else if (i == 3) icon = recolterImg;
+
+            if (icon != null) g2.drawImage(icon, x + 8, startY + 8, slotSize - 16, slotSize - 16, null);
             g2.setComposite(prevComp);
 
-            // 3. Dessiner la bordure
+            // Bordure (Blanche si sélectionnée, Marron sinon)
             if (selectedIndex >= 0 && i == selectedIndex) {
-                // Case sélectionnée : Gros contour Blanc (Style Minecraft)
                 g2.setColor(Color.WHITE);
                 g2.setStroke(new BasicStroke(5));
             } else {
-                // Case normale : Petit contour Marron (Style Stardew) ; si inactif, bordure grise
-                if (slotActive) {
-                    g2.setColor(darkBorder);
-                } else {
-                    g2.setColor(new Color(90, 90, 90));
-                }
+                g2.setColor(slotActive ? darkBorder : new Color(90, 90, 90));
                 g2.setStroke(new BasicStroke(3));
             }
             g2.drawRect(x, startY, slotSize, slotSize);
 
-            // 4. Dessiner le chiffre de raccourci (1 a 4) en haut a gauche
-            // Si inactif, dessiner le numéro en gris pale
+            // Numéro de raccourci (1, 2, 3, 4)
             g2.setColor(slotActive ? new Color(255, 255, 255, 180) : new Color(200, 200, 200, 160));
-            if (GameFonts.MINECRAFT_FONT != null) {
-                g2.setFont(GameFonts.MINECRAFT_FONT.deriveFont(12f));
-            } else {
-                g2.setFont(new Font("Arial", Font.BOLD, 10));
-            }
+            g2.setFont((GameFonts.MINECRAFT_FONT != null) ? GameFonts.MINECRAFT_FONT.deriveFont(12f) : new Font("Arial", Font.BOLD, 10));
             g2.drawString(String.valueOf(i + 1), x + 4, startY + 14);
         }
         g2.dispose();
     }
 
+    /** Affiche les boîtes d'XP et d'argent en haut à gauche */
     private void drawTopStatsRow(Graphics g) {
         src.model.Stats stats = world.getStats();
-        Barn barn = world.getBarn();
-        int money = barn.getMoney();
-        int level = stats.getLevel();
-        int exp = stats.getExp();
-        int expMax = stats.getExpForNextLevel();
-        String expText = "Niv." + level + " " + exp + "/" + expMax + " XP";
+        int money = world.getBarn().getMoney();
+        String expText = "Niv." + stats.getLevel() + " " + stats.getExp() + "/" + stats.getExpForNextLevel() + " XP";
         String moneyText = "" + money;
 
         Graphics2D g2 = (Graphics2D) g.create();
@@ -613,184 +532,89 @@ public class Global extends JPanel {
         g2.setFont(g2.getFont().deriveFont(Font.BOLD, 18f));
         FontMetrics metrics = g2.getFontMetrics();
 
-        int iconSize = 25;
-        int sectionGap = 14;
-        int paddingX = 10;
-        int paddingY = 6;
-        int x = 12;
-        int y = 12;
-        int expWidth = metrics.stringWidth(expText);
-        int moneyWidth = metrics.stringWidth(moneyText);
-        int expBoxWidth = expWidth + paddingX * 2;
-        int moneyBoxWidth = iconSize + 8 + moneyWidth + paddingX * 2;
-        int gapBetween = sectionGap;
+        int iconSize = 25, paddingX = 10, paddingY = 6, x = 12, y = 12;
+        int expBoxWidth = metrics.stringWidth(expText) + paddingX * 2;
+        int moneyBoxWidth = iconSize + 8 + metrics.stringWidth(moneyText) + paddingX * 2;
         int height = Math.max(iconSize, metrics.getHeight()) + paddingY * 2;
 
-        // XP box (left)
-        int expBoxX = x;
-        int expBoxY = y;
+        // Rendu XP
         g2.setColor(new Color(0, 0, 0, 140));
-        g2.fillRoundRect(expBoxX, expBoxY, expBoxWidth, height, 12, 12);
+        g2.fillRoundRect(x, y, expBoxWidth, height, 12, 12);
         g2.setColor(new Color(255, 225, 120));
-        g2.drawRoundRect(expBoxX, expBoxY, expBoxWidth, height, 12, 12);
-
-        // Money box (right)
-        int moneyBoxX = expBoxX + expBoxWidth + gapBetween;
-        g2.setColor(new Color(0, 0, 0, 140));
-        g2.fillRoundRect(moneyBoxX, expBoxY, moneyBoxWidth, height, 12, 12);
-        g2.setColor(new Color(255, 225, 120));
-        g2.drawRoundRect(moneyBoxX, expBoxY, moneyBoxWidth, height, 12, 12);
-
-        // Content positions
-        int textY = y + paddingY + metrics.getAscent() + (iconSize - metrics.getHeight()) / 2;
-
-        // Draw XP text inside left box
+        g2.drawRoundRect(x, y, expBoxWidth, height, 12, 12);
         g2.setColor(Color.WHITE);
-        int expTextX = expBoxX + paddingX;
-        g2.drawString(expText, expTextX, textY);
+        g2.drawString(expText, x + paddingX, y + paddingY + metrics.getAscent());
 
-        // Draw coin gif and money text inside right box
-        int coinX = moneyBoxX + paddingX;
-        int contentY = expBoxY + paddingY;
-        if (slowCoinGif != null && slowCoinGif.getImage() != null) {
-            g2.drawImage(slowCoinGif.getImage(), coinX, contentY, iconSize, iconSize, this);
-        }
-        int moneyTextX = coinX + iconSize + 8;
-        g2.drawString(moneyText, moneyTextX, textY);
+        // Rendu Argent
+        int mX = x + expBoxWidth + 14;
+        g2.setColor(new Color(0, 0, 0, 140));
+        g2.fillRoundRect(mX, y, moneyBoxWidth, height, 12, 12);
+        g2.setColor(new Color(255, 225, 120));
+        g2.drawRoundRect(mX, y, moneyBoxWidth, height, 12, 12);
+        if (slowCoinGif != null) g2.drawImage(slowCoinGif.getImage(), mX + paddingX, y + paddingY, iconSize, iconSize, this);
+        g2.setColor(Color.WHITE);
+        g2.drawString(moneyText, mX + paddingX + iconSize + 8, y + paddingY + metrics.getAscent());
         g2.dispose();
     }
 
-    /**
-     * Retourne true si au moins une partie de l'emprise du batiment intersecte la zone visible de la caméra.
-     */
+    /** Vérifie si un bâtiment intersecte le rectangle de vue de la caméra */
     private boolean isBuildingVisibleInCamera(int x, int y, int width, int height, int fstTileX, int fstTileY) {
-        int buildingMaxX = x + width - 1;
-        int buildingMaxY = y + height - 1;
-
-        int cameraMaxX = fstTileX + Camera.WIDTH;
-        int cameraMaxY = fstTileY + Camera.HEIGHT;
-
-        return buildingMaxX >= fstTileX && x <= cameraMaxX
-                && buildingMaxY >= fstTileY && y <= cameraMaxY;
+        return (x + width - 1) >= fstTileX && x <= (fstTileX + Camera.WIDTH)
+                && (y + height - 1) >= fstTileY && y <= (fstTileY + Camera.HEIGHT);
     }
 
-    /** Méthode pour dessiner les entités (jardiniers et ennemis) a l'écran, en fonction de leur position dans le monde et de la caméra.
-     * @param g le contexte graphique pour dessiner
-     * @param fstTileX la coordonnée x de la premiere tuile visible a l'écran (en monde)
-     * @param fstTileY la coordonnée y de la premiere tuile visible a l'écran (en monde)
-     * @param pixelDiffX le décalage en pixels entre la caméra et la premiere tuile visible (pour un scrolling fluide)
-     * @param pixelDiffY le décalage en pixels entre la caméra et la premiere tuile visible (pour un scrolling fluide)
-     */
+    /** Dessine les jardiniers, poules et corbeaux animés */
     private void drawEntities(Graphics g, int fstTileX, int fstTileY, int pixelDiffX, int pixelDiffY) {
         long elapsedTime = System.currentTimeMillis() - startTime;
 
-        //  Dessin du jardinier
+        // 1. Jardiniers
         for (Gardener gardener : world.getGardeners()) {
-            // Savoir s'il est a l'écran
             if (gardener.getX() >= fstTileX && gardener.getX() <= fstTileX + Camera.WIDTH &&
                     gardener.getY() >= fstTileY && gardener.getY() <= fstTileY + Camera.HEIGHT) {
 
-                // Calcul de la frame actuelle (change toutes les 150ms)
-                int currentFrameIndex = (int) (elapsedTime / 150) % gardenerLoader.getNbFrames();
+                int frameIdx = (int) (elapsedTime / 150) % gardenerLoader.getNbFrames();
+                BufferedImage sprite = (gardener.getCurrentState() == Gardener.State.MOVING) ?
+                        gardenerLoader.getWalkFrame(gardener.getFacingDirection(), frameIdx) :
+                        gardenerLoader.getIdleFrame(gardener.getFacingDirection(), frameIdx);
 
-                BufferedImage spriteToDraw;
-                int direction = gardener.getFacingDirection();
-
-                // Sélection du sprite (marche ou attente)
-                if (gardener.getCurrentState() == Gardener.State.MOVING) {
-                    spriteToDraw = gardenerLoader.getWalkFrame(direction, currentFrameIndex);
-                } else {
-                    spriteToDraw = gardenerLoader.getIdleFrame(direction, currentFrameIndex);
-                }
-
-                // Calcul de la position a l'écran (identique aux tuiles)
                 int drawX = ((gardener.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
                 int drawY = ((gardener.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
 
-                // Dessiner avec effet miroir si droite
-                if (direction == Entity.RIGHT) {
-                    g.drawImage(spriteToDraw,
-                            drawX + Display.RATIO_X, drawY,
-                            drawX, drawY + Display.RATIO_Y,
-                            0, 0, 24, 24, null);
+                // Effet miroir si le jardinier regarde vers la DROITE
+                if (gardener.getFacingDirection() == Entity.RIGHT) {
+                    g.drawImage(sprite, drawX + Display.RATIO_X, drawY, drawX, drawY + Display.RATIO_Y, 0, 0, 24, 24, null);
                 } else {
-                    // Affichage normal
-                    g.drawImage(spriteToDraw,
-                            drawX, drawY,
-                            drawX + Display.RATIO_X, drawY + Display.RATIO_Y,
-                            0, 0, 24, 24, null);
+                    g.drawImage(sprite, drawX, drawY, drawX + Display.RATIO_X, drawY + Display.RATIO_Y, 0, 0, 24, 24, null);
                 }
             }
         }
 
-        // dessin des ennemis (poules)
+        // 2. Poules
         java.util.List<Chicken> enemies = world.getEnemies();
-
-        if (enemies != null && !enemies.isEmpty()) {
-            // La poule a 4 frames par animation, on change toutes les 150ms
-            int currentChickenFrame = (int) (elapsedTime / 150) % 4;
-
-            for (Chicken chicken : enemies) {
-                // Vérifier si la poule est visible a l'écran
-                if (chicken.getX() >= fstTileX && chicken.getX() <= fstTileX + Camera.WIDTH &&
-                        chicken.getY() >= fstTileY && chicken.getY() <= fstTileY + Camera.HEIGHT) {
-
-                    // Récupérer la bonne frame via le loader
-                    BufferedImage spriteToDraw = chickenLoader.getFrame(
-                            chicken.getCurrentStateActionIndex(),
-                            chicken.getFacingDirection(),
-                            currentChickenFrame
-                    );
-
-                    // Calcul de la position a l'écran
-                    int drawX = ((chicken.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
-                    int drawY = ((chicken.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
-
-                    // Les sprites de poule ont déja un fichier "left" et un fichier "right"
-                    // On les affiche donc normalement, sans avoir besoin d'inverser l'image !
-                    if (spriteToDraw != null) {
-                        g.drawImage(spriteToDraw,
-                                drawX, drawY,
-                                Display.RATIO_X, Display.RATIO_Y, null);
-                    }
+        if (enemies != null) {
+            int frame = (int) (elapsedTime / 150) % 4;
+            for (Chicken c : enemies) {
+                if (c.getX() >= fstTileX && c.getX() <= fstTileX + Camera.WIDTH && c.getY() >= fstTileY && c.getY() <= fstTileY + Camera.HEIGHT) {
+                    BufferedImage s = chickenLoader.getFrame(c.getCurrentStateActionIndex(), c.getFacingDirection(), frame);
+                    int dx = ((c.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
+                    int dy = ((c.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
+                    if (s != null) g.drawImage(s, dx, dy, Display.RATIO_X, Display.RATIO_Y, null);
                 }
             }
-
-
         }
 
-        //dessin des corbeaux
-        // Récupere la liste des corbeaux (il faudra créer cette liste dans World.java, comme enemies)
-        java.util.List<src.model.Crow> corbeaux = world.getCrows(); // Exemple, adapte le nom
-
-        if (corbeaux != null && !corbeaux.isEmpty()) {
-            // Calcule la frame d'animation actuelle basée sur le temps écoulé
-            // (Tu utilises déja NB_FRAMES=4 pour la poule, c'est parfait)
-            int currentCrowFrame = (int) (elapsedTime / 150) % 4; // Vitesse d'animation
-
-            for (src.model.Crow crow : corbeaux) {
-                // Ne dessine que s'il est visible a l'écran (dans la caméra)
-                if (crow.getX() >= fstTileX && crow.getX() <= fstTileX + Camera.WIDTH &&
-                        crow.getY() >= fstTileY && crow.getY() <= fstTileY + Camera.HEIGHT) {
-
-                    // --- Récupération de l'image exacte via ton nouveau loader ---
-                    BufferedImage spriteToDraw = crowLoader.getFrame(
-                            crow.getCurrentStateActionIndex(), // Il faudra créer cette méthode dans Crow.java
-                            crow.getFacingDirection(),
-                            currentCrowFrame
-                    );
-
-                    // Calcule les coordonnées de dessin a l'écran
-                    int drawX = ((crow.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
-                    int drawY = ((crow.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
-
-                    // --- Dessin ---
-                    if (spriteToDraw != null) {
-                        g.drawImage(spriteToDraw, drawX, drawY, Display.RATIO_X, Display.RATIO_Y, null);
-                    }
+        // 3. Corbeaux
+        java.util.List<src.model.Crow> corbeaux = world.getCrows();
+        if (corbeaux != null) {
+            int frame = (int) (elapsedTime / 150) % 4;
+            for (src.model.Crow cr : corbeaux) {
+                if (cr.getX() >= fstTileX && cr.getX() <= fstTileX + Camera.WIDTH && cr.getY() >= fstTileY && cr.getY() <= fstTileY + Camera.HEIGHT) {
+                    BufferedImage s = crowLoader.getFrame(cr.getCurrentStateActionIndex(), cr.getFacingDirection(), frame);
+                    int dx = ((cr.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
+                    int dy = ((cr.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
+                    if (s != null) g.drawImage(s, dx, dy, Display.RATIO_X, Display.RATIO_Y, null);
                 }
             }
         }
     }
 }
-

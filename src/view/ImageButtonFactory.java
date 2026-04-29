@@ -3,45 +3,74 @@ package src.view;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Factory utilitaire pour créer des boutons basés sur des images.
+ * Gère les états visuels (repos, survol, clic) en redéfinissant le rendu Swing.
+ */
 public class ImageButtonFactory {
 
+    /**
+     * Crée un JButton personnalisé qui affiche des images différentes selon l'interaction.
+     *
+     * @param idlePath    Chemin vers l'image au repos (état normal).
+     * @param hoverPath   Chemin vers l'image lors du survol par la souris (peut être null).
+     * @param pressedPath Chemin vers l'image lors du clic (peut être null).
+     * @return Un JButton configuré pour le rendu d'images.
+     */
     public static JButton createImageButton(String idlePath, String hoverPath, String pressedPath) {
-        // On charge les images en memoire
+        // Chargement des icônes en mémoire depuis les fichiers assets
         final ImageIcon idleIcon = new ImageIcon(idlePath);
         final ImageIcon hoverIcon = hoverPath != null ? new ImageIcon(hoverPath) : null;
         final ImageIcon pressedIcon = pressedPath != null ? new ImageIcon(pressedPath) : null;
 
-        // On cree un bouton personnalise qui redefinit son propre dessin
+        // Création d'une classe anonyme étendant JButton pour surcharger le dessin (rendering)
         JButton button = new JButton() {
             @Override
             protected void paintComponent(Graphics g) {
+                // Par défaut, on prépare l'image "repos"
                 Image imgToDraw = idleIcon.getImage();
 
-                // On choisit l'image selon l'etat de la souris
+                // Logique de changement d'image basée sur l'état du bouton (ButtonModel)
                 if (getModel().isPressed() && pressedIcon != null) {
+                    // État : Clic enfoncé
                     imgToDraw = pressedIcon.getImage();
                 } else if (getModel().isRollover() && hoverIcon != null) {
+                    // État : Souris sur le bouton (survol)
                     imgToDraw = hoverIcon.getImage();
                 }
 
-                // LE SECRET EST ICI : On dessine l'image en forçant la taille a getWidth() et getHeight()
+                // LE SECRET DU RENDU :
+                // On dessine l'image en l'étirant/réduisant pour qu'elle remplisse
+                // exactement la taille actuelle du composant (getWidth/getHeight).
                 if (imgToDraw != null) {
                     g.drawImage(imgToDraw, 0, 0, getWidth(), getHeight(), this);
                 }
 
-                // On appelle le super pour dessiner le texte par-dessus si tu en as mis un
+                // Appelle la méthode parente pour permettre le dessin du texte (setForeground)
+                // ou d'autres effets standards par-dessus l'image.
                 super.paintComponent(g);
             }
         };
 
-        // --- Configuration pour rendre le bouton "invisible" ---
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false); // Retire le fond gris
-        button.setFocusPainted(false);
-        button.setOpaque(false);
-        button.setFocusable(false); // Protege le focus de la camera
+        // --- CONFIGURATION DU BOUTON POUR LE STYLE "PIXEL ART / HUD" ---
 
-        // Optionnel : Retire le texte par defaut si tu n'utilises que l'image
+        // Empêche Swing de dessiner la bordure rectangulaire standard
+        button.setBorderPainted(false);
+
+        // Empêche Swing de dessiner le rectangle gris par défaut derrière l'image
+        button.setContentAreaFilled(false);
+
+        // Empêche de dessiner le petit liseré pointillé de focus (souvent moche sur des boutons images)
+        button.setFocusPainted(false);
+
+        // Rend le composant transparent (pour ne pas masquer ce qu'il y a derrière les bords de l'image)
+        button.setOpaque(false);
+
+        // Empêche le bouton de prendre le focus clavier, évitant ainsi d'intercepter
+        // les commandes de la Caméra ou du Jardinier.
+        button.setFocusable(false);
+
+        // Assure que le bouton n'a pas de texte résiduel qui viendrait polluer l'image
         button.setText("");
 
         return button;

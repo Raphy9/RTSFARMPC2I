@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.swing.*;
 import javax.swing.plaf.FontUIResource;
 
+//Classe permettant d'importer la police de jeu et de l'appliquer
 public class GameFonts {
     public static Font MINECRAFT_FONT;
 
