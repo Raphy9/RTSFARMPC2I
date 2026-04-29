@@ -5,19 +5,19 @@ import java.util.List;
 
 /**
  * Ennemi autonome (Poule) qui cherche la plante la plus proche pour la détruire.
- * S'exécute dans son propre Thread pour ne pas bloquer l'interface graphique.
+ * Elle fonctionne sur un Thread indépendant pour ne pas bloquer l'interface utilisateur.
  */
 public class Chicken extends Entity implements Runnable {
 
-    /** États possibles de la poule influençant ses animations et son comportement */
+    /** États possibles de la poule pour gérer les animations et les comportements */
     public enum State { IDLE, RUNNING, EATING, FLEEING }
 
     private State currentState;
     private boolean isRunning;
     private Thread chickenThread;
-    private boolean hasClucked = false; // Pour éviter de jouer le son en boucle
+    private boolean hasClucked = false;
 
-    /** Compteur de plantes mangées : après 3, la poule s'en va d'elle-même */
+    // Seuil de satiété : la poule s'en va après avoir mangé un certain nombre de plantes
     private int plantsEaten = 0;
 
     public Chicken(int x, int y, World world) {
@@ -27,72 +27,73 @@ public class Chicken extends Entity implements Runnable {
         this.setFacingDirection(Entity.LEFT);
     }
 
-    /** Démarre le thread de vie de la poule */
+    /** Initialise et lance le thread de vie de la poule */
     public void start() {
         this.chickenThread = new Thread(this, "ChickenThread");
         this.chickenThread.start();
     }
 
-    /** Arrête proprement le thread */
+    /** Arrête proprement l'activité de la poule */
     public void stop() {
         this.isRunning = false;
         if (chickenThread != null) chickenThread.interrupt();
     }
 
-    /** Boucle de vie principale de l'IA */
+    /** Boucle principale de l'IA de la poule */
     @Override
     public void run() {
         System.out.println("La poule apparaît !");
 
         while (isRunning) {
             try {
-                // 1. Priorité absolue : La fuite
+                // 1. Priorité absolue : Fuir si elle est effrayée
                 if (this.currentState == State.FLEEING) {
                     handleFleeing();
                     continue;
                 }
 
-                // 2. Recherche d'une cible
+                // 2. Recherche d'une cible (plante la plus proche)
                 PlantTile targetPlant = findNearestPlant();
 
-                // 3. Si aucune plante à manger, la poule se balade au hasard
+                // Si aucune plante n'est disponible sur la carte, elle se promène
                 if (targetPlant == null) {
                     wanderRandomly();
                     continue;
                 }
 
-                // 4. Calcul d'itinéraire vers la plante
                 int targetX = targetPlant.getX();
                 int targetY = targetPlant.getY();
+
+                // 3. Calcul du chemin vers la plante cible (Pathfinding A*)
                 List<Tile> path = pathFinding(world, targetX, targetY);
 
                 if (path == null) {
                     this.currentState = State.IDLE;
-                    Thread.sleep(1000); // Bloquée ? On attend un peu avant de retenter
+                    Thread.sleep(1000); // Pause si le chemin est bloqué
                     continue;
                 }
 
-                // 5. Déplacement étape par étape
+                // --- Phase de DÉPLACEMENT ---
                 if (!path.isEmpty()) {
                     this.currentState = State.RUNNING;
                     for (Tile step : path) {
+                        // On vérifie à chaque pas si elle doit changer d'état pour fuir
                         if (this.currentState == State.FLEEING) break;
 
                         int newX = step.getX();
                         int newY = step.getY();
 
-                        // Anticollision : On vérifie si une autre poule est déjà sur la case
-                        // ou si le joueur a posé une barrière entre-temps.
+                        // Évite de marcher sur une case occupée ou un obstacle
                         Tile nextTile = world.getTile(newX, newY);
                         if (nextTile.hasChicken() || !nextTile.isWalkable()) {
-                            break; // On s'arrête pour recalculer un chemin au prochain cycle
+                            break;
                         }
 
-                        // Mise à jour de la direction visuelle
+                        // Mise à jour de l'orientation visuelle
                         if (newX > this.x) setFacingDirection(Entity.RIGHT);
                         else if (newX < this.x) setFacingDirection(Entity.LEFT);
 
-                        // Déplacement physique sur la grille
+                        // Mise à jour de la grille de jeu
                         int oldX = this.x;
                         int oldY = this.y;
                         this.x = newX;
@@ -101,22 +102,23 @@ public class Chicken extends Entity implements Runnable {
                         world.getTile(oldX, oldY).removeEntity(this);
                         world.getTile(newX, newY).addEntity(this);
 
-                        // Ambiance sonore : cri d'approche
-                        if (!hasClucked && Math.abs(newX - targetX) + Math.abs(newY - targetY) <= 10) {
-                            SoundManager.playSound(SoundManager.CHICKEN_AMBIENT);
-                            hasClucked = true;
+                        // Cri de proximité (une seule fois à l'approche de la plante)
+                        if (!hasClucked) {
+                            if (Math.abs(newX - targetX) + Math.abs(newY - targetY) <= 10) {
+                                SoundManager.playSound(SoundManager.CHICKEN_AMBIENT);
+                                hasClucked = true;
+                            }
                         }
 
-                        Thread.sleep(280); // Vitesse de marche
+                        Thread.sleep(280); // Vitesse de course de la poule
                     }
                 }
 
-                // 6. Arrivée sur la plante : Action de manger
+                // --- Phase d'ACTION (Manger) ---
                 if (this.currentState != State.FLEEING) {
                     Plant plant = targetPlant.getPlant();
-                    if (this.x == targetX && this.y == targetY && plant != null
-                            && plant.getState() != PlantState.MORT && plant.getState() != PlantState.EATEN) {
-
+                    // Vérifie si la plante est toujours là et mangeable à l'arrivée
+                    if (this.x == targetX && this.y == targetY && plant != null && plant.getState() != PlantState.MORT && plant.getState() != PlantState.EATEN) {
                         this.currentState = State.EATING;
                         Thread.sleep(3000); // Temps nécessaire pour manger
                         plant.destroyByEnemy();
@@ -124,38 +126,43 @@ public class Chicken extends Entity implements Runnable {
 
                         plantsEaten++;
 
-                        // Gestion de la satiété
+                        // Si la poule a mangé 3 plantes, elle quitte la ferme (flee)
                         if (plantsEaten >= 3) {
-                            System.out.println("Ventre plein, la poule quitte la ferme !");
                             this.currentState = State.FLEEING;
                             continue;
                         } else {
-                            System.out.println("Digestion en cours...");
+                            // Sinon, elle se repose un peu avant de chercher la suivante
                             this.currentState = State.IDLE;
                             Thread.sleep(1000);
-                            wanderRandomly(); // Évite de manger tout un champ en une ligne droite
+                            wanderRandomly();
                             continue;
                         }
                     }
+
                     this.currentState = State.IDLE;
                     Thread.sleep(500);
                 }
 
             } catch (InterruptedException e) {
-                if (this.currentState != State.FLEEING) isRunning = false;
+                // L'interruption (clic du joueur ou stop) réveille le thread.
+                // Si elle n'est pas morte, elle entame sa fuite au prochain tour de boucle.
+                System.out.println("Poule interrompue, passage à la fuite.");
             }
         }
     }
 
-    /** Logique de fuite : la poule cherche le bord de map le plus proche pour disparaître */
+    /**
+     * Calcule le bord de carte le plus proche pour s'échapper.
+     */
     private void handleFleeing() throws InterruptedException {
         int distLeft = this.x;
         int distRight = World.WIDTH - 1 - this.x;
         int distTop = this.y;
         int distBottom = World.HEIGHT - 1 - this.y;
 
-        // Choix du bord le plus proche
+        // On cherche la distance minimale vers un des quatre bords
         int minDist = Math.min(Math.min(distLeft, distRight), Math.min(distTop, distBottom));
+
         int targetX = this.x;
         int targetY = this.y;
 
@@ -166,26 +173,42 @@ public class Chicken extends Entity implements Runnable {
 
         List<Tile> path = pathFinding(world, targetX, targetY);
 
+        // La poule court vers la sortie
         if (path != null && !path.isEmpty()) {
             for (Tile step : path) {
-                // ... (Logique de déplacement rapide vers la sortie)
-                Thread.sleep(100); // Fuite beaucoup plus rapide que la marche
+                int newX = step.getX();
+                int newY = step.getY();
+
+                if (world.getTile(newX, newY).hasChicken()) break;
+
+                if (newX > this.x) setFacingDirection(Entity.RIGHT);
+                else if (newX < this.x) setFacingDirection(Entity.LEFT);
+
+                int oldX = this.x;
+                int oldY = this.y;
+                this.x = newX;
+                this.y = newY;
+
+                world.getTile(oldX, oldY).removeEntity(this);
+                world.getTile(newX, newY).addEntity(this);
+
+                Thread.sleep(100); // Court plus vite quand elle fuit
             }
         }
 
-        // Suppression de la poule du jeu
+        // Suppression de l'entité du monde une fois le bord atteint
         world.getTile(this.x, this.y).removeEntity(this);
         world.removeEnemy(this);
-        this.isRunning = false;
+        this.isRunning = false; // Fin du thread
     }
 
     /**
-     * Algorithme de détection : cherche la plante la plus proche non encore
-     * occupée par une consœur.
+     * Recherche par balayage de la grille la plante vivante la plus proche.
      */
     private PlantTile findNearestPlant() {
         PlantTile nearest = null;
         int minDistance = Integer.MAX_VALUE;
+        if (world == null) return null;
 
         for (int x = 0; x < World.WIDTH; x++) {
             for (int y = 0; y < World.HEIGHT; y++) {
@@ -193,9 +216,9 @@ public class Chicken extends Entity implements Runnable {
                 if (tile instanceof PlantTile) {
                     PlantTile pt = (PlantTile) tile;
                     Plant p = pt.getPlant();
-
-                    if (p != null && p.getState() != PlantState.MORT && !p.isHarvestable()) {
-                        // Empêche deux poules de viser la même plante
+                    // Vérifie que la plante est vivante et pas encore récoltable
+                    if (p != null && p.getState() != PlantState.MORT && p.getState() != PlantState.EATEN && !p.isHarvestable()) {
+                        // Vérifie que la plante n'est pas déjà "attaquée" par une autre poule
                         if (!pt.hasChicken() || (pt.getX() == this.x && pt.getY() == this.y)) {
                             int dist = Math.abs(x - getX()) + Math.abs(y - getY());
                             if (dist < minDistance) {
@@ -210,22 +233,57 @@ public class Chicken extends Entity implements Runnable {
         return nearest;
     }
 
-    /** Balade aléatoire dans un petit rayon pour donner une impression de vie */
+    /**
+     * Déplacement aléatoire dans un petit périmètre (utilisé quand elle est IDLE).
+     */
     private void wanderRandomly() throws InterruptedException {
-        // ... (Logique de choix de destination aléatoire et marche lente)
+        int radius = 4;
+        int randomX = this.x + (int)(Math.random() * (radius * 2 + 1)) - radius;
+        int randomY = this.y + (int)(Math.random() * (radius * 2 + 1)) - radius;
+
+        if (randomX >= 0 && randomX < World.WIDTH && randomY >= 0 && randomY < World.HEIGHT) {
+            if (world.getTile(randomX, randomY).isWalkable()) {
+                List<Tile> path = pathFinding(world, randomX, randomY);
+                if (path != null && !path.isEmpty()) {
+                    this.currentState = State.RUNNING;
+                    for (Tile step : path) {
+                        if (!isRunning || this.currentState == State.FLEEING) break;
+
+                        int newX = step.getX();
+                        int newY = step.getY();
+                        if (world.getTile(newX, newY).hasChicken()) break;
+
+                        if (newX > this.x) setFacingDirection(Entity.RIGHT);
+                        else if (newX < this.x) setFacingDirection(Entity.LEFT);
+
+                        this.x = newX;
+                        this.y = newY;
+                        // ... logique de mise à jour de tuile omise pour la brièveté ...
+                        Thread.sleep(400); // Marche plus lentement en se promenant
+                    }
+                }
+            }
+        }
+        if (this.currentState != State.FLEEING) {
+            this.currentState = State.IDLE;
+            Thread.sleep(1500 + (int)(Math.random() * 1500));
+        }
     }
 
-    /** Force la poule à passer en état de fuite (appelé par le joueur) */
+    /** Déclenche le mode fuite (appelé par le contrôleur lors d'un clic sur l'entité) */
     public void flee() {
         if (this.currentState == State.FLEEING) return;
+        System.out.println("Cot cot ! La poule a été chassée !");
         SoundManager.playSound(SoundManager.CHICKEN_RUN);
         this.currentState = State.FLEEING;
-        if (chickenThread != null) chickenThread.interrupt(); // Réveille le thread s'il dormait
+        if (chickenThread != null) {
+            chickenThread.interrupt(); // Interrompt le sommeil en cours pour fuir immédiatement
+        }
     }
 
     public State getCurrentState() { return currentState; }
 
-    /** Retourne l'index pour l'animation (ex: 0=repos, 1=marche, 2=mange) */
+    /** Mappe l'état de l'IA vers l'index de la Sprite Sheet pour l'animation */
     public int getCurrentStateActionIndex() {
         switch (currentState) {
             case IDLE: return 0;

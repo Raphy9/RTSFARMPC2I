@@ -109,7 +109,7 @@ public class GlobalController implements MouseListener, MouseMotionListener{
 
         // --- NOUVEAU : Fait fuir le corbeau s'il est cliqué ---
         if (crowToClick != null) {
-            crowToClick.flee(true);
+            crowToClick.flee();
             world.registerQuestAction(Quests.ACTION_CLICK_CROW); // Enregistrer l'action de cliquer sur un corbeau
             return;
         }

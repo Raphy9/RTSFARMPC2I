@@ -57,7 +57,7 @@ public class Scarecrow extends Building {
                      * Le paramètre 'true' permet probablement de valider un objectif de quête
                      * ou de comptabiliser un "corbeau effrayé" dans les stats.
                      */
-                    crow.flee(true);
+                    crow.flee();
                 }
             }
         }
