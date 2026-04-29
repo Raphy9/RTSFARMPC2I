@@ -2,6 +2,7 @@ package src.view;
 
 import src.model.*;
 import src.model.buildings.Building;
+import src.model.buildings.Fence;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -227,7 +228,17 @@ public class Global extends JPanel {
 
                     // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, x, y) pour les batiments posés
                     Image spriteImg = b.getSprite(world, b.getX(), b.getY()).getImage();
+                    if (b instanceof Fence) {
+                        if (((Fence) b).hasFenceRight(world, b.getX(), b.getY())) {
+                            g.drawImage(((Fence) b).getFaceSprite().getImage(), 6+px + Display.RATIO_X / 2, py, (Display.RATIO_X * b.getWidth())-10, Display.RATIO_Y * b.getHeight(), null);
+                        }
+                    }
                     g.drawImage(spriteImg, px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
+                    if (b instanceof Fence) {
+                       if (((Fence) b).hasFenceBelow(world, b.getX(), b.getY())) {
+                           g.drawImage(((Fence) b).getSideSprite().getImage(), 2+px, py + Display.RATIO_Y/2, Display.RATIO_X * b.getWidth(), (Display.RATIO_Y * b.getHeight())-16, null);
+                       }
+                    }
                 }
             }
         }
