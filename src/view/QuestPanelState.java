@@ -84,8 +84,13 @@ public class QuestPanelState {
         public final int rewardMoney;
         public final int rewardExp;
         public final boolean completed;
+        public final boolean rewardClaimed;
 
         public QuestCardState(String title, String description, int progress, int goal, int rewardMoney, int rewardExp, boolean completed) {
+            this(title, description, progress, goal, rewardMoney, rewardExp, completed, false);
+        }
+
+        public QuestCardState(String title, String description, int progress, int goal, int rewardMoney, int rewardExp, boolean completed, boolean rewardClaimed) {
             this.title = title;
             this.description = description;
             this.progress = progress;
@@ -93,6 +98,7 @@ public class QuestPanelState {
             this.rewardMoney = rewardMoney;
             this.rewardExp = rewardExp;
             this.completed = completed;
+            this.rewardClaimed = rewardClaimed;
         }
     }
 }

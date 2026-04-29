@@ -129,23 +129,7 @@ public class World {
 
     private void onLevelUp(int newLevel) {
         syncLevelMilestones();
-
-        // Débloquer de nouveaux jardiniers aux niveaux 3 et 7
-        if (newLevel == 3 && gardeners.size() == 1) {
-            // Débloquer le deuxieme jardinier au niveau 3
-            Gardener secondGardener = new Gardener(WIDTH/2+1, HEIGHT/2, this);
-            gardeners.add(secondGardener);
-            Thread t = new Thread(secondGardener);
-            t.start();
-            System.out.println("Deuxieme jardinier débloqué au niveau 3 !");
-        } else if (newLevel == 7 && gardeners.size() == 2) {
-            // Débloquer le troisieme jardinier au niveau 7
-            Gardener thirdGardener = new Gardener(WIDTH/2-1, HEIGHT/2, this);
-            gardeners.add(thirdGardener);
-            Thread t = new Thread(thirdGardener);
-            t.start();
-            System.out.println("Troisieme jardinier débloqué au niveau 7 !");
-        }
+        syncGardenersForLevel(newLevel);
 
         if (levelUpCallback != null) {
             levelUpCallback.accept(newLevel);
@@ -164,6 +148,35 @@ public class World {
             if (level >= 5) {
                 quests.onAction(src.model.Quests.ACTION_REACH_LEVEL_5, stats);
             }
+        }
+    }
+
+    public int getUnlockedGardenersCountForLevel(int level) {
+        if (level >= 7) return 3;
+        if (level >= 3) return 2;
+        return 1;
+    }
+
+    /**
+     * Garantit le nombre de jardiniers débloqués selon le niveau.
+     * N'en enlève pas: le niveau ne baisse pas dans le gameplay normal.
+     */
+    public synchronized void syncGardenersForLevel(int level) {
+        int target = getUnlockedGardenersCountForLevel(level);
+        while (gardeners.size() < target) {
+            int idx = gardeners.size();
+            int spawnX = WIDTH / 2;
+            int spawnY = HEIGHT / 2;
+            if (idx == 1) {
+                spawnX = WIDTH / 2 + 1;
+            } else if (idx == 2) {
+                spawnX = WIDTH / 2 - 1;
+            }
+
+            Gardener gardener = new Gardener(spawnX, spawnY, this);
+            gardeners.add(gardener);
+            Thread t = new Thread(gardener, "GardenerThread-" + (idx + 1));
+            t.start();
         }
     }
 

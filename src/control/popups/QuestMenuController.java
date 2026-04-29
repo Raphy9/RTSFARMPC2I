@@ -146,7 +146,8 @@ public class QuestMenuController implements ActionListener {
                         quest.getGoal(),
                         quest.getRewardMoney(),
                         quest.getRewardExp(),
-                        quest.isCompleted()
+                        quest.isCompleted(),
+                        quest.isRewardClaimed()
                 ));
             }
         }

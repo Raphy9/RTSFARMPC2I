@@ -82,6 +82,7 @@ public class Quests {
     private final java.util.List<QuestLine> questLines = new java.util.ArrayList<>();
     private int activeLineIndex = 0;
     private Runnable changeListener = null;
+    private static final int CHAPTER_6_INDEX = 5;  // Index du chapitre 6 (après le ch5)
 
     public Quests() {
         buildDefaultQuestLines();
@@ -150,10 +151,22 @@ public class Quests {
                 "Finaliser la ferme fraise et automatiser.",
                 java.util.List.of(
                         Quest.createHarvestQuest("Q5_HARVEST_FRAISE", "Recolter des fraises", "Recolter 20 fraises.", PlantType.FRAISE, 20, 30, 30),
-                        Quest.createActionQuest("Q5_CLICK_CROW", "Chasser des corbeaux", "Cliquer sur 5 corbeaux pour les chasser.", ACTION_CLICK_CROW, 5, 20, 30),
+                        Quest.createActionQuest("Q5_CLICK_CROW", "Chasser des corbeaux", "Chasser 5 corbeaux (clic ou epouvantail).", ACTION_CLICK_CROW, 5, 20, 30),
                         Quest.createBuildQuest("Q5_BUILD_SPRINKLER", "Poser un arroseur", "Poser un arroseur automatique.", Sprinkler.class, 1, 40, 35),
                         Quest.createBuildQuest("Q5_BUILD_10", "Poser des batiments", "Poser 10 batiments.", null, 10, 40, 35),
                         Quest.createActionQuest("Q5_LEVEL_5", "Passer niveau 5", "Atteindre le niveau 5.", ACTION_REACH_LEVEL_5, 1, 50, 40)
+                )
+        ));
+
+        questLines.add(new QuestLine(
+                "Chapitre 6 - Les Defis",
+                "Releves des defis infinis pour devenir un fermier ultimate !",
+                java.util.List.of(
+                        Quest.createActionQuest("Q6_CHASE_CHICKEN", "Chasser des poules", "Chasser 20 poules.", ACTION_CHASE_CHICKEN, 20, 30, 50),
+                        Quest.createActionQuest("Q6_CHASE_CROW", "Chasser des corbeaux", "Chasser 20 corbeaux.", ACTION_CLICK_CROW, 20, 30, 50),
+                        Quest.createHarvestQuest("Q6_HARVEST_FRAISE", "Recolter des fraises", "Recolter 50 fraises.", PlantType.FRAISE, 50, 30, 50),
+                        Quest.createBuildQuest("Q6_BUILD_10", "Poser des batiments", "Poser 10 batiments.", null, 10, 30, 50),
+                        Quest.createBuildQuest("Q6_BUILD_STATUE", "Poser une statue", "Poser une statue.", src.model.buildings.Statue.class, 1, 30, 50)
                 )
         ));
     }
@@ -244,11 +257,29 @@ public class Quests {
     }
 
     private void unlockNextLine() {
+        // Chapitre 6: boucle infinie, on le reset puis on reste dessus.
+        if (activeLineIndex == CHAPTER_6_INDEX) {
+            resetChapter6();
+            return;
+        }
+
         if (activeLineIndex < questLines.size()) {
             activeLineIndex++;
-            questLines.get(activeLineIndex).setUnlocked(true);
-        } else {
-            activeLineIndex = questLines.size();
+            if (activeLineIndex < questLines.size()) {
+                questLines.get(activeLineIndex).setUnlocked(true);
+            }
+        }
+    }
+
+    /**
+     * Réinitialise toutes les quêtes du chapitre 6.
+     */
+    private void resetChapter6() {
+        if (CHAPTER_6_INDEX >= 0 && CHAPTER_6_INDEX < questLines.size()) {
+            QuestLine chapter6 = questLines.get(CHAPTER_6_INDEX);
+            for (Quest quest : chapter6.getQuests()) {
+                quest.reset();
+            }
         }
     }
 

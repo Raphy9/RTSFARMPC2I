@@ -323,6 +323,7 @@ public class BuildingSidePanel extends JPanel {
                 out.add(new Entry("Enseigne fraise",  "src/assets/Buildings/strawberrysign.png", "Pour ne jamais perdre de vue \nvos precieux plants de fraises.",  () -> new strawberrysign(),   10, 4,3));
                 out.add(new Entry("Boite aux lettres","src/assets/Buildings/mailbox1.png", "Indispensable pour recevoir les nouvelles \ndu voisinage (ou juste pour le style).", () -> new Mailbox1(),  30, 4, 1));
                 out.add(new Entry("Linge",            "src/assets/Buildings/linge.png",  "Un element decoratif qui donne un air de \ncampagne habitee a votre ferme.",  () -> new Linge(),    50, 5,2));
+                out.add(new Entry("Statue",            "src/assets/Buildings/statue.png",  "Une statue dorée.",  () -> new Statue(),    300, 6));
                 break;
             case "Nature":
                 out.add(new Entry("Rocher",  "src/assets/Buildings/rock1.png", "Un element naturel et robuste pour decorer votre \nterrain avec un aspect sauvage.",() -> new Rock1(), 10, 1,30));
