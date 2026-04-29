@@ -1,7 +1,6 @@
 package src.control.persistence;
 
 import src.model.World;
-import src.view.WorldSaveData;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -125,7 +124,7 @@ public class SaveController {
 				for (Object itemObj : data.getBarnItems()) {
 					try {
 						// Chaque élément est casté puis demande à être réinstancié dans le monde physique
-						src.view.WorldSaveData.ItemSaveData item = (src.view.WorldSaveData.ItemSaveData) itemObj;
+						WorldSaveData.ItemSaveData item = (WorldSaveData.ItemSaveData) itemObj;
 						item.restoreToBarn(world);
 					} catch (Exception ignored) {}
 				}
@@ -134,7 +133,7 @@ public class SaveController {
 			// Restauration des tuiles de plantation
 			if (data.getPlantTiles() != null) {
 				// La map des tuiles utilise les coordonnées sous forme de String ("x,y") comme clé de hachage
-				for (java.util.Map.Entry<String, src.view.WorldSaveData.PlantTileSaveData> entry : data.getPlantTiles().entrySet()) {
+				for (java.util.Map.Entry<String, WorldSaveData.PlantTileSaveData> entry : data.getPlantTiles().entrySet()) {
 					// On extrait les coordonnées depuis la clé
 					String[] coords = entry.getKey().split(",");
 					int x = Integer.parseInt(coords[0]);
@@ -147,7 +146,7 @@ public class SaveController {
 
 			// Restauration des infrastructures (barrières, puits, épouvantails...)
 			if (data.getBuildings() != null) {
-				for (src.view.WorldSaveData.BuildingSaveData bsd : data.getBuildings()) {
+				for (WorldSaveData.BuildingSaveData bsd : data.getBuildings()) {
 					bsd.restoreToWorld(world);
 				}
 			}
@@ -160,7 +159,7 @@ public class SaveController {
 					int count = Math.min(data.getGardeners().size(), world.getGardeners().size());
 
 					for (int i = 0; i < count; i++) {
-						src.view.WorldSaveData.GardenerSaveData gsd = data.getGardeners().get(i);
+						WorldSaveData.GardenerSaveData gsd = data.getGardeners().get(i);
 						src.model.Gardener gardener = world.getGardeners().get(i);
 
 						int targetX = gsd.x;
@@ -189,7 +188,7 @@ public class SaveController {
 						// Gestion de l'inventaire personnel du jardinier
 						// Pour éviter la perte d'items, tous les objets qu'il portait sont envoyés dans la grange globale
 						if (gsd.inventoryItems != null && !gsd.inventoryItems.isEmpty()) {
-							for (src.view.WorldSaveData.ItemSaveData itemData : gsd.inventoryItems) {
+							for (WorldSaveData.ItemSaveData itemData : gsd.inventoryItems) {
 								itemData.restoreToBarn(world);
 							}
 						}

@@ -1,4 +1,4 @@
-package src.view;
+package src.control.persistence;
 
 import src.model.*;
 import src.model.buildings.*;
