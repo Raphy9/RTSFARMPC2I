@@ -10,7 +10,7 @@ public class Inventory {
     }
 
     /**
-     * Ajoute un item à l'inventaire. Si un item du même type (classe + plantType) existe, fusionne les quantités.
+     * Ajoute un item a l'inventaire. Si un item du meme type (classe + plantType) existe, fusionne les quantites.
      */
     public void addItem(Item item) {
         Item existing = findSameItem(item);
@@ -30,8 +30,8 @@ public class Inventory {
     }
 
     /**
-     * Cherche un item dans cet inventaire du même type (même classe et même PlantType).
-     * Retourne l'item trouvé ou null.
+     * Cherche un item dans cet inventaire du meme type (meme classe et meme PlantType).
+     * Retourne l'item trouve ou null.
      */
     public Item findSameItem(Item item) {
         for (Item it : items) {
@@ -43,7 +43,7 @@ public class Inventory {
     }
 
     /**
-     * Transfère jusqu'à qty unités de sourceItem depuis cet inventaire vers target.
+     * Transfere jusqu'a qty unités de sourceItem depuis cet inventaire vers target.
      * Retourne la quantité effectivement transférée.
      */
     public int transferTo(Inventory target, Item sourceItem, int qty) {
@@ -57,7 +57,7 @@ public class Inventory {
         if (targetSame != null) {
             targetSame.addQuantity(toTransfer);
         } else {
-            // Créer une nouvelle instance du même type avec la quantité à transférer
+            // Créer une nouvelle instance du meme type avec la quantité a transférer
             Item newItem = null;
             if (sourceItem instanceof ItemPlant) {
                 newItem = new ItemPlant(sourceItem.getPlantType(), toTransfer);

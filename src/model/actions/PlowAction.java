@@ -11,14 +11,14 @@ import src.model.Quests;
  */
 public class PlowAction extends Action {
 
-    // Les coordonnées de la case à labourer
+    // Les coordonnées de la case a labourer
     private int plowX, plowY;
 
     /** Constructeur de PlowAction.
      * @param execX Les coordonnées x de la tuile d'exécution (où le jardinier doit se déplacer pour effectuer l'action).
      * @param execY Les coordonnées y de la tuile d'exécution.
-     * @param plowX Les coordonnées x de la case à labourer.
-     * @param plowY Les coordonnées y de la case à labourer.
+     * @param plowX Les coordonnées x de la case a labourer.
+     * @param plowY Les coordonnées y de la case a labourer.
      */
     public PlowAction(int execX, int execY, int plowX, int plowY) {
         super(execX, execY);
@@ -27,7 +27,7 @@ public class PlowAction extends Action {
     }
 
     /** Le jardinier arrive sur la tuile d'exécution (execX,execY). Cette action laboure la case (plowX,plowY).
-     * Si la case est déjà labourée ou n'existe pas, un message d'erreur est affiché dans la console.
+     * Si la case est déja labourée ou n'existe pas, un message d'erreur est affiché dans la console.
      */
     @Override
     public void perform(Gardener gardener, World world) {
@@ -36,15 +36,15 @@ public class PlowAction extends Action {
         if (tile.isPlowable()) {
             // On remplace la tile actuelle par une nouvelle PlantTile
             world.toPlantTile(plowX, plowY);
-            System.out.println("Succès : Le jardinier a labouré la case (" + plowX + ", " + plowY + ") !");
+            System.out.println("Succes : Le jardinier a labouré la case (" + plowX + ", " + plowY + ") !");
             SoundManager.playSound(SoundManager.PLOW);
             world.computeParcels();
             world.registerQuestAction(Quests.ACTION_PLOW_TILE);
         } else {
-            System.out.println("Échec : La case (" + plowX + ", " + plowY + ") est déjà labourée ou n'existe pas.");
+            System.out.println("Échec : La case (" + plowX + ", " + plowY + ") est déja labourée ou n'existe pas.");
         }
 
-        // Libère la réservation associée à cette action, même en cas d'échec.
+        // Libere la réservation associée a cette action, meme en cas d'échec.
         world.releasePlowTiles(1);
     }
 }

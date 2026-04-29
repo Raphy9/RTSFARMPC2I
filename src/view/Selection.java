@@ -13,7 +13,7 @@ import java.awt.*;
  */
 public class Selection extends Global {
 
-    // Message à afficher pour indiquer à l'utilisateur ce qu'il doit selectionner
+    // Message a afficher pour indiquer a l'utilisateur ce qu'il doit selectionner
     // par exemple "Selectionnez une case plantable"
     private String message = "Selectionnez une case";
 

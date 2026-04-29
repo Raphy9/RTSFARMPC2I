@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 import java.util.HashSet;
 import javax.swing.SwingUtilities;
 
-/** Classe qui gère les interactions de l'utilisateur avec la vue selection,
+/** Classe qui gere les interactions de l'utilisateur avec la vue selection,
  * principalement la selection de l'objet demande */
 public class SelectionController implements MouseListener, MouseMotionListener, KeyListener {
 
@@ -23,11 +23,11 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
     private ActionBuilder builder;
     private Predicate<Tile> selectionCriteria = tile -> true;
 
-    /** true quand le bouton gauche est maintenu enfoncé */
+    /** true quand le bouton gauche est maintenu enfonce */
     private boolean dragging = false;
-    /** true si la souris a bougé pendant le drag (= drag réel, pas un simple clic) */
+    /** true si la souris a bouge pendant le drag (= drag reel, pas un simple clic) */
     private boolean movedDuringDrag = false;
-    /** Dernière case traitée pendant un drag, pour éviter de retraiter la même case */
+    /** Derniere case traitee pendant un drag, pour eviter de retraiter la meme case */
     private Point lastDragPoint = null;
     private boolean plowLimitPopupShown = false;
 
@@ -133,7 +133,7 @@ public class SelectionController implements MouseListener, MouseMotionListener, 
         } catch (Exception ex) { return; }
 
         Point targetPoint = new Point(coords.x, coords.y);
-        if (targetPoint.equals(lastDragPoint)) return; // même case, on ignore
+        if (targetPoint.equals(lastDragPoint)) return; // meme case, on ignore
         lastDragPoint = targetPoint;
         movedDuringDrag = true;
 

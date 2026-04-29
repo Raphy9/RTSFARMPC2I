@@ -4,8 +4,8 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Ennemi autonome (Poule) qui cherche la plante la plus proche pour la détruire.
- * S'exécute dans son propre Thread.
+ * Ennemi autonome (Poule) qui cherche la plante la plus proche pour la detruire.
+ * S'execute dans son propre Thread.
  */
 public class Chicken extends Entity implements Runnable {
 
@@ -16,7 +16,7 @@ public class Chicken extends Entity implements Runnable {
     private Thread chickenThread;
     private boolean hasClucked = false;
 
-    // --- NOUVEAU : Compteur de plantes mangées ---
+    // --- NOUVEAU : Compteur de plantes mangees ---
     private int plantsEaten = 0;
 
     public Chicken(int x, int y, World world) {
@@ -49,7 +49,7 @@ public class Chicken extends Entity implements Runnable {
 
                 PlantTile targetPlant = findNearestPlant();
 
-                // Si pas de plante, on se promène
+                // Si pas de plante, on se promene
                 if (targetPlant == null) {
                     wanderRandomly();
                     continue;
@@ -65,7 +65,7 @@ public class Chicken extends Entity implements Runnable {
                     continue;
                 }
 
-                // Déplacement vers la plante
+                // Deplacement vers la plante
                 if (!path.isEmpty()) {
                     this.currentState = State.RUNNING;
                     for (Tile step : path) {
@@ -76,9 +76,9 @@ public class Chicken extends Entity implements Runnable {
 
                         // anticollision de la poule avec les obstacles
                         Tile nextTile = world.getTile(newX, newY);
-                        // Si la case est occupée par une poule OU si un obstacle vient d'être posé
+                        // Si la case est occupee par une poule OU si un obstacle vient d'etre pose
                         if (nextTile.hasChicken() || !nextTile.isWalkable()) {
-                            break; // Coupe le déplacement, l'IA recalculera au prochain cycle
+                            break; // Coupe le deplacement, l'IA recalculera au prochain cycle
                         }
 
                         if (newX > this.x) setFacingDirection(Entity.RIGHT);
@@ -122,7 +122,7 @@ public class Chicken extends Entity implements Runnable {
                             this.currentState = State.FLEEING;
                             continue; // On repasse au début de la boucle pour gérer la fuite
                         } else {
-                            System.out.println("La poule digère et fait une petite balade...");
+                            System.out.println("La poule digere et fait une petite balade...");
                             this.currentState = State.IDLE;
                             Thread.sleep(1000);
                             wanderRandomly(); // Force une balade aléatoire avant de chercher une autre plante
@@ -182,7 +182,7 @@ public class Chicken extends Entity implements Runnable {
                 world.getTile(oldX, oldY).removeEntity(this);
                 world.getTile(newX, newY).addEntity(this);
 
-                Thread.sleep(100); // Fuite très rapide
+                Thread.sleep(100); // Fuite tres rapide
             }
         }
 

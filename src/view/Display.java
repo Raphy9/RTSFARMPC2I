@@ -16,9 +16,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-/** Classe principale de la vue, qui gère les différentes vues (globale, popup, selection) et les interactions entre elles.
- * C'est la classe centrale pour le rendu et l'affichage du jeu, elle contient les références vers les autres vues et les contrôleurs.
- * C'est aussi la classe qui gère le changement de vue (par exemple passer de la vue globale à une vue popup ou de selection) et qui permet aux contrôleurs de déclencher des changements de vue.
+/** Classe principale de la vue, qui gere les differentes vues (globale, popup, selection) et les interactions entre elles.
+ * C'est la classe centrale pour le rendu et l'affichage du jeu, elle contient les references vers les autres vues et les controleurs.
+ * C'est aussi la classe qui gere le changement de vue (par exemple passer de la vue globale a une vue popup ou de selection) et qui permet aux controleurs de declencher des changements de vue.
  * */
 public class Display {
     // Ratio multiplicateur pour la taille des objets
@@ -55,8 +55,8 @@ public class Display {
     private static final int HUD_BUTTON_SIZE = 90;
     private static final int HUD_PANEL_HEIGHT = 100;
 
-    /** Constructeur de la classe Display, qui initialise les différentes vues et contrôleurs, et configure la fenêtre principale du jeu.
-     * @param frame la fenêtre principale du jeu, créée dans la classe Main, pour laquelle on va configurer le contenu et les dimensions
+    /** Constructeur de la classe Display, qui initialise les différentes vues et controleurs, et configure la fenetre principale du jeu.
+     * @param frame la fenetre principale du jeu, créée dans la classe Main, pour laquelle on va configurer le contenu et les dimensions
      */
     public Display(JFrame frame) {
         GameFonts.loadFonts();
@@ -96,7 +96,7 @@ public class Display {
 
         layeredPane.add(globalView, JLayeredPane.DEFAULT_LAYER);
 
-        // KEYBINDINGS POUR LA HOTBAR (Touches 1 à 4) ---
+        // KEYBINDINGS POUR LA HOTBAR (Touches 1 a 4) ---
         InputMap im = globalView.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = globalView.getActionMap();
 
@@ -209,7 +209,7 @@ public class Display {
             this.btnOpenQuestMenu.setBorderPainted(false);
         } else {
             // Fallback visuel en attendant l'image quetes.png.
-            this.btnOpenQuestMenu = new JButton("Quêtes");
+            this.btnOpenQuestMenu = new JButton("Quetes");
             this.btnOpenQuestMenu.setFocusable(false);
             this.btnOpenQuestMenu.setFont(GameFonts.MINECRAFT_FONT != null
                     ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 14f)
@@ -258,8 +258,8 @@ public class Display {
         this.controlPanel.add(this.btnOpenQuestMenu);
 
         buildingManager.setDeletionModeListener(active -> {
-            // Synchrone (pas d'invokeLater) : évite que setHotbarVisible(true) arrive après
-            // les appels directs à setHotbarVisible(false) lors du passage construction↔destruction
+            // Synchrone (pas d'invokeLater) : évite que setHotbarVisible(true) arrive apres
+            // les appels directs a setHotbarVisible(false) lors du passage construction↔destruction
             if (active) {
                 rememberQuestPanelStateBeforeTransientAction();
                 setQuestPanelVisible(false);
@@ -318,7 +318,7 @@ public class Display {
             public void actionPerformed(ActionEvent e) {
                 if (selectionView.isVisible()) return;
 
-                // NOUVEAU : Si un popup est DÉJÀ ouvert (inventaire, grange, pause...), on le ferme
+                // NOUVEAU : Si un popup est DÉJA ouvert (inventaire, grange, pause...), on le ferme
                 if (popupView.isVisible() && popupView.getComponentCount() > 0) {
                     switchToGlobal();
                     return;
@@ -393,7 +393,7 @@ public class Display {
 
         this.frame.setVisible(true);
 
-        // Ajuste une fois après affichage pour éviter tout dépassement visuel initial des boutons.
+        // Ajuste une fois apres affichage pour éviter tout dépassement visuel initial des boutons.
         SwingUtilities.invokeLater(this::layoutHudButtons);
 
         this.edgeScroller = new EdgeScroller(this.frame, this.layeredPane, this.camera, this.globalView,
@@ -659,13 +659,13 @@ public class Display {
     }
 
     /**
-     * Le panneau quêtes est un overlay d'information: largeur max 1/5 et hauteur max 2/3 de l'écran.
+     * Le panneau quetes est un overlay d'information: largeur max 1/5 et hauteur max 2/3 de l'écran.
      */
     private Rectangle computeQuestOverlayBounds(int contentWidth, int contentHeight) {
         int width = Math.max(1, contentWidth / 5);
         int height = Math.max(1, (contentHeight * 2) / 3);
 
-        // Le panneau quêtes doit s'ouvrir à gauche.
+        // Le panneau quetes doit s'ouvrir a gauche.
         int y = Math.max(HUD_MARGIN, (contentHeight - height) / 2);
         return new Rectangle(HUD_MARGIN, y, width, height);
     }
@@ -684,7 +684,7 @@ public class Display {
 
     public void update() { }
 
-    /** Déclenche l'action correspondant à un slot de hotbar */
+    /** Déclenche l'action correspondant a un slot de hotbar */
     public void triggerHotbarAction(int slotIndex, Gardener gardener) {
         java.awt.event.ActionEvent fakeEvent = new java.awt.event.ActionEvent(this, java.awt.event.ActionEvent.ACTION_PERFORMED, "");
         if (slotIndex == 0) {
@@ -725,7 +725,7 @@ public class Display {
         if (this.edgeScroller != null) {
             this.edgeScroller.setEnabled(!hasVisibleOverlay);
 
-            // On met à jour les zones ignorées (boutons HUD + marges)
+            // On met a jour les zones ignorées (boutons HUD + marges)
             java.util.List<Rectangle> ignoredRegions = new java.util.ArrayList<>();
             if (this.controlPanel != null && this.controlPanel.isVisible()) {
                 Rectangle bounds = this.controlPanel.getBounds();
@@ -786,7 +786,7 @@ public class Display {
     }
 
     /**
-     * Garantit une zone de contenu exacte (hors bordures système) pour éviter
+     * Garantit une zone de contenu exacte (hors bordures systeme) pour éviter
      * les écarts de quelques pixels selon l'état précédent de la JFrame.
      */
     private void enforceExactContentSize(Dimension contentSize) {
@@ -803,9 +803,9 @@ public class Display {
     public void returnToMainMenu() {
         // 1. On sauvegarde l'état actuel
         saveGame();
-        // 2. On arrête tous les threads des entités pour ne pas faire planter le jeu en arrière-plan
+        // 2. On arrete tous les threads des entités pour ne pas faire planter le jeu en arriere-plan
         world.stopWorld();
-        // 3. On arrête le thread de la caméra
+        // 3. On arrete le thread de la caméra
         if (this.edgeScroller != null) {
             this.edgeScroller.stop();
         }

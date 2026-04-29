@@ -4,21 +4,21 @@ import javax.swing.*;
 
 public class ItemPlant extends Item {
     /*
-    Constructeur (par défaut) de la classe ItemPlant, qui prend en paramètre le type de plante (PlantType) et initialise l'image correspondante.
+    Constructeur (par defaut) de la classe ItemPlant, qui prend en parametre le type de plante (PlantType) et initialise l'image correspondante.
      */
     public ItemPlant(PlantType plantType) {
-        // Appelle du constructeur de la classe mère Item pour initialiser le type de plante et la quantité (0 par défaut)
+        // Appelle du constructeur de la classe mere Item pour initialiser le type de plante et la quantite (0 par défaut)
         super(plantType);
 
         initializeImage();
     }
 
     /*
-    Constructeur de la classe ItemPlant, qui prend en paramètre le type de plante (PlantType) et la quantité de plantes (int quantity) et initialise l'image correspondante,
+    Constructeur de la classe ItemPlant, qui prend en parametre le type de plante (PlantType) et la quantité de plantes (int quantity) et initialise l'image correspondante,
     pour permettre de créer un item avec une quantité définie (uitilisé pour tester l'inventaire sans gameplay pour l'instant)
      */
     public ItemPlant(PlantType plantType, int quantity) {
-        // Appelle du constructeur de la classe mère Item pour initialiser le type de plante et la quantité
+        // Appelle du constructeur de la classe mere Item pour initialiser le type de plante et la quantité
         super(plantType, quantity);
 
         initializeImage();
@@ -28,7 +28,7 @@ public class ItemPlant extends Item {
     Méthode pour définir l'image de l'item en fonction du type (PlantType)
     */
     private void initializeImage() {
-        // On utilise une image différente pour les plantes que pour les graines, on affiche l'image de la plante prête à être récoltée
+        // On utilise une image différente pour les plantes que pour les graines, on affiche l'image de la plante prete a etre récoltée
         // On utilise un switch pour définir l'image en fonction du type de plante
         switch (getPlantType()) {
             case CHOUX -> super.defineImage(new javax.swing.ImageIcon("src/assets/CropSprites/choux/done.png"));

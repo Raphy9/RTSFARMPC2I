@@ -14,20 +14,20 @@ public class Parcel {
     private final ArrayList<PlantTile> tiles;
 
     public Parcel(ArrayList<PlantTile> tiles) {
-        // On crée une copie pour garantir l'immuabilité
+        // On cree une copie pour garantir l'immuabilite
         this.tiles = new ArrayList<>(tiles);
-        // Tri pour garantir un ordre cohérent pour les jardiniers
+        // Tri pour garantir un ordre coherent pour les jardiniers
         this.tiles.sort((t1, t2) -> {
             if (t1.getY() != t2.getY()) return Integer.compare(t1.getY(), t2.getY());
             return Integer.compare(t1.getX(), t2.getX());
         });
-        // Lier les cases à cette parcelle
+        // Lier les cases a cette parcelle
         for (PlantTile tile : this.tiles) {
             tile.setParcel(this);
         }
     }
 
-    /** Renvoie un iterable des cases de cette parcelle, triée par coordonnées (d'abord par Y, puis par X) */
+    /** Renvoie un iterable des cases de cette parcelle, triee par coordonnees (d'abord par Y, puis par X) */
     public Iterable<PlantTile> getTiles() {
         return tiles;
     }
@@ -37,7 +37,7 @@ public class Parcel {
         return tiles.size();
     }
 
-    /** Renvoie le nombre de cases plantables non occupées dans cette parcelle */
+    /** Renvoie le nombre de cases plantables non occupees dans cette parcelle */
     public int getAvailableSpotsNb() {
         int count = 0;
         for (PlantTile tile : tiles) {

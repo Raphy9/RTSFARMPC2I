@@ -30,9 +30,9 @@ public class ActionsPopup extends PopupPanel {
     private JButton createStyledButton(String text, java.awt.event.ActionListener listener) {
         JButton btn = new JButton(text);
 
-        // Palette de sélection
-        Color selectLight = new Color(160, 100, 60); // Brun clair boisé
-        Color selectDark = new Color(80, 40, 10);    // Brun foncé terreux
+        // Palette de selection
+        Color selectLight = new Color(160, 100, 60); // Brun clair boise
+        Color selectDark = new Color(80, 40, 10);    // Brun fonce terreux
 
         btn.setFocusable(false);
         btn.setBackground(selectLight);

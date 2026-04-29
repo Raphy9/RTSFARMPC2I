@@ -34,7 +34,7 @@ public class Global extends JPanel {
 
     private src.control.popups.BuildingManager ghostManager;
 
-    // Compteur de références par case pour éviter qu'un jardinier retire la surbrillance d'un autre.
+    // Compteur de references par case pour eviter qu'un jardinier retire la surbrillance d'un autre.
     private final Map<Point, Integer> highlights = new HashMap<>();
     private Set<Point> selectedTilesBlueHighlight = new HashSet<Point>();
     private FloatingTextManager floatingTextManager;
@@ -190,43 +190,43 @@ public class Global extends JPanel {
                         g3.setColor(fillColor);
                         g3.fillRect(px, py, Display.RATIO_X, Display.RATIO_Y);
 
-                        // Bordure opaque (avec +1 et -3 pour ne pas déborder, comme tes highlights)
+                        // Bordure opaque (avec +1 et -3 pour ne pas deborder, comme tes highlights)
                         g3.setColor(borderColor);
                         g3.drawRect(px + 1, py + 1, Display.RATIO_X - 3, Display.RATIO_Y - 3);
                     }
                 }
             }
 
-            // 2. Appliquer la transparence (50%) *uniquement* pour le sprite du bâtiment
+            // 2. Appliquer la transparence (50%) *uniquement* pour le sprite du batiment
             g3.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
 
-            // 3. Dessiner l'image du bâtiment au-dessus de la zone surlignée
+            // 3. Dessiner l'image du batiment au-dessus de la zone surlignee
             int relX = gx - fstTileX;
             int relY = gy - fstTileY;
             if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                 int px = (relX * Display.RATIO_X) - pixelDiffX;
                 int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, gx, gy) pour le fantôme des barrières
+                // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, gx, gy) pour le fantome des barrieres
                 Image ghostImg = b.getSprite(world, gx, gy).getImage();
                 g3.drawImage(ghostImg, px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
             }
             g3.dispose();
         }
 
-        // === DESSIN DES BÂTIMENTS DÉJÀ CONSTRUITS ===
+        // === DESSIN DES BATIMENTS DÉJA CONSTRUITS ===
         if (world.getBuildings() != null) {
             for (src.model.buildings.Building b : world.getBuildings()) {
 
                 int relX = b.getX() - fstTileX;
                 int relY = b.getY() - fstTileY;
 
-                // Si le bâtiment est dans le champ de la caméra
+                // Si le batiment est dans le champ de la caméra
                 if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                     int px = (relX * Display.RATIO_X) - pixelDiffX;
                     int py = (relY * Display.RATIO_Y) - pixelDiffY;
 
-                    // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, x, y) pour les bâtiments posés
+                    // MODIFICATION APPLIQUÉE : Prise en compte du contexte (world, x, y) pour les batiments posés
                     Image spriteImg = b.getSprite(world, b.getX(), b.getY()).getImage();
                     g.drawImage(spriteImg, px, py, Display.RATIO_X * b.getWidth(), Display.RATIO_Y * b.getHeight(), null);
                 }
@@ -302,7 +302,7 @@ public class Global extends JPanel {
                 int relX = p.x - fstTileX;
                 int relY = p.y - fstTileY;
 
-                // Vérifier si la case est visible à l'écran
+                // Vérifier si la case est visible a l'écran
                 if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                     int hx = (relX * Display.RATIO_X) - pixelDiffX;
                     int hy = (relY * Display.RATIO_Y) - pixelDiffY;
@@ -328,7 +328,7 @@ public class Global extends JPanel {
                 int relX = p.x - fstTileX;
                 int relY = p.y - fstTileY;
 
-                // Vérifier si la case est visible à l'écran
+                // Vérifier si la case est visible a l'écran
                 if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                     int hx = (relX * Display.RATIO_X) - pixelDiffX;
                     int hy = (relY * Display.RATIO_Y) - pixelDiffY;
@@ -360,7 +360,7 @@ public class Global extends JPanel {
                     int relX = hoveredX - fstTileX;
                     int relY = hoveredY - fstTileY;
 
-                    // On vérifie que la case survolée est bien visible à l'écran
+                    // On vérifie que la case survolée est bien visible a l'écran
                     if (relX >= 0 && relX <= Camera.WIDTH && relY >= 0 && relY <= Camera.HEIGHT) {
                         int drawX = (relX * Display.RATIO_X) - pixelDiffX;
                         int drawY = (relY * Display.RATIO_Y) - pixelDiffY;
@@ -387,7 +387,7 @@ public class Global extends JPanel {
                             g.setColor(new Color(144, 238, 144, 180));
                             g.fillRect(barX + 2, growthBarY + 2, fillGrowthW, innerH / 2);
                         }
-                        // 2ème JAUGE : L'EAU (BLEUE)
+                        // 2eme JAUGE : L'EAU (BLEUE)
                         int waterBarY = growthBarY + barH + 3; // Placée juste en dessous de la barre verte (+2px d'écart)
 
                         if (progressBarEmpty != null) {
@@ -447,7 +447,7 @@ public class Global extends JPanel {
         gPanel.setColor(new Color(0, 0, 0, 180));
         gPanel.fillRoundRect(px, py, panelWidth, panelHeight, 12, 12);
 
-        // Bordure légère
+        // Bordure légere
         gPanel.setColor(new Color(200, 200, 200, 100));
         gPanel.setStroke(new BasicStroke(2));
         gPanel.drawRoundRect(px, py, panelWidth, panelHeight, 12, 12);
@@ -526,7 +526,7 @@ public class Global extends JPanel {
             }
             g2.drawRect(x, startY, slotSize, slotSize);
 
-            // 4. Dessiner le chiffre de raccourci (1 à 4) en haut à gauche
+            // 4. Dessiner le chiffre de raccourci (1 a 4) en haut a gauche
             g2.setColor(new Color(255, 255, 255, 180));
             if (GameFonts.MINECRAFT_FONT != null) {
                 g2.setFont(GameFonts.MINECRAFT_FONT.deriveFont(12f));
@@ -600,19 +600,19 @@ public class Global extends JPanel {
         g2.dispose();
     }
 
-    /** Méthode pour dessiner les entités (jardiniers et ennemis) à l'écran, en fonction de leur position dans le monde et de la caméra.
+    /** Méthode pour dessiner les entités (jardiniers et ennemis) a l'écran, en fonction de leur position dans le monde et de la caméra.
      * @param g le contexte graphique pour dessiner
-     * @param fstTileX la coordonnée x de la première tuile visible à l'écran (en monde)
-     * @param fstTileY la coordonnée y de la première tuile visible à l'écran (en monde)
-     * @param pixelDiffX le décalage en pixels entre la caméra et la première tuile visible (pour un scrolling fluide)
-     * @param pixelDiffY le décalage en pixels entre la caméra et la première tuile visible (pour un scrolling fluide)
+     * @param fstTileX la coordonnée x de la premiere tuile visible a l'écran (en monde)
+     * @param fstTileY la coordonnée y de la premiere tuile visible a l'écran (en monde)
+     * @param pixelDiffX le décalage en pixels entre la caméra et la premiere tuile visible (pour un scrolling fluide)
+     * @param pixelDiffY le décalage en pixels entre la caméra et la premiere tuile visible (pour un scrolling fluide)
      */
     private void drawEntities(Graphics g, int fstTileX, int fstTileY, int pixelDiffX, int pixelDiffY) {
         long elapsedTime = System.currentTimeMillis() - startTime;
 
         //  Dessin du jardinier
         for (Gardener gardener : world.getGardeners()) {
-            // Savoir s'il est à l'écran
+            // Savoir s'il est a l'écran
             if (gardener.getX() >= fstTileX && gardener.getX() <= fstTileX + Camera.WIDTH &&
                     gardener.getY() >= fstTileY && gardener.getY() <= fstTileY + Camera.HEIGHT) {
 
@@ -629,7 +629,7 @@ public class Global extends JPanel {
                     spriteToDraw = gardenerLoader.getIdleFrame(direction, currentFrameIndex);
                 }
 
-                // Calcul de la position à l'écran (identique aux tuiles)
+                // Calcul de la position a l'écran (identique aux tuiles)
                 int drawX = ((gardener.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
                 int drawY = ((gardener.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
 
@@ -657,7 +657,7 @@ public class Global extends JPanel {
             int currentChickenFrame = (int) (elapsedTime / 150) % 4;
 
             for (Chicken chicken : enemies) {
-                // Vérifier si la poule est visible à l'écran
+                // Vérifier si la poule est visible a l'écran
                 if (chicken.getX() >= fstTileX && chicken.getX() <= fstTileX + Camera.WIDTH &&
                         chicken.getY() >= fstTileY && chicken.getY() <= fstTileY + Camera.HEIGHT) {
 
@@ -668,11 +668,11 @@ public class Global extends JPanel {
                             currentChickenFrame
                     );
 
-                    // Calcul de la position à l'écran
+                    // Calcul de la position a l'écran
                     int drawX = ((chicken.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
                     int drawY = ((chicken.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
 
-                    // Les sprites de poule ont déjà un fichier "left" et un fichier "right"
+                    // Les sprites de poule ont déja un fichier "left" et un fichier "right"
                     // On les affiche donc normalement, sans avoir besoin d'inverser l'image !
                     if (spriteToDraw != null) {
                         g.drawImage(spriteToDraw,
@@ -686,16 +686,16 @@ public class Global extends JPanel {
         }
 
         //dessin des corbeaux
-        // Récupère la liste des corbeaux (il faudra créer cette liste dans World.java, comme enemies)
+        // Récupere la liste des corbeaux (il faudra créer cette liste dans World.java, comme enemies)
         java.util.List<src.model.Crow> corbeaux = world.getCrows(); // Exemple, adapte le nom
 
         if (corbeaux != null && !corbeaux.isEmpty()) {
             // Calcule la frame d'animation actuelle basée sur le temps écoulé
-            // (Tu utilises déjà NB_FRAMES=4 pour la poule, c'est parfait)
+            // (Tu utilises déja NB_FRAMES=4 pour la poule, c'est parfait)
             int currentCrowFrame = (int) (elapsedTime / 150) % 4; // Vitesse d'animation
 
             for (src.model.Crow crow : corbeaux) {
-                // Ne dessine que s'il est visible à l'écran (dans la caméra)
+                // Ne dessine que s'il est visible a l'écran (dans la caméra)
                 if (crow.getX() >= fstTileX && crow.getX() <= fstTileX + Camera.WIDTH &&
                         crow.getY() >= fstTileY && crow.getY() <= fstTileY + Camera.HEIGHT) {
 
@@ -706,7 +706,7 @@ public class Global extends JPanel {
                             currentCrowFrame
                     );
 
-                    // Calcule les coordonnées de dessin à l'écran
+                    // Calcule les coordonnées de dessin a l'écran
                     int drawX = ((crow.getX() - fstTileX) * Display.RATIO_X) - pixelDiffX;
                     int drawY = ((crow.getY() - fstTileY) * Display.RATIO_Y) - pixelDiffY;
 

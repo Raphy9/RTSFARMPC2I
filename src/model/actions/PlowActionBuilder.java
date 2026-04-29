@@ -29,7 +29,7 @@ public class PlowActionBuilder extends ActionBuilder {
         int current = getCurrentPlowedTilesCount();
         int limit = getPlowLimit();
         int queued = getSelectedPoints().size();
-        return "Ajoutez une case à labourer " + current + "/"
+        return "Ajoutez une case a labourer " + current + "/"
                 + limit + " (+5 par niveau) | En attente : " + queued;
     }
 

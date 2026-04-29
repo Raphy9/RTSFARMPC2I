@@ -21,10 +21,10 @@ public class FenceFace extends Building {
     private static void loadSprites() {
         if (loaded) return;
 
-        // Image de base pour la barrière de face
+        // Image de base pour la barriere de face
         baseSprite = SpriteUtils.processFenceImage("src/assets/Obstacles/fence_face.png");
 
-        // On charge manuellement les 4 angles des barrières
+        // On charge manuellement les 4 angles des barrieres
         cornerTR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_top_right.png");
         cornerBR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_right.png");
         cornerBL = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_left.png");
@@ -33,7 +33,7 @@ public class FenceFace extends Building {
         loaded = true;
     }
 
-    // Petite méthode pour détecter si un voisin est une barrière (face ou côté)
+    // Petite méthode pour détecter si un voisin est une barriere (face ou coté)
     private boolean isFence(Building b) {
         return b instanceof FenceFace || b instanceof FenceSide;
     }
@@ -49,10 +49,10 @@ public class FenceFace extends Building {
         boolean hasW = isFence(world.getBuildingAt(x - 1, y));
 
         // Si ça forme EXCLUSIVEMENT un angle droit, on renvoie l'image d'angle pivotée
-        if (hasW && hasS && !hasN && !hasE) return cornerTR; // Angle en Haut à Droite
-        if (hasN && hasW && !hasS && !hasE) return cornerBR; // Angle en Bas à Droite
-        if (hasN && hasE && !hasS && !hasW) return cornerBL; // Angle en Bas à Gauche
-        if (hasS && hasE && !hasN && !hasW) return cornerTL; // Angle en Haut à Gauche
+        if (hasW && hasS && !hasN && !hasE) return cornerTR; // Angle en Haut a Droite
+        if (hasN && hasW && !hasS && !hasE) return cornerBR; // Angle en Bas a Droite
+        if (hasN && hasE && !hasS && !hasW) return cornerBL; // Angle en Bas a Gauche
+        if (hasS && hasE && !hasN && !hasW) return cornerTL; // Angle en Haut a Gauche
 
         // Si ce n'est pas un angle droit (ligne droite, cul-de-sac ou croisement), on reste de Face
         return baseSprite;

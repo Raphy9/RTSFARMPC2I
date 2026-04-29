@@ -5,7 +5,7 @@ import src.model.Camera;
 import java.awt.*;
 
 /**
- * EdgeScroller léger : wrapper autour d'un EdgeScrollThread dédié.
+ * EdgeScroller leger : wrapper autour d'un EdgeScrollThread dedie.
  * Garde une API compatible avec l'ancien usage dans `Display`.
  */
 public class EdgeScroller {

@@ -6,10 +6,10 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Thread dédié à l'edge-scrolling. Gère en exclusivité la détection de position de la souris
- * et le déplacement de la caméra à intervalle fixe.
+ * Thread dedie a l'edge-scrolling. Gere en exclusivite la detection de position de la souris
+ * et le deplacement de la camera a intervalle fixe.
  *
- * Usage : instancier en fournissant les composants nécessaires, appeler start() et stop().
+ * Usage : instancier en fournissant les composants necessaires, appeler start() et stop().
  */
 public class EdgeScrollThread {
     private final Camera camera;
@@ -45,15 +45,15 @@ public class EdgeScrollThread {
             int sleepMs = Math.max(1, 1000 / this.fps);
             while (!Thread.currentThread().isInterrupted()) {
                 if (enabled && camera != null && !overlayActive) {
-                    // Ne scroller que si la fenêtre contenant la vue a le focus
+                    // Ne scroller que si la fenetre contenant la vue a le focus
                     try {
                         java.awt.Window w = SwingUtilities.getWindowAncestor(globalView);
                         if (w == null || !w.isFocused()) {
                             Thread.sleep(sleepMs);
-                            continue; // ne fait rien si la fenêtre n'a pas le focus
+                            continue; // ne fait rien si la fenetre n'a pas le focus
                         }
                     } catch (Throwable t) {
-                        // en cas d'erreur lors de la récupération de la fenêtre, on continue normalement
+                        // en cas d'erreur lors de la recuperation de la fenetre, on continue normalement
                     }
                     try {
                         PointerInfo pi = MouseInfo.getPointerInfo();

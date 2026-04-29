@@ -15,7 +15,7 @@ public class CrowSpawner implements Runnable {
 
     // Temps entre chaque apparition
     private static final int SPAWN_INTERVAL = 20000;
-    // Nombre maximum de corbeaux en même temps
+    // Nombre maximum de corbeaux en meme temps
     private static final int MAX_CROWS = 3;
 
     public CrowSpawner(World world) {
@@ -38,7 +38,7 @@ public class CrowSpawner implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Générateur de corbeaux activé ! (Apparition à partir du niveau 4)");
+        System.out.println("Générateur de corbeaux activé ! (Apparition a partir du niveau 4)");
 
         while (isRunning) {
             try {

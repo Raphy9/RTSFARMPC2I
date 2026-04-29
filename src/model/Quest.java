@@ -4,8 +4,8 @@ import src.model.buildings.Building;
 
 public class Quest {
     /**
-     * Type d'événement qui peut faire avancer une quête.
-     * Chaque quête ne répond qu'à un seul type pour garder les règles lisibles.
+     * Type d'evénement qui peut faire avancer une quete.
+     * Chaque quete ne répond qu'a un seul type pour garder les regles lisibles.
      */
     public enum Type {
         PLANT,
@@ -56,22 +56,22 @@ public class Quest {
         this.rewardClaimed = false;
     }
 
-    /** Crée une quête liée à une plantation. */
+    /** Crée une quete liée a une plantation. */
     public static Quest createPlantQuest(String id, String title, String description, PlantType plantType, int goal, int rewardMoney, int rewardExp) {
         return new Quest(id, title, description, Type.PLANT, plantType, null, null, goal, rewardMoney, rewardExp);
     }
 
-    /** Crée une quête liée à une récolte. */
+    /** Crée une quete liée a une récolte. */
     public static Quest createHarvestQuest(String id, String title, String description, PlantType plantType, int goal, int rewardMoney, int rewardExp) {
         return new Quest(id, title, description, Type.HARVEST, plantType, null, null, goal, rewardMoney, rewardExp);
     }
 
-    /** Crée une quête liée à une construction. Si targetBuildingClass est null, n'importe quel bâtiment valide. */
+    /** Crée une quete liée a une construction. Si targetBuildingClass est null, n'importe quel batiment valide. */
     public static Quest createBuildQuest(String id, String title, String description, Class<? extends Building> targetBuildingClass, int goal, int rewardMoney, int rewardExp) {
         return new Quest(id, title, description, Type.BUILD, null, targetBuildingClass != null ? targetBuildingClass.getName() : null, null, goal, rewardMoney, rewardExp);
     }
 
-    /** Crée une quête pilotée par un événement de gameplay (labour, vente, niveau, etc.). */
+    /** Crée une quete pilotée par un événement de gameplay (labour, vente, niveau, etc.). */
     public static Quest createActionQuest(String id, String title, String description, String actionKey, int goal, int rewardMoney, int rewardExp) {
         return new Quest(id, title, description, Type.ACTION, null, null, actionKey, goal, rewardMoney, rewardExp);
     }
@@ -99,7 +99,7 @@ public class Quest {
     }
 
     /**
-     * Avance la quête d'une quantité donnée et renvoie true uniquement lorsqu'elle passe à l'état terminé.
+     * Avance la quete d'une quantité donnée et renvoie true uniquement lorsqu'elle passe a l'état terminé.
      */
     public boolean addProgress(int amount) {
         if (completed || amount <= 0) {
@@ -132,20 +132,20 @@ public class Quest {
     }
 
     /**
-     * Méthode pour réclamer la récompense manuellement (nécessite accès aux stats du monde).
+     * Méthode pour réclamer la récompense manuellement (nécessite acces aux stats du monde).
      * Cette méthode sera appelée depuis l'interface utilisateur.
      */
     public boolean claimReward() {
         if (!completed || rewardClaimed) {
             return false;
         }
-        // Marquer comme réclamée - les stats seront mises à jour par le système de quêtes
+        // Marquer comme réclamée - les stats seront mises a jour par le systeme de quetes
         rewardClaimed = true;
         return true;
     }
 
     /**
-     * Restaure l'état exact de la quête depuis une sauvegarde.
+     * Restaure l'état exact de la quete depuis une sauvegarde.
      */
     public void restoreState(int restoredProgress, boolean restoredCompleted, boolean restoredRewardClaimed) {
         this.progress = Math.max(0, Math.min(goal, restoredProgress));

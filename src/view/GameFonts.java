@@ -17,12 +17,12 @@ public class GameFonts {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(MINECRAFT_FONT);
         } catch (IOException | FontFormatException e) {
-            System.err.println("Erreur : Impossible de charger Minecraft.ttf. Utilisation de la police par défaut.");
+            System.err.println("Erreur : Impossible de charger Minecraft.ttf. Utilisation de la police par defaut.");
             MINECRAFT_FONT = new Font("Arial", Font.PLAIN, 14);
         }
     }
 
-    /** Applique la police à TOUS les composants Swing par défaut */
+    /** Applique la police a TOUS les composants Swing par defaut */
     public static void applyGlobalFont(Font font) {
         FontUIResource resource = new FontUIResource(font);
         java.util.Enumeration<Object> keys = UIManager.getDefaults().keys();

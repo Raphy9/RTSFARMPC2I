@@ -68,12 +68,12 @@ public class BuildingManager extends MouseAdapter {
         startPlacement(buildingTemplate, -1, null);
     }
 
-    // Active le mode construction et mémorise un callback de refresh UI
+    // Active le mode construction et memorise un callback de refresh UI
     public void startPlacement(Building buildingTemplate, Runnable onComplete) {
         startPlacement(buildingTemplate, -1, onComplete);
     }
 
-    // Active le mode construction avec une limite de quantité maximale pour ce type de bâtiment
+    // Active le mode construction avec une limite de quantite maximale pour ce type de bâtiment
     public void startPlacement(Building buildingTemplate, int maxCount, Runnable onComplete) {
         this.placementMaxCount = maxCount;
         this.onPlacementComplete = onComplete;
@@ -112,14 +112,14 @@ public class BuildingManager extends MouseAdapter {
     }
 
     public void cancelDeletionMode() {
-        if (!this.deletionMode) return; // rien à faire si le mode n'était pas actif
+        if (!this.deletionMode) return; // rien à faire si le mode n'etait pas actif
         this.deletionMode = false;
         this.deletionDragActive = false;
         this.pendingDeletionBuildings.clear();
         this.pendingDeletionPlantTiles.clear();
         display.getGlobalView().repaint();
         if (this.deletionModeListener != null) this.deletionModeListener.accept(false);
-        // Retirer la référence pour arrêter le rendu du ghost/highlight
+        // Retirer la reference pour arreter le rendu du ghost/highlight
         display.getGlobalView().setGhostBuilding(null);
     }
 
@@ -202,7 +202,7 @@ public class BuildingManager extends MouseAdapter {
             leftMousePressed = false;
             GameDialog.showMessage(display.getGlobalView(),
                     "Limite atteinte",
-                    "Vous avez déjà construit le nombre maximum de ce bâtiment.");
+                    "Vous avez dejà construit le nombre maximum de ce bâtiment.");
             cancelPlacement();
             return;
         }
@@ -215,7 +215,7 @@ public class BuildingManager extends MouseAdapter {
             leftMousePressed = false;
             GameDialog.showMessage(display.getGlobalView(),
                     "Fonds insuffisants",
-                    "Pas assez d'argent !\nCoût : " + cost + " PO\nSolde : " + world.getStats().getMoney() + " PO");
+                    "Pas assez d'argent !\nCout : " + cost + " PO\nSolde : " + world.getStats().getMoney() + " PO");
             return;
         }
 
@@ -226,14 +226,14 @@ public class BuildingManager extends MouseAdapter {
 
         placedBuilding.setPosition(ghostX, ghostY);
         world.addBuilding(placedBuilding);
-        // La construction a été posée: on l'annonce au système de quêtes.
+        // La construction a ete posee: on l'annonce au systeme de quetes.
         world.registerBuildEvent(placedBuilding);
 
         SoundManager.playSound(SoundManager.PLACE);
 
         if (cost > 0) {
             world.getStats().removeMoney(cost);
-            System.out.println("Bâtiment acheté : " + cost + " PO | Solde : " + world.getStats().getMoney());
+            System.out.println("Bâtiment achete : " + cost + " PO | Solde : " + world.getStats().getMoney());
         }
 
         for (int dx = 0; dx < placedBuilding.getWidth(); dx++) {
@@ -356,7 +356,7 @@ public class BuildingManager extends MouseAdapter {
         pendingDeletionPlantTiles.clear();
         display.getGlobalView().repaint();
         notifyPlacementComplete();
-        System.out.println("Bâtiments supprimés -> +" + totalSell + " PO | Solde : " + world.getStats().getMoney());
+        System.out.println("Bâtiments supprimes -> +" + totalSell + " PO | Solde : " + world.getStats().getMoney());
 
 //        SoundManager.playSound(SoundManager.BREAK);    // Pour le moment son de gain d'argent, a voir
     }
@@ -379,7 +379,7 @@ public class BuildingManager extends MouseAdapter {
                 if (checkX < 0 || checkY < 0 || checkX >= World.WIDTH || checkY >= World.HEIGHT)
                     return false;
 
-                // 2. CORRECTION DU BUG DE SUPERPOSITION : Un bâtiment est déjà là ?
+                // 2. CORRECTION DU BUG DE SUPERPOSITION : Un bâtiment est dejà là ?
                 if (world.hasBuildingAt(checkX, checkY)) return false;
 
                 Tile t = world.getTile(checkX, checkY);
@@ -387,7 +387,7 @@ public class BuildingManager extends MouseAdapter {
                 // 3. Case non franchissable de base (eau, rocher, buisson)
                 if (!t.isWalkable()) return false;
 
-                // 4. VÉRIFICATION DES RÈGLES DE PLACEMENT (Normal vs Plantable)
+                // 4. VERIFICATION DES REGLES DE PLACEMENT (Normal vs Plantable)
                 boolean isPlantTile = (t instanceof src.model.PlantTile);
 
                 if (b.getPlacementRule() == Building.PlacementRule.NORMAL_ONLY && isPlantTile) {

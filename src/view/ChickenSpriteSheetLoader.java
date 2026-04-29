@@ -7,8 +7,8 @@ import javax.imageio.ImageIO;
 import src.model.Entity;
 
 /**
- * Classe spécifique pour charger et découper les sprites de la poule.
- * Contrairement au jardinier qui a une grille, la poule utilise 6 fichiers séparés de 4 frames horizontales.
+ * Classe specifique pour charger et decouper les sprites de la poule.
+ * Contrairement au jardinier qui a une grille, la poule utilise 6 fichiers separes de 4 frames horizontales.
  */
 public class ChickenSpriteSheetLoader {
 
@@ -18,13 +18,13 @@ public class ChickenSpriteSheetLoader {
     private BufferedImage[][][] animations;
     private final int nbFrames = 4; // Car chaque fichier de poule n'a que 4 frames
 
-    // Constructeur : charge tous les sprites dès l'instanciation
+    // Constructeur : charge tous les sprites des l'instanciation
     public ChickenSpriteSheetLoader() {
         animations = new BufferedImage[3][2][nbFrames];
         loadAllSheets();
     }
 
-    // Charge tous les fichiers de sprites et les découpe en frames
+    // Charge tous les fichiers de sprites et les decoupe en frames
     private void loadAllSheets() {
         try {
             // Idle : la poule se repose
@@ -45,12 +45,12 @@ public class ChickenSpriteSheetLoader {
         }
     }
 
-    /** Découpe une bande horizontale d'image en 4 frames carrées */
+    /** Decoupe une bande horizontale d'image en 4 frames carrees */
     private BufferedImage[] parseHorizontalSheet(String path) throws IOException {
         BufferedImage sheet = ImageIO.read(new File(path));
         BufferedImage[] frames = new BufferedImage[nbFrames];
 
-        // On suppose que la hauteur de l'image correspond à la taille d'une frame carrée
+        // On suppose que la hauteur de l'image correspond a la taille d'une frame carrée
         int frameSize = sheet.getHeight();
 
         for (int i = 0; i < nbFrames; i++) {
@@ -61,8 +61,8 @@ public class ChickenSpriteSheetLoader {
     }
 
     /**
-     * Récupère la bonne image d'animation.
-     * @param state L'état (src.model.Chicken.State) converti en int (0,1,2)
+     * Récupere la bonne image d'animation.
+     * @param stateAction L'état (src.model.Chicken.State) converti en int (0,1,2)
      * @param direction La direction (Entity.LEFT ou RIGHT)
      * @param frameIndex L'index de la frame (0-3)
      */

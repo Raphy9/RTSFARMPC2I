@@ -19,7 +19,7 @@ public class BarnCategoriesController implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Transmettre la catégorie au popup et rafraîchir la grille
+            // Transmettre la categorie au popup et rafraîchir la grille
             popupBarn.setCategory(category);
             popupBarn.refresh();
         }

@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Popup de félicitations affiché à chaque montée de niveau.
- * Montre les objets nouvellement débloqués (plantes ET bâtiments) avec un badge "new.png".
+ * Popup de felicitations affiche a chaque montee de niveau.
+ * Montre les objets nouvellement debloques (plantes ET batiments) avec un badge "new.png".
  */
 public class LevelUpPopup {
 
@@ -48,19 +48,19 @@ public class LevelUpPopup {
         title.setForeground(new Color(200, 150, 255));
         root.add(title, BorderLayout.NORTH);
 
-        // --- Corps : items débloqués ---
+        // --- Corps : items debloques ---
         List<UnlockEntry> unlocked = getUnlocksForLevel(newLevel);
 
         JPanel centerPanel = new JPanel(new BorderLayout(0, 12));
         centerPanel.setOpaque(false);
 
         if (unlocked.isEmpty()) {
-            JLabel noNew = new JLabel("Continuez à progresser pour débloquer de nouveaux objets !", SwingConstants.CENTER);
+            JLabel noNew = new JLabel("Continuez a progresser pour debloquer de nouveaux objets !", SwingConstants.CENTER);
             noNew.setFont(font.deriveFont(14f));
             noNew.setForeground(SDV_TEXT);
             centerPanel.add(noNew, BorderLayout.CENTER);
         } else {
-            JLabel subtitle = new JLabel("Nouveaux objets débloqués :", SwingConstants.CENTER);
+            JLabel subtitle = new JLabel("Nouveaux objets debloques :", SwingConstants.CENTER);
             subtitle.setFont(font.deriveFont(16f));
             subtitle.setForeground(SDV_TEXT);
             centerPanel.add(subtitle, BorderLayout.NORTH);
@@ -111,7 +111,7 @@ public class LevelUpPopup {
         card.setBorder(BorderFactory.createLineBorder(SDV_BORDER_DARK, 2));
         card.setPreferredSize(new Dimension(110, 120));
 
-        // Image chargée de façon synchrone + badge "new" superposé
+        // Image chargee de façon synchrone + badge "new" superpose
         JLabel imgLabel = new JLabel(buildBadgedIcon(entry.iconPath, 64)) {
             @Override public Dimension getPreferredSize() { return new Dimension(80, 80); }
         };
@@ -127,7 +127,7 @@ public class LevelUpPopup {
         return card;
     }
 
-    /** Charge une image de façon SYNCHRONE via ImageIO (évite les artefacts asynchrones de ImageIcon). */
+    /** Charge une image de façon SYNCHRONE via ImageIO (evite les artefacts asynchrones de ImageIcon). */
     private static java.awt.image.BufferedImage loadSync(String path) {
         try {
             java.io.File f = new java.io.File(path);
@@ -136,7 +136,7 @@ public class LevelUpPopup {
         return null;
     }
 
-    /** Crée une icône avec le badge "new.png" en haut à droite. */
+    /** Cree une icone avec le badge "new.png" en haut a droite. */
     private static ImageIcon buildBadgedIcon(String imagePath, int size) {
         java.awt.image.BufferedImage baseImg = loadSync(imagePath);
         java.awt.image.BufferedImage badgeImg = loadSync("src/assets/new.png");
@@ -149,7 +149,7 @@ public class LevelUpPopup {
         if (baseImg != null) {
             g2.drawImage(baseImg, 0, 0, size, size, null);
         } else {
-            // Fallback : carré gris avec "?"
+            // Fallback : carre gris avec "?"
             g2.setColor(new Color(180, 140, 80));
             g2.fillRect(0, 0, size, size);
             g2.setColor(new Color(110, 45, 15));
@@ -165,7 +165,7 @@ public class LevelUpPopup {
     }
 
     // -------------------------------------------------------
-    // Données : quoi est débloqué à chaque niveau
+    // Donnees : quoi est debloque a chaque niveau
     // -------------------------------------------------------
 
     public static List<UnlockEntry> getUnlocksForLevel(int level) {
@@ -181,7 +181,7 @@ public class LevelUpPopup {
             }
         }
 
-        // Bâtiments
+        // Batiments
         for (BuildingEntry b : ALL_BUILDINGS) {
             if (b.levelRequirement() == level) {
                 list.add(new UnlockEntry(b.name(), b.iconPath()));
@@ -192,14 +192,14 @@ public class LevelUpPopup {
     }
 
     // -------------------------------------------------------
-    // Catalogue statique de tous les bâtiments avec leurs niveaux
+    // Catalogue statique de tous les batiments avec leurs niveaux
     // -------------------------------------------------------
 
     public record BuildingEntry(String name, String iconPath, int levelRequirement) {}
 
     public static final List<BuildingEntry> ALL_BUILDINGS = List.of(
-        new BuildingEntry("Barrière (Face)",  "src/assets/Obstacles/fence_face.png", 1),
-        new BuildingEntry("Barrière (Côté)",  "src/assets/Obstacles/fence_side.png", 1),
+        new BuildingEntry("Barriere (Face)",  "src/assets/Obstacles/fence_face.png", 1),
+        new BuildingEntry("Barriere (Cote)",  "src/assets/Obstacles/fence_side.png", 1),
         new BuildingEntry("Tonneau 1",        "src/assets/Buildings/barrel1.png",    1),
         new BuildingEntry("Tonneau 2",        "src/assets/Buildings/barrel2.png",    1),
         new BuildingEntry("Rocher",           "src/assets/Buildings/rock1.png",      1),
@@ -211,7 +211,7 @@ public class LevelUpPopup {
         new BuildingEntry("Arroseur auto",    "src/assets/arroseur.png",             3),
         new BuildingEntry("Boite aux lettres","src/assets/Buildings/mailbox1.png",   4),
         new BuildingEntry("Porte (Face)",     "src/assets/Obstacles/fence_face.png", 4),
-        new BuildingEntry("Porte (Côté)",     "src/assets/Obstacles/fence_side.png", 4),
+        new BuildingEntry("Porte (Cote)",     "src/assets/Obstacles/fence_side.png", 4),
         new BuildingEntry("Linge",            "src/assets/Buildings/linge.png",      5),
         new BuildingEntry("Enseigne carrote",  "src/assets/Buildings/carrotsign.png",   2),
         new BuildingEntry("Enseigne fraise",  "src/assets/Buildings/strawberrysign.png",   4),

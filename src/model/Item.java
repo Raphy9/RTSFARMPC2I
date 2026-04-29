@@ -3,9 +3,9 @@ package src.model;
 import javax.swing.*;
 
 public abstract class Item {
-    private ImageIcon image; // Image de l'item, définie dans les classes filles en fonction du type de plante (image différente pour les graines et les plantes)
+    private ImageIcon image; // Image de l'item, definie dans les classes filles en fonction du type de plante (image différente pour les graines et les plantes)
     private PlantType plantType; // Type de l'item, qui correspond au type de plante (choux, carotte, citrouille, fraise)
-    private int quantity; // Quantité de l'item, qui peut être modifiée en ajoutant ou retirant des items (ex: récolter une plante ajoute une plante à l'inventaire et retire une graine, planter une graine retire une graine de l'inventaire)
+    private int quantity; // Quantité de l'item, qui peut etre modifiée en ajoutant ou retirant des items (ex: récolter une plante ajoute une plante a l'inventaire et retire une graine, planter une graine retire une graine de l'inventaire)
 
     /*
     Constructeur par défaut de tous les items

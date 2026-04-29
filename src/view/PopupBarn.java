@@ -11,21 +11,21 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 /**
- * Popup d'inventaire de la grange: affiche les items stockés dans une grille 4x5.
- * Interface 3 zones: catégories (haut), grille d'items (centre), description (droite).
+ * Popup d'inventaire de la grange: affiche les items stockes dans une grille 4x5.
+ * Interface 3 zones: categories (haut), grille d'items (centre), description (droite).
  * Permet le transfert d'items via clic/shift-clic.
  */
 public class PopupBarn extends PopupPanel {
 
-    // Références du jeu
-    private Display display;      // Pour rafraîchir l'écran après les mises à jour
-    private World world;          // Pour accéder à la grange: world.getBarn()
-    private Barn barn;            // Référence directe à la grange (extends Inventory)
+    // References du jeu
+    private Display display;      // Pour rafraîchir l'ecran apres les mises a jour
+    private World world;          // Pour acceder a la grange: world.getBarn()
+    private Barn barn;            // Reference directe a la grange (extends Inventory)
 
     // Composants visuels
     private JPanel itemGrid;         // Grille 4x5 des items (20 cases)
     private JPanel categories;       // Barre de 8 boutons: Toutes, Graines, Plantes, + vides
-    private JPanel descriptionPanel; // Zone droite: détails de l'item sélectionné
+    private JPanel descriptionPanel; // Zone droite: details de l'item selectionne
 
     private String selectedCategory = "Toutes";
     private Item selectedItem = null;
@@ -42,29 +42,29 @@ public class PopupBarn extends PopupPanel {
 
     /**
      * Initialise le popup de la grange.
-     * @param display affichage principal (pour rafraîchir après transferts)
-     * @param world le monde (accès à la grange via getBarn())
+     * @param display affichage principal (pour rafraîchir apres transferts)
+     * @param world le monde (acces a la grange via getBarn())
      */
     public PopupBarn(Display display, World world) {
-        // Créer le popup avec dimensions maximales (presque tout l'écran)
+        // Creer le popup avec dimensions maximales (presque tout l'ecran)
         super(display, Camera.WIDTH*Display.RATIO_X - 2*Display.RATIO_X, Camera.HEIGHT*Display.RATIO_Y-2*Display.RATIO_Y, "Grange");
         
-        // Stocker les références
+        // Stocker les references
         this.display = display;
         this.world = world;
-        // Sécurité: assure un catalogue minimum visible même après une sauvegarde partielle/corrompue.
+        // Securite: assure un catalogue minimum visible meme apres une sauvegarde partielle/corrompue.
         this.world.ensureBarnCatalog();
         this.barn = world.getBarn();
         
-        // Construire l'interface: catégories + grille + description
+        // Construire l'interface: categories + grille + description
         initializeUI();
     }
 
     /**
-     * Construit l'interface: 3 zones disposées verticalement et horizontalement.
-     * NORD: boutons de catégories (Toutes, Graines, Plantes)
+     * Construit l'interface: 3 zones disposees verticalement et horizontalement.
+     * NORD: boutons de categories (Toutes, Graines, Plantes)
      * CENTRE: grille 4x5 d'items
-     * EST: panneau de description (détails de l'item)
+     * EST: panneau de description (details de l'item)
      */
     private void initializeUI() {
         JPanel center = new JPanel(new BorderLayout());
@@ -75,7 +75,7 @@ public class PopupBarn extends PopupPanel {
         panel.setBackground(new Color(0, 0, 0, 0));
         panel.setOpaque(false);
         
-        // === Créer les 3 zones vides ===
+        // === Creer les 3 zones vides ===
         categories = new JPanel(new GridLayout(1, 4, 4, 0));       // 4 colonnes pour 4 boutons
         categories.setOpaque(false);
         categories.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
@@ -84,7 +84,7 @@ public class PopupBarn extends PopupPanel {
         itemGrid.setOpaque(false);
         itemGrid.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 10));
 
-        // Panneau de droite (Preview) séparé par une ligne verticale
+        // Panneau de droite (Preview) separe par une ligne verticale
         descriptionPanel = new JPanel(new BorderLayout());
         descriptionPanel.setOpaque(false);
         descriptionPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -93,16 +93,16 @@ public class PopupBarn extends PopupPanel {
         ));
 
         // === Remplir les zones ===
-        buildItemGrid();      // Parcourir inventaire et créer les cases d'items
+        buildItemGrid();      // Parcourir inventaire et creer les cases d'items
         buildDescription();   // Ajouter le texte "Description des items ici"
-        ArrayList<JButton> categoryButtons = buildCategories();    // Créer les boutons de catégories
+        ArrayList<JButton> categoryButtons = buildCategories();    // Creer les boutons de categories
         
         for (int i = 0; i < categoryButtons.size() && i < 4; i++) {
             JButton catButton = categoryButtons.get(i);
             catButton.addActionListener(new BarnCategoriesController(catButton, this, new String[]{"Toutes", "Graines", "Plantes", "Fertilisants"}[i]));
         }
 
-        // === Assembler: NORD (catégories) | CENTRE (grille) | EST (description) ===
+        // === Assembler: NORD (categories) | CENTRE (grille) | EST (description) ===
         panel.add(categories, BorderLayout.NORTH);
         panel.add(itemGrid, BorderLayout.CENTER);
         panel.add(descriptionPanel, BorderLayout.EAST);
@@ -113,12 +113,12 @@ public class PopupBarn extends PopupPanel {
 
     /**
      * Remplit la grille avec les items de l'inventaire.
-     * Cycle: VIDER → REMPLIR → REDESSINER (utile pour les rafraîchissements après transferts).
+     * Cycle: VIDER → REMPLIR → REDESSINER (utile pour les rafraîchissements apres transferts).
      */
     private void buildItemGrid() {
         itemGrid.setPreferredSize(new Dimension(this.width-DESCRIPTION_SIZE, this.height-20));
         
-        // ÉTAPE 1: Vider la grille (enlever les anciens items)
+        // eTAPE 1: Vider la grille (enlever les anciens items)
         itemGrid.removeAll();
         
         ArrayList<Item> filtered = new ArrayList<>();
@@ -149,7 +149,7 @@ public class PopupBarn extends PopupPanel {
             itemGrid.add(emptyPanel);
         }
         
-        // ÉTAPE 3: Forcer Swing à recalculer et redessiner
+        // eTAPE 3: Forcer Swing a recalculer et redessiner
         itemGrid.revalidate();
         itemGrid.repaint();
     }
@@ -157,12 +157,12 @@ public class PopupBarn extends PopupPanel {
     public void setCategory(String category) {
         if (category != null) {
             this.selectedCategory = category;
-            this.selectedItem = null; // On désélectionne quand on change d'onglet
+            this.selectedItem = null; // On deselectionne quand on change d'onglet
         }
     }
 
     /**
-     * Crée la barre de boutons de catégories: 3 nommés (Toutes, Graines, Plantes) + 1 vide.
+     * Cree la barre de boutons de categories: 3 nommes (Toutes, Graines, Plantes) + 1 vide.
      */
     private ArrayList<JButton> buildCategories() {
         String[] categoryNames = {"Toutes", "Graines", "Plantes", "Fertilisants"};
@@ -182,14 +182,14 @@ public class PopupBarn extends PopupPanel {
     }
 
     /**
-     * Panneau de description (droite): affiche les détails de l'item sélectionné.
+     * Panneau de description (droite): affiche les details de l'item selectionne.
      */
     private void buildDescription() {
         descriptionPanel.removeAll();
         descriptionPanel.setPreferredSize(new Dimension(DESCRIPTION_SIZE, this.height - 20));
 
         if (selectedItem == null) {
-            // Écran par défaut
+            // ecran par defaut
             JTextArea descr = new JTextArea("\n\nBienvenue a la Grange !\n\nCliquez sur un objet a gauche pour voir ses details.");
             descr.setEditable(false);
             descr.setOpaque(false);
@@ -223,7 +223,7 @@ public class PopupBarn extends PopupPanel {
             imgLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             imgLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
 
-            // 3. Détails complets
+            // 3. Details complets
             JPanel detailsPanel = new JPanel(new GridLayout(0, 1, 0, 6));
             detailsPanel.setOpaque(false);
 
@@ -237,7 +237,7 @@ public class PopupBarn extends PopupPanel {
                 // Stock
                 detailsPanel.add(createDetailLabel("En stock : " + selectedItem.getQuantity()));
                 
-                // Prix de vente (toujours affiché)
+                // Prix de vente (toujours affiche)
                 detailsPanel.add(createDetailLabel("Prix de Vente : " + barn.sellItem(selectedItem, 0) + " PO"));
                 // N'afficher le prix d'achat QUE pour les graines ou autres items non-plante
                 if (!(selectedItem instanceof ItemPlant)) {
@@ -246,13 +246,13 @@ public class PopupBarn extends PopupPanel {
 
                 // Croissance (si c'est une graine)
                 if (selectedItem instanceof ItemSeed) {
-                    detailsPanel.add(createDetailLabel("Durée de croissance : " + plantType.getGrowthDuration() + " unités"));
-                    detailsPanel.add(createDetailLabel("Consommation d'eau : " + String.format("%.1f", plantType.getWaterConsumption()) + "/unité"));
+                    detailsPanel.add(createDetailLabel("Duree de croissance : " + plantType.getGrowthDuration() + " unites"));
+                    detailsPanel.add(createDetailLabel("Consommation d'eau : " + String.format("%.1f", plantType.getWaterConsumption()) + "/unite"));
                 }
                 
             } else {
                 int req = selectedItem.getPlantType().getLevelRequirement();
-                JLabel lockedMsg = new JLabel("<html><center>Cet objet se débloque<br>au niveau " + req + ".</center></html>");
+                JLabel lockedMsg = new JLabel("<html><center>Cet objet se debloque<br>au niveau " + req + ".</center></html>");
                 lockedMsg.setFont(getCustomFont(14f));
                 lockedMsg.setForeground(SDV_TEXT);
                 lockedMsg.setHorizontalAlignment(SwingConstants.CENTER);
@@ -296,7 +296,7 @@ public class PopupBarn extends PopupPanel {
     }
 
     /**
-     * Crée un bouton pour la barre de catégories.
+     * Cree un bouton pour la barre de categories.
      */
     private JButton createCategoryButton(String text) {
         JButton btn = new JButton(text);
@@ -309,7 +309,7 @@ public class PopupBarn extends PopupPanel {
     }
 
     /**
-     * Crée une case d'item: carré icône à gauche + nom/description à droite + boutons acheter/vendre.
+     * Cree une case d'item: carre icone a gauche + nom/description a droite + boutons acheter/vendre.
      */
     private JPanel createPanelItem(Item item) {
         // Calculer les dimensions de la case
@@ -321,7 +321,7 @@ public class PopupBarn extends PopupPanel {
         JPanel panel = new JPanel(new BorderLayout(10, 0)); // 10px espace horizontal entre gauche/droite
         boolean unlocked = isItemUnlocked(item);
         boolean outOfStock = item.getQuantity() <= 0;
-        // si débloqué -> couleur claire, sinon foncé
+        // si debloque -> couleur claire, sinon fonce
         panel.setBackground(unlocked ? SDV_BORDER_LIGHT : SDV_BORDER_LIGHTDARK);
         panel.setPreferredSize(new Dimension(slotWidth, slotHeight));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8)); // Marges
@@ -341,18 +341,18 @@ public class PopupBarn extends PopupPanel {
             }
         });
 
-        // === BLOC GAUCHE: Carré avec icône + badge quantité ===
+        // === BLOC GAUCHE: Carre avec icone + badge quantite ===
         JPanel iconSquare = new JPanel(new BorderLayout());
         iconSquare.setPreferredSize(new Dimension(iconSize, iconSize));
         iconSquare.setBorder(BorderFactory.createLineBorder(SDV_BORDER_DARK));
         iconSquare.setBackground(unlocked ? SDV_BORDER_LIGHT : Color.GRAY);
 
-        // Superposer l'icône et le badge
+        // Superposer l'icone et le badge
         JPanel overlay = new JPanel();
         overlay.setLayout(new OverlayLayout(overlay));
         overlay.setOpaque(false);
 
-        // Icône centrée
+        // Icone centree
         ImageIcon iconImg = unlocked
             ? new ImageIcon(item.getImage().getImage().getScaledInstance(iconSize - 40, iconSize - 40, Image.SCALE_SMOOTH))
             : getLockIcon(iconSize - 40);
@@ -360,18 +360,18 @@ public class PopupBarn extends PopupPanel {
         iconLabel.setAlignmentX(0.5f);
         iconLabel.setAlignmentY(0.5f);
 
-        // Si out of stock, ajouter un calque semi-transparent pour "dim" l'icône
+        // Si out of stock, ajouter un calque semi-transparent pour "dim" l'icone
         if (outOfStock) {
             JPanel dimmer = new JPanel();
             dimmer.setOpaque(true);
-            // blanc semi-transparent pour éclaircir et donner l'effet grisé; on peut aussi utiliser noir transparent
+            // blanc semi-transparent pour eclaircir et donner l'effet grise; on peut aussi utiliser noir transparent
             dimmer.setBackground(new Color(71, 43, 20, 160));
             dimmer.setAlignmentX(0.5f);
             dimmer.setAlignmentY(0.5f);
             overlay.add(dimmer);
         }
 
-        // Texte quantité en bas à droite
+        // Texte quantite en bas a droite
         JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 1));
         quantityPanel.setOpaque(true);
         quantityPanel.setBackground(new Color(0, 0, 0, 170));
@@ -399,7 +399,7 @@ public class PopupBarn extends PopupPanel {
         String name = unlocked ? item.getPlantType().getName() : "???";
         JLabel nameLabel = new JLabel(name);
         nameLabel.setFont(getCustomFont(14f));
-        // Si débloqué mais outOfStock -> gris, sinon si débloqué normal couleur SDV_TEXT, sinon dark gray
+        // Si debloque mais outOfStock -> gris, sinon si debloque normal couleur SDV_TEXT, sinon dark gray
         nameLabel.setForeground(!unlocked ? Color.DARK_GRAY : SDV_TEXT);
 
         infoPanel.add(nameLabel);
@@ -425,7 +425,7 @@ public class PopupBarn extends PopupPanel {
         JButton sellButton = createActionBtn("Vendre");  
 
         if (unlocked) {
-            // Do not allow buying of ItemPlant (légumes) from the barn — only selling
+            // Do not allow buying of ItemPlant (legumes) from the barn — only selling
             if (!(item instanceof ItemPlant)) {
                 buyButton.addActionListener(new BarnController(world, barn, PopupBarn.this, item, true, quantityInput));
             } else {
@@ -458,7 +458,7 @@ public class PopupBarn extends PopupPanel {
     }
 
     /**
-     * Génère la mini-description.
+     * Genere la mini-description.
      */
     private String buildItemDescription(Item item) {
         PlantType plantType = item.getPlantType();
@@ -471,7 +471,7 @@ public class PopupBarn extends PopupPanel {
         return GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, size) : new Font("Arial", Font.BOLD, (int)size);
     }
 
-    /** Rafraîchit la grille et la description après une action. */
+    /** Rafraîchit la grille et la description apres une action. */
     public void refresh() {
         buildItemGrid();
         buildDescription();

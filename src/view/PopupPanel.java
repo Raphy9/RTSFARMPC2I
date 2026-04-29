@@ -12,8 +12,8 @@ public class PopupPanel extends JPanel {
     // Couleurs palettes Stardew Valley
     public static final Color SDV_BG = new Color(255, 218, 153);        // Beige bois clair
     public static final Color SDV_BORDER_LIGHT = new Color(245, 190, 105); // Marron clair
-    public static final Color SDV_BORDER_DARK = new Color(110, 45, 15);    // Marron foncé / Contour
-    public static final Color SDV_TEXT = new Color(75, 35, 10);            // Texte marron très sombre
+    public static final Color SDV_BORDER_DARK = new Color(110, 45, 15);    // Marron fonce / Contour
+    public static final Color SDV_TEXT = new Color(75, 35, 10);            // Texte marron tres sombre
 
     protected final int width, height;
     private Point initialClick;
@@ -26,7 +26,7 @@ public class PopupPanel extends JPanel {
         this.setLayout(new BorderLayout());
         setPreferredSize(new Dimension(width, height));
         setFocusable(true);
-        setOpaque(false); // TRÈS IMPORTANT : permet au paintComponent personnalisé d'apparaître
+        setOpaque(false); // TRES IMPORTANT : permet au paintComponent personnalise d'apparaître
 
         // --- Panel du haut (Barre de titre draggable) ---
         JPanel topPanel = new JPanel(new BorderLayout());
@@ -78,14 +78,14 @@ public class PopupPanel extends JPanel {
         topPanel.add(t, BorderLayout.CENTER);
     }
 
-    /** Dessin de la texture style Stardew Valley (3 épaisseurs) */
+    /** Dessin de la texture style Stardew Valley (3 epaisseurs) */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
         int w = getWidth();
         int h = getHeight();
-        int borderSize = 4; // Épaisseur des pixels
+        int borderSize = 4; // Epaisseur des pixels
 
         // 1. Bordure externe sombre
         g2.setColor(SDV_BORDER_DARK);

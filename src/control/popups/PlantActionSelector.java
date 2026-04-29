@@ -15,13 +15,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /** Controleur du bouton planter dans le menu de choix d'action
- * Lance un popup d'inventaire qui affiche toutes les graines disponibles (même celles dont
- * le jardinier n'a pas de stock mais qui sont présentes dans la grange, avec une quantité de 0 et un bouton désactivé)
- * Le popup doit permettre de sélectionner une graine, et une fois la graine sélectionnée, il doit lancer le mode de
- * sélection de la display pour sélectionner une case à planter, avec un critère de plantation (case doit être labourée,
+ * Lance un popup d'inventaire qui affiche toutes les graines disponibles (meme celles dont
+ * le jardinier n'a pas de stock mais qui sont presentes dans la grange, avec une quantite de 0 et un bouton desactive)
+ * Le popup doit permettre de selectionner une graine, et une fois la graine selectionnee, il doit lancer le mode de
+ * sélection de la display pour sélectionner une case à planter, avec un critere de plantation (case doit etre labourée,
  * pas d'obstacle, etc.) et une fois la case sélectionnée, il doit construire une PlantAction avec la graine sélectionnée
  * et la case sélectionnée, et l'ajouter au jardinier.
- * Note : le mode de sélection de la display doit être lancé à partir du builder pour pouvoir construire l'action une fois la case sélectionnée
+ * Note : le mode de sélection de la display doit etre lancé à partir du builder pour pouvoir construire l'action une fois la case sélectionnée
  */
 public class PlantActionSelector implements ActionListener {
 
@@ -43,20 +43,20 @@ public class PlantActionSelector implements ActionListener {
         this.builder.setDisplay(display); // fournir la display pour le highlight
     }
 
-    /** Lorsque le bouton est cliqué, on lance un popup d'inventaire qui affiche toutes les graines disponibles (même celles dont
+    /** Lorsque le bouton est cliqué, on lance un popup d'inventaire qui affiche toutes les graines disponibles (meme celles dont
      * le jardinier n'a pas de stock mais qui sont présentes dans la grange, avec une quantité de 0 et un bouton désactivé)
      * Le popup doit permettre de sélectionner une graine, et une fois la graine sélectionnée, il doit lancer le mode de
-     * sélection de la display pour sélectionner une case à planter, avec un critère de plantation (case doit être labourée,
+     * sélection de la display pour sélectionner une case à planter, avec un critere de plantation (case doit etre labourée,
      * pas d'obstacle, etc.) et une fois la case sélectionnée, il doit construire une PlantAction avec la graine sélectionnée
      * et la case sélectionnée, et l'ajouter au jardinier.
-     * Note : le mode de sélection de la display doit être lancé à partir du builder pour pouvoir construire l'action une fois la case sélectionnée
+     * Note : le mode de sélection de la display doit etre lancé à partir du builder pour pouvoir construire l'action une fois la case sélectionnée
      */
     @Override
     public void actionPerformed(ActionEvent e) {
         System.out.println("Lancement du popup de selection de graine");
 
         // Construire une inventory temporaire qui contient une ItemSeed pour chaque PlantType,
-        // quantité = somme(gardener + barn) (peut être 0)
+        // quantité = somme(gardener + barn) (peut etre 0)
         Inventory combined = new Inventory();
 
         Gardener gardener = builder.getGardener();
@@ -84,7 +84,7 @@ public class PlantActionSelector implements ActionListener {
                     }
                 }
             }
-            // ajouter un ItemSeed même si total == 0 pour afficher un bouton désactivé
+            // ajouter un ItemSeed meme si total == 0 pour afficher un bouton désactivé
             combined.addItem(new ItemSeed(pt, total));
         }
 

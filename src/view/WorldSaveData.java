@@ -8,21 +8,21 @@ import java.util.*;
 
 /**
  * ╔════════════════════════════════════════════════════════════════════════╗
- * ║ WorldSaveData - DTO pour la sérialisation du monde                    ║
+ * ║ WorldSaveData - DTO pour la serialisation du monde                    ║
  * ╠════════════════════════════════════════════════════════════════════════╣
  * ║                                                                        ║
  * ║ Classe responsable de:                                                ║
- * ║ • Capturer l'état complet du World en constructeur                   ║
- * ║ • Exposer les données via des getters                                ║
+ * ║ • Capturer l'etat complet du World en constructeur                   ║
+ * ║ • Exposer les donnees via des getters                                ║
  * ║                                                                        ║
  * ║ Architecture MVC:                                                     ║
- * ║ • C'est un DTO (Data Transfer Object) = données seulement             ║
- * ║ • Pas de logique métier                                              ║
- * ║ • La restauration est effectuée par SaveController (contrôleur)       ║
+ * ║ • C'est un DTO (Data Transfer Object) = donnees seulement             ║
+ * ║ • Pas de logique metier                                              ║
+ * ║ • La restauration est effectuee par SaveController (controleur)       ║
  * ║                                                                        ║
- * ║ Sérialisation:                                                        ║
+ * ║ Serialisation:                                                        ║
  * ║ • Classe Serializable pour ObjectOutputStream                        ║
- * ║ • Tous les champs doivent être sérialisables                         ║
+ * ║ • Tous les champs doivent etre serialisables                         ║
  * ╚════════════════════════════════════════════════════════════════════════╝
  */
 public class WorldSaveData implements Serializable {
@@ -38,13 +38,13 @@ public class WorldSaveData implements Serializable {
     private int exp;
     private long timestamp;
 
-    // Données de la carte et bâtiments
-    private List<BuildingSaveData> buildings;           // Tous les bâtiments
+    // Donnees de la carte et batiments
+    private List<BuildingSaveData> buildings;           // Tous les batiments
     private Map<String, PlantTileSaveData> plantTiles;  // Tuiles labourées
 
-    // Inventaire et quêtes
+    // Inventaire et quetes
     private List<ItemSaveData> barnItems;               // Items de la grange
-    private List<List<Integer>> questProgresses;        // Progression quêtes
+    private List<List<Integer>> questProgresses;        // Progression quetes
     private int activeQuestLineIndex;                   // Chapitre actif
 
     private List<GardenerSaveData> gardeners;           // Positions des jardiniers
@@ -72,7 +72,7 @@ public class WorldSaveData implements Serializable {
         this.activeQuestLineIndex = 0;
         this.gardeners = new ArrayList<>();
 
-        // Sauvegarder tous les bâtiments
+        // Sauvegarder tous les batiments
         for (Building b : world.getBuildings()) {
             buildings.add(new BuildingSaveData(b));
         }
@@ -92,7 +92,7 @@ public class WorldSaveData implements Serializable {
             barnItems.add(new ItemSaveData(item));
         }
 
-        // Sauvegarder la progression des quêtes (utilise getProgressSnapshot() du modèle Quests)
+        // Sauvegarder la progression des quetes (utilise getProgressSnapshot() du modele Quests)
         try {
             if (world.getQuests() != null) {
                 questProgresses = world.getQuests().getProgressSnapshot();
@@ -107,7 +107,7 @@ public class WorldSaveData implements Serializable {
     }
 
     // ════════════════════════════════════════════════════════════════════
-    // GETTERS POUR ACCÈS AUX DONNÉES
+    // GETTERS POUR ACCES AUX DONNÉES
     // ════════════════════════════════════════════════════════════════════
 
     public int getLevel() { return level; }
@@ -127,7 +127,7 @@ public class WorldSaveData implements Serializable {
     // ════════════════════════════════════════════════════════════════════
 
     /**
-     * DTO pour sauvegarder les données d'un bâtiment (classe et position).
+     * DTO pour sauvegarder les données d'un batiment (classe et position).
      */
     public static class BuildingSaveData implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -149,7 +149,7 @@ public class WorldSaveData implements Serializable {
         }
 
         /**
-         * Restaure le bâtiment dans le monde
+         * Restaure le batiment dans le monde
          */
         public void restoreToWorld(World world) {
             try {
@@ -180,7 +180,7 @@ public class WorldSaveData implements Serializable {
                     }
                 }
             } catch (Exception ex) {
-                System.err.println("Erreur lors de la restauration du bâtiment : " + ex.getMessage());
+                System.err.println("Erreur lors de la restauration du batiment : " + ex.getMessage());
             }
         }
     }

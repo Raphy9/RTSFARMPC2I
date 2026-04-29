@@ -49,7 +49,7 @@ public class SaveManager {
     }
 
     /**
-     * Retourne les sauvegardes avec métadonnées utiles pour l'UI (date, niveau, PO).
+     * Retourne les sauvegardes avec metadonnees utiles pour l'UI (date, niveau, PO).
      */
     public static List<SaveInfo> getSaveInfos() {
         List<SaveInfo> infos = new ArrayList<>();
@@ -70,7 +70,7 @@ public class SaveManager {
                         money = data.getMoney();
                     }
                 } catch (Exception ignored) {
-                    // On garde la sauvegarde listée même si on ne peut pas lire les métadonnées.
+                    // On garde la sauvegarde listee meme si on ne peut pas lire les metadonnees.
                 }
 
                 infos.add(new SaveInfo(name, lastModified, level, money));
@@ -83,14 +83,14 @@ public class SaveManager {
     }
 
     /**
-     * Sauvegarde l'état du monde dans un fichier
+     * Sauvegarde l'etat du monde dans un fichier
      */
     public static boolean saveGame(String saveName, World world) {
         return src.control.persistence.SaveController.saveGame(saveName, world);
     }
 
     /**
-     * Charge l'état du monde depuis un fichier
+     * Charge l'etat du monde depuis un fichier
      */
     public static void loadGame(String saveName, World world) {
         SaveController.loadGame(saveName, world);
@@ -103,7 +103,7 @@ public class SaveManager {
         try {
             Path savePath = Paths.get(SAVES_DIR, saveName + ".sav");
             Files.deleteIfExists(savePath);
-            System.out.println("Sauvegarde supprimée : " + saveName);
+            System.out.println("Sauvegarde supprimee : " + saveName);
             return true;
         } catch (IOException ex) {
             System.err.println("Erreur lors de la suppression : " + ex.getMessage());
@@ -120,17 +120,17 @@ public class SaveManager {
             Path newPath = Paths.get(SAVES_DIR, newName + ".sav");
 
             if (!Files.exists(oldPath)) {
-                System.err.println("La sauvegarde à renommer n'existe pas : " + oldName);
+                System.err.println("La sauvegarde a renommer n'existe pas : " + oldName);
                 return false;
             }
 
             if (Files.exists(newPath)) {
-                System.err.println("Une sauvegarde avec ce nom existe déjà : " + newName);
+                System.err.println("Une sauvegarde avec ce nom existe deja : " + newName);
                 return false;
             }
 
             Files.move(oldPath, newPath);
-            System.out.println("Sauvegarde renommée : " + oldName + " -> " + newName);
+            System.out.println("Sauvegarde renommee : " + oldName + " -> " + newName);
             return true;
         } catch (IOException ex) {
             System.err.println("Erreur lors du renommage : " + ex.getMessage());
@@ -139,14 +139,14 @@ public class SaveManager {
     }
 
     /**
-     * Vérifie si une sauvegarde existe déjà
+     * Verifie si une sauvegarde existe deja
      */
     public static boolean savExists(String saveName) {
         return Files.exists(Paths.get(SAVES_DIR, saveName + ".sav"));
     }
 
     /**
-     * Génère un nom de sauvegarde par défaut
+     * Genere un nom de sauvegarde par defaut
      */
     public static String generateSaveName() {
         List<String> existingSaves = getSaveList();

@@ -10,7 +10,7 @@ import src.model.Entity; // Pour utiliser Entity.LEFT et Entity.RIGHT
 
 /**
  * Chargeur de spritesheet pour le nouvel ennemi "Corbeau".
- * Gère les états IDLE, FLYING, EATING et le miroir automatique pour les directions.
+ * Gere les etats IDLE, FLYING, EATING et le miroir automatique pour les directions.
  */
 public class CrowSpriteSheetLoader {
 
@@ -21,7 +21,7 @@ public class CrowSpriteSheetLoader {
     // --- Configuration des spritesheets ---
     private static final int NB_FRAMES = 4; // 4 images d'animation par ligne
 
-    // --- Stockage des sprites découpés ---
+    // --- Stockage des sprites decoupes ---
     // [Action (0=Idle, 1=Flying/Fleeing, 2=Eating)][Direction (0=RIGHT, 1=LEFT)][Frame (0-3)]
     private BufferedImage[][][] frames;
 
@@ -32,37 +32,37 @@ public class CrowSpriteSheetLoader {
     }
 
     /**
-     * Charge les images, les découpe et crée les versions miroir (LEFT).
+     * Charge les images, les decoupe et cree les versions miroir (LEFT).
      */
     private void loadAndProcessSprites() {
         try {
             System.out.println("Chargement des sprites du corbeau...");
 
-            // 1. Charger et découper l'action IDLE (Action index 0)
+            // 1. Charger et decouper l'action IDLE (Action index 0)
             BufferedImage idleSheet = ImageIO.read(new File(PATH_IDLE));
             processSheet(idleSheet, 0);
 
-            // 2. Charger et découper l'action FLYING/FLEEING (Action index 1)
+            // 2. Charger et decouper l'action FLYING/FLEEING (Action index 1)
             BufferedImage flyingSheet = ImageIO.read(new File(PATH_FLYING));
             processSheet(flyingSheet, 1);
 
-            // 3. Charger et découper l'action EATING (Action index 2)
+            // 3. Charger et decouper l'action EATING (Action index 2)
             BufferedImage eatingSheet = ImageIO.read(new File(PATH_EATING));
             processSheet(eatingSheet, 2);
 
-            System.out.println("Sprites du corbeau chargés avec succès !");
+            System.out.println("Sprites du corbeau charges avec succes !");
 
         } catch (Exception e) {
             System.err.println("ERREUR : Impossible de charger les sprites du corbeau.");
-            System.err.println("Vérifie les chemins d'accès : " + PATH_IDLE + ", " + PATH_FLYING + ", " + PATH_EATING);
+            System.err.println("Verifie les chemins d'acces : " + PATH_IDLE + ", " + PATH_FLYING + ", " + PATH_EATING);
             e.printStackTrace();
-            // Création de sprites de secours vides pour éviter les crashs
+            // Creation de sprites de secours vides pour eviter les crashs
             createPlaceholderSprites();
         }
     }
 
     /**
-     * Découpe une spritesheet d'une seule ligne et génère les versions miroir.
+     * Decoupe une spritesheet d'une seule ligne et genere les versions miroir.
      */
     private void processSheet(BufferedImage sheet, int actionIndex) {
         if (sheet == null) return;
@@ -72,7 +72,7 @@ public class CrowSpriteSheetLoader {
         int frameHeight = sheet.getHeight();
 
         for (int f = 0; f < NB_FRAMES; f++) {
-            // Découpage de la frame originale (regarde à DROITE par défaut si c'est comme tes autres assets)
+            // Decoupage de la frame originale (regarde a DROITE par défaut si c'est comme tes autres assets)
             BufferedImage originalFrame = sheet.getSubimage(f * frameWidth, 0, frameWidth, frameHeight);
 
             // Stockage pour la direction DROITE
@@ -116,12 +116,12 @@ public class CrowSpriteSheetLoader {
     }
 
     /**
-     * Récupère la frame exacte pour dessiner le corbeau.
+     * Récupere la frame exacte pour dessiner le corbeau.
      * * @param actionIndex Index de l'action : 0=IDLE/LANDED, 1=FLYING, 2=EATING.
-     * (Correspondant à crow.getCurrentStateActionIndex())
+     * (Correspondant a crow.getCurrentStateActionIndex())
      * @param direction   Direction de l'entité (Entity.RIGHT ou Entity.LEFT).
-     * @param frameIndex   Frame actuelle de l'animation (0 à 3).
-     * @return L'image (BufferedImage) à dessiner.
+     * @param frameIndex   Frame actuelle de l'animation (0 a 3).
+     * @return L'image (BufferedImage) a dessiner.
      */
     public BufferedImage getFrame(int actionIndex, int direction, int frameIndex) {
         // Validation des indices pour éviter les erreurs

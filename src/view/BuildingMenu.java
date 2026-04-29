@@ -8,9 +8,9 @@ import java.awt.*;
 
 public class BuildingMenu extends JPanel {
 
-    private JButton selectedButton = null; // pour garder la sélection visuelle
+    private JButton selectedButton = null; // pour garder la selection visuelle
 
-    // Le constructeur prend un BuildingManager pour déclencher les placements et deux Runnables: onClose et onOpenBarn
+    // Le constructeur prend un BuildingManager pour declencher les placements et deux Runnables: onClose et onOpenBarn
     public BuildingMenu(BuildingManager manager, Runnable onClose) {
         this(manager, onClose, null);
     }
@@ -23,7 +23,7 @@ public class BuildingMenu extends JPanel {
 
         // Bordure avec titre
         javax.swing.border.TitledBorder border = BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.WHITE), "Bâtiments");
+                BorderFactory.createLineBorder(Color.WHITE), "Batiments");
         border.setTitleColor(Color.WHITE);
         this.setBorder(border);
 
@@ -32,11 +32,11 @@ public class BuildingMenu extends JPanel {
         topPanel.setOpaque(false);
         topPanel.setMaximumSize(new Dimension(150, 40));
 
-        // Création du bouton de fermeture avec des images pour les différents états
+        // Creation du bouton de fermeture avec des images pour les differents etats
         JButton btnClose = ImageButtonFactory.createImageButton(
                 "src/assets/UI/close_idle.png",   // Image normale
                 "src/assets/UI/close_hover.png",  // Image au survol (plus claire)
-                "src/assets/UI/close_pressed.png" // Image au clic (enfoncée)
+                "src/assets/UI/close_pressed.png" // Image au clic (enfoncee)
         );
         btnClose.setPreferredSize(new Dimension(30, 30));
         btnClose.setMaximumSize(new Dimension(30, 30));
@@ -52,13 +52,13 @@ public class BuildingMenu extends JPanel {
         this.add(Box.createRigidArea(new Dimension(0, 12))); // Plus d'espace
         // ------------------------------------------
 
-        // Taille unifiée pour la plupart des boutons
+        // Taille unifiee pour la plupart des boutons
         Dimension btnSize = new Dimension(120, 60);
 
         JButton btnLinge = ImageButtonFactory.createImageButton(
                 "src/assets/UI/btn_linge_idle.png",
                 "src/assets/UI/btn_linge_hover.png",
-                null // Pas d'image spéciale pour le clic (optionnel)
+                null // Pas d'image speciale pour le clic (optionnel)
         );
         btnLinge.setPreferredSize(btnSize);
         btnLinge.setMaximumSize(btnSize);
@@ -79,7 +79,7 @@ public class BuildingMenu extends JPanel {
         JButton btnPoto = ImageButtonFactory.createImageButton(
                 "src/assets/UI/btn_poto_idle.png",
                 "src/assets/UI/btn_poto_hover.png",
-                null // Pas d'image spéciale pour le clic (optionnel)
+                null // Pas d'image speciale pour le clic (optionnel)
         );
         btnPoto.setPreferredSize(btnSize);
         btnPoto.setMaximumSize(btnSize);
@@ -87,7 +87,7 @@ public class BuildingMenu extends JPanel {
         btnPoto.setVerticalTextPosition(SwingConstants.BOTTOM);
         btnPoto.setHorizontalTextPosition(SwingConstants.CENTER);
         btnPoto.setText("Poto");
-        btnPoto.setToolTipText("Poto: décoration");
+        btnPoto.setToolTipText("Poto: decoration");
         btnPoto.addActionListener(e -> {
             manager.startPlacement(new Poto());
             setSelectedButton(btnPoto);
@@ -107,8 +107,8 @@ public class BuildingMenu extends JPanel {
         btnMailbox1.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnMailbox1.setVerticalTextPosition(SwingConstants.BOTTOM);
         btnMailbox1.setHorizontalTextPosition(SwingConstants.CENTER);
-        btnMailbox1.setText("Boîte aux lettres");
-        btnMailbox1.setToolTipText("Boîte aux lettres: reçoit du courrier et des quêtes");
+        btnMailbox1.setText("Boite aux lettres");
+        btnMailbox1.setToolTipText("Boite aux lettres: Un bel ajout pour stocker le courier");
         btnMailbox1.addActionListener(e -> {
             manager.startPlacement(new Mailbox1());
             setSelectedButton(btnMailbox1);
@@ -120,7 +120,7 @@ public class BuildingMenu extends JPanel {
         // Bouton Grange (ouvre la popup de la grange si un callback est fourni)
         if (onOpenBarn != null) {
             JButton btnBarn = ImageButtonFactory.createImageButton(
-                    "src/assets/Buildings/poto.png", // réutilise une icône simple (à adapter)
+                    "src/assets/Buildings/poto.png", // réutilise une icone simple (a adapter)
                     "src/assets/Buildings/poto.png",
                     null
             );
@@ -130,7 +130,7 @@ public class BuildingMenu extends JPanel {
             btnBarn.setVerticalTextPosition(SwingConstants.BOTTOM);
             btnBarn.setHorizontalTextPosition(SwingConstants.CENTER);
             btnBarn.setText("Grange");
-            btnBarn.setToolTipText("Ouvrir la grange: gérer les inventaires");
+            btnBarn.setToolTipText("Ouvrir la grange: gerer l'inventaire de la ferme");
             btnBarn.addActionListener(e -> {
                 onOpenBarn.run();
             });
@@ -153,7 +153,7 @@ public class BuildingMenu extends JPanel {
         }
     }
 
-    // Enlève la sélection visuelle
+    // Enleve la sélection visuelle
     public void clearSelection() {
         if (selectedButton != null) {
             selectedButton.setBorderPainted(false);

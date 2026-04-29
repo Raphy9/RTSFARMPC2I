@@ -4,7 +4,7 @@ import java.util.Random;
 
 /**
  * Générateur d'ennemis (Poules).
- * Tourne dans son propre Thread et fait apparaître des poules sur les bords de la carte à intervalles réguliers.
+ * Tourne dans son propre Thread et fait apparaître des poules sur les bords de la carte a intervalles réguliers.
  */
 public class ChickenSpawner implements Runnable {
 
@@ -13,10 +13,10 @@ public class ChickenSpawner implements Runnable {
     private Thread spawnerThread;
     private final Random random;
 
-    //  Paramètres d'apparition
+    //  Parametres d'apparition
     // Temps entre chaque apparition (en millisecondes)
     private static final int SPAWN_INTERVAL = 20000;
-    // Nombre maximum de poules en même temps sur la carte (pour éviter de surcharger le jeu)
+    // Nombre maximum de poules en meme temps sur la carte (pour éviter de surcharger le jeu)
     private static final int MAX_CHICKENS = 3;
 
     public ChickenSpawner(World world) {
@@ -52,7 +52,7 @@ public class ChickenSpawner implements Runnable {
                 }
 
             } catch (InterruptedException e) {
-                // Si le jeu se ferme, on arrête le thread
+                // Si le jeu se ferme, on arrete le thread
                 isRunning = false;
             }
         }
@@ -101,7 +101,7 @@ public class ChickenSpawner implements Runnable {
         // Si on a trouvé une bonne case, on fait apparaître la poule !
         if (validSpot) {
             Chicken newChicken = new Chicken(x, y, world);
-            world.getEnemies().add(newChicken); // CopyOnWriteArrayList protège contre les crashs !
+            world.getEnemies().add(newChicken); // CopyOnWriteArrayList protege contre les crashs !
             newChicken.start(); // Lance le script de la poule dans son propre thread
         }
     }

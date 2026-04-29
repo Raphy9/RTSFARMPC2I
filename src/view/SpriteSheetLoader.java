@@ -7,7 +7,7 @@ import javax.imageio.ImageIO;
 
 public class SpriteSheetLoader {
 
-    // Dimensions exactes calculées à partir de votre image 192x72
+    // Dimensions exactes calculees a partir de votre image 192x72
     private static final int FRAME_WIDTH = 24;
     private static final int FRAME_HEIGHT = 24;
     private static final int NB_ROWS = 3;
@@ -34,10 +34,10 @@ public class SpriteSheetLoader {
                     );
 
                     if (col < 4) {
-                        // Les 4 premières colonnes sont pour l'IDLE (Attente)
+                        // Les 4 premieres colonnes sont pour l'IDLE (Attente)
                         idleSprites[row][col] = frame;
                     } else {
-                        // Les 4 dernières colonnes sont pour le WALK (Marche)
+                        // Les 4 dernieres colonnes sont pour le WALK (Marche)
                         walkSprites[row][col - 4] = frame;
                     }
                 }
@@ -49,8 +49,8 @@ public class SpriteSheetLoader {
     }
 
     /**
-     * Convertit la direction de l'Entité (0=Bas, 1=Gauche, 2=Droite, 3=Haut)
-     * en numéro de ligne dans l'image (0=Bas, 1=Profil, 2=Haut).
+     * Convertit la direction de l'Entite (0=Bas, 1=Gauche, 2=Droite, 3=Haut)
+     * en numero de ligne dans l'image (0=Bas, 1=Profil, 2=Haut).
      */
     private int getRowIndex(int direction) {
         if (direction == src.model.Entity.UP) return 2;

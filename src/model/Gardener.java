@@ -21,7 +21,7 @@ public class Gardener extends Entity implements Runnable {
     private transient Thread gardenerThread;
     private volatile boolean isRunning;
 
-    // --- NOUVEAU : Index de la barre d'action (-1 = rien sélectionné) ---
+    // --- NOUVEAU : Index de la barre d'action (-1 = rien selectionne) ---
     private int selectedHotbarIndex = -1;
 
     public Gardener(int x, int y, World world) {
@@ -91,7 +91,7 @@ public class Gardener extends Entity implements Runnable {
                     wanderWhenIdle();
                 }
             } catch (InterruptedException e) {
-                System.out.println("Jardinier : Action annulée en cours de route.");
+                System.out.println("Jardinier : Action annulee en cours de route.");
                 if (currentAction instanceof PlowAction) {
                     world.releasePlowTiles(1);
                 }
@@ -111,10 +111,10 @@ public class Gardener extends Entity implements Runnable {
         List<Tile> path = this.pathFinding(world, action.getTargetX(), action.getTargetY());
 
         if (path != null) {
-            System.out.println("Jardinier : Chemin trouvé ! (" + path.size() + " cases)");
+            System.out.println("Jardinier : Chemin trouve ! (" + path.size() + " cases)");
             for (Tile step : path) {
                 if (Thread.interrupted()) {
-                    throw new InterruptedException("Déplacement annulé.");
+                    throw new InterruptedException("Deplacement annule.");
                 }
 
                 int oldX = this.x;
@@ -192,8 +192,8 @@ public class Gardener extends Entity implements Runnable {
     }
 
     /**
-     * Promenade aléatoire courte lorsque le jardinier est en attente (inspirée de Chicken.wanderRandomly).
-     * Vérifie la file d'actions avant et pendant la promenade pour pouvoir s'interrompre proprement.
+     * Promenade aleatoire courte lorsque le jardinier est en attente (inspiree de Chicken.wanderRandomly).
+     * Verifie la file d'actions avant et pendant la promenade pour pouvoir s'interrompre proprement.
      */
     private void wanderWhenIdle() throws InterruptedException {
         // If actions appeared meanwhile, abort wandering
@@ -201,7 +201,7 @@ public class Gardener extends Entity implements Runnable {
             if (!actionQueue.isEmpty() || !isRunning) return;
         }
 
-        int radius = 2; // jardinier se promène moins loin que la poule
+        int radius = 2; // jardinier se promene moins loin que la poule
         int randomX = this.x + (int) (Math.random() * (radius * 2 + 1)) - radius;
         int randomY = this.y + (int) (Math.random() * (radius * 2 + 1)) - radius;
 
@@ -249,7 +249,7 @@ public class Gardener extends Entity implements Runnable {
 
         if (this.currentState != State.WORKING && isRunning) {
             this.currentState = State.WAITING;
-            // pause aléatoire avant prochaine promenade
+            // pause aleatoire avant prochaine promenade
             Thread.sleep(500 + (int) (Math.random() * 1000));
         }
     }

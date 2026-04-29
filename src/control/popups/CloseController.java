@@ -20,19 +20,19 @@ public class CloseController implements ActionListener, KeyListener {
         this.display = display;
     }
 
-    /** Lorsque le bouton est cliqué, on revient à la vue globale */
+    /** Lorsque le bouton est clique, on revient à la vue globale */
     @Override
     public void actionPerformed(ActionEvent e) {
         display.switchToGlobal();   // revenir a la vue globale
     }
 
-    // Implémentation de KeyListener pour permettre de fermer le popup ou la vue de sélection en appuyant sur Echap
+    // Implementation de KeyListener pour permettre de fermer le popup ou la vue de selection en appuyant sur Echap
     @Override
     public void keyTyped(KeyEvent e) {
 
     }
 
-    // Lorsque une touche est pressée, on vérifie si c'est Echap, et si c'est le cas, on revient à la vue globale
+    // Lorsque une touche est pressee, on verifie si c'est Echap, et si c'est le cas, on revient à la vue globale
     @Override
     public void keyPressed(KeyEvent e) {
         // Fermer si la touche echap est appuyee

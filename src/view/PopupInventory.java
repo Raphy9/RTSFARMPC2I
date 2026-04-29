@@ -66,7 +66,7 @@ public class PopupInventory extends PopupPanel {
                     });
                 } else {
                     itemButton.setEnabled(false);
-                    itemButton.setBackground(new Color(110, 80, 60)); // Brun grisé si vide
+                    itemButton.setBackground(new Color(110, 80, 60)); // Brun grise si vide
                 }
                 gridInventory.add(itemButton);
             } else {

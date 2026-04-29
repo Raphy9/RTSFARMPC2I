@@ -6,9 +6,9 @@ import java.awt.*;
 
 public class PauseMenuPopup extends PopupPanel {
 
-    // Couleurs pour les états
+    // Couleurs pour les etats
     private final Color COLOR_ON = new Color(160, 100, 60);  // Marron (Actif)
-    private final Color COLOR_OFF = new Color(200, 60, 50); // Rouge (Désactivé)
+    private final Color COLOR_OFF = new Color(200, 60, 50); // Rouge (Desactive)
     private final Color COLOR_HOVER_ON = new Color(120, 70, 40);
     private final Color COLOR_HOVER_OFF = new Color(150, 40, 30);
 
@@ -57,15 +57,15 @@ public class PauseMenuPopup extends PopupPanel {
     }
 
     /**
-     * Met à jour dynamiquement le texte et la couleur du bouton selon l'état Mute.
+     * Met a jour dynamiquement le texte et la couleur du bouton selon l'etat Mute.
      */
     private void updateButtonState(JButton btn, boolean isMuted, String label) {
         btn.setText(label + " : " + (isMuted ? "OFF" : "ON"));
 
-        // Au moment du clic, la souris est forcément SUR le bouton, on met donc directement la couleur Hover appropriée
+        // Au moment du clic, la souris est forcement SUR le bouton, on met donc directement la couleur Hover appropriee
         btn.setBackground(isMuted ? COLOR_HOVER_OFF : COLOR_HOVER_ON);
 
-        // Force l'interface graphique à redessiner instantanément la nouvelle couleur
+        // Force l'interface graphique a redessiner instantanement la nouvelle couleur
         btn.repaint();
     }
 
@@ -73,7 +73,7 @@ public class PauseMenuPopup extends PopupPanel {
         JButton btn = new JButton(text);
         btn.setFocusable(false);
 
-        // TRÈS IMPORTANT : OBLIGATOIRE sur certains OS (Mac/Win) pour que le setBackground fonctionne !
+        // TRES IMPORTANT : OBLIGATOIRE sur certains OS (Mac/Win) pour que le setBackground fonctionne !
         btn.setOpaque(true);
 
         btn.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 14f) : new Font("Arial", Font.BOLD, 14));
@@ -81,7 +81,7 @@ public class PauseMenuPopup extends PopupPanel {
         btn.setForeground(Color.WHITE);
         btn.setBorder(BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 2));
 
-        // Gestion du survol dynamique basée sur le texte ACTUEL du bouton
+        // Gestion du survol dynamique basee sur le texte ACTUEL du bouton
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 String currentText = btn.getText();

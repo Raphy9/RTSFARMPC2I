@@ -12,10 +12,10 @@ public class BarnBuilding extends Building {
     public BarnBuilding() {
         // Dimensions: 3 (largeur) x 3 (hauteur)
         // isPassable: false (on ne peut pas marcher dessus)
-        // Règle: NORMAL_ONLY (se pose sur l'herbe)
+        // Regle: NORMAL_ONLY (se pose sur l'herbe)
         super(3, 3, false, PlacementRule.NORMAL_ONLY, new ImageIcon("src/assets/Buildings/barn.png"));
         this.buyPrice = 0; // Gratuite !
-        this.levelRequirement = 1; // Disponible dès le début
+        this.levelRequirement = 1; // Disponible des le début
     }
 
     @Override

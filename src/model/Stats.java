@@ -7,7 +7,7 @@ public class Stats {
     private int exp;
     private int level;
 
-    /** Appelé chaque fois qu'un niveau est atteint, avec le nouveau niveau comme argument. */
+    /** Appele chaque fois qu'un niveau est atteint, avec le nouveau niveau comme argument. */
     private IntConsumer levelUpCallback = null;
     private java.util.function.IntConsumer moneyGainCallback = null;
     private java.util.function.IntConsumer expGainCallback = null;

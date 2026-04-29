@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Classe de base pour les entités du jeu (jardinier, ennemis, etc.)
- * Contient la logique de pathfinding A* pour se déplacer vers une cible
+ * Classe de base pour les entites du jeu (jardinier, ennemis, etc.)
+ * Contient la logique de pathfinding A* pour se deplacer vers une cible
  */
 public class Entity {
 
@@ -18,7 +18,7 @@ public class Entity {
 
         protected World world;
         protected int x, y;
-        protected int facingDirection = DOWN; // Par défaut, regarde en bas
+        protected int facingDirection = DOWN; // Par defaut, regarde en bas
 
         public int getX() { return x; }
         public int getY() { return y; }
@@ -31,20 +31,20 @@ public class Entity {
             this.facingDirection = direction;
         }
 
-    // Constructeur pour initialiser la position de l'entité
+    // Constructeur pour initialiser la position de l'entite
     public Entity(World world, int x, int y) {
         this.x = x;
         this.y = y;
         this.world = world;
-        System.out.println("Création de l'entité à la position (" + x + ", " + y + ")");
-        world.getTiles()[y][x].addEntity(this); // Ajoute l'entité à la tuile correspondante
+        System.out.println("Creation de l'entite a la position (" + x + ", " + y + ")");
+        world.getTiles()[y][x].addEntity(this); // Ajoute l'entite a la tuile correspondante
     }
 
-/**     * Implémentation de l'algorithme A* pour trouver un chemin vers une cible
-     * @param world Le monde dans lequel se trouve l'entité
-     * @param targetX La coordonnée X de la cible
-     * @param targetY La coordonnée Y de la cible
-     * @return Une liste de Tiles représentant le chemin à suivre, ou null si aucun chemin n'est trouvé
+/**     * Implementation de l'algorithme A* pour trouver un chemin vers une cible
+     * @param world Le monde dans lequel se trouve l'entite
+     * @param targetX La coordonnee X de la cible
+     * @param targetY La coordonnee Y de la cible
+     * @return Une liste de Tiles representant le chemin a suivre, ou null si aucun chemin n'est trouvé
      */
     public List<Tile> pathFinding(World world, int targetX, int targetY) {
         // Vérifications de base
@@ -64,7 +64,7 @@ public class Entity {
         // liste ouverte, Les cases qu'on a repérées mais pas encore traitées
         List<Node> openList = new ArrayList<>();
 
-        // liste fermée, Les cases déjà traitées (on utilise un tableau booléen pour faire simple)
+        // liste fermée, Les cases déja traitées (on utilise un tableau booléen pour faire simple)
         boolean[][] closedList = new boolean[World.WIDTH][World.HEIGHT];
 
         // On ajoute le point de départ
@@ -73,14 +73,14 @@ public class Entity {
 
         // Boucle principale de l'algorithme
         while (!openList.isEmpty()) {
-            // On cherche le noeud avec le plus petit coût F dans la liste ouverte
+            // On cherche le noeud avec le plus petit cout F dans la liste ouverte
             Node current = openList.get(0);
             for (int i = 1; i < openList.size(); i++) {
-                // Si on trouve un noeud avec un coût F plus petit, il devient le courant
+                // Si on trouve un noeud avec un cout F plus petit, il devient le courant
                 if (openList.get(i).fCost < current.fCost) {
                     current = openList.get(i);
                 }
-                // Si les coûts sont égaux, on peut prendre celui le plus proche de l'arrivée (H) pour optimiser un peu
+                // Si les couts sont égaux, on peut prendre celui le plus proche de l'arrivée (H) pour optimiser un peu
                 else if (openList.get(i).fCost == current.fCost && openList.get(i).hCost < current.hCost) {
                     current = openList.get(i);
                 }
@@ -118,11 +118,11 @@ public class Entity {
                     continue;
                 }
 
-                // Calculs des coûts
+                // Calculs des couts
                 int newG = current.gCost + 1;
                 int newH = getManhattanDistance(neighborX, neighborY, targetX, targetY);
 
-                // Vérifier si ce voisin est déjà dans la liste ouverte
+                // Vérifier si ce voisin est déja dans la liste ouverte
                 Node neighborNode = null;
                 for (Node n : openList) {
                     if (n.x == neighborX && n.y == neighborY) {
@@ -136,7 +136,7 @@ public class Entity {
                     Node newNode = new Node(neighborX, neighborY, current, newG, newH);
                     openList.add(newNode);
                 } else {
-                    // Si déjà dans la liste, on regarde si le nouveau chemin est meilleur
+                    // Si déja dans la liste, on regarde si le nouveau chemin est meilleur
                     if (newG < neighborNode.gCost) {
                         neighborNode.gCost = newG;
                         neighborNode.fCost = newG + neighborNode.hCost;
@@ -168,7 +168,7 @@ public class Entity {
     private class Node {
         int x, y;
         Node parent;
-        int gCost; // Coût depuis le départ
+        int gCost; // Cout depuis le départ
         int hCost; // Distance estimée vers la fin
         int fCost; // Total
 

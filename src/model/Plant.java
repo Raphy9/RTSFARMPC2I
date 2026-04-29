@@ -3,26 +3,26 @@ package src.model;
 import javax.swing.ImageIcon;
 
 /**
- * La classe Plant gère la logique de croissance, d'eau, de pourriture et de mort d'une plante.
- * Elle est indépendante de la vue et ne connaît que son type et son état.
- * C'est la "source de vérité" pour tout ce qui concerne une plante.
+ * La classe Plant gere la logique de croissance, d'eau, de pourriture et de mort d'une plante.
+ * Elle est independante de la vue et ne connaît que son type et son etat.
+ * C'est la "source de verite" pour tout ce qui concerne une plante.
  */
 public class Plant {
 
     // --- Constantes ---
     public static final float MAX_WATER_LEVEL = 60.0f;
-    public static final float WATERING_AMOUNT = 33.0f; // Quantité d'eau ajoutée par arrosage
+    public static final float WATERING_AMOUNT = 33.0f; // Quantite d'eau ajoutee par arrosage
     public static final float OVERWATER_THRESHOLD = 10.0f; // Seuil d'eau en trop qui fait pourrir la plante
     public static final int TIME_BEFORE_DEATH = 45; // Temps (ticks) sans eau avant de mourir
 
     // --- Attributs ---
     private final PlantType type; // Le type de plante (Salade, Carotte, Tomate, etc.)
-    private PlantState state; // L'état actuel de la plante (GRAINE, POUSSE, CROISSANCE, MATURE, MORT, EATEN)
+    private PlantState state; // L'etat actuel de la plante (GRAINE, POUSSE, CROISSANCE, MATURE, MORT, EATEN)
 
-    private float currentWaterLevel; // Niveau d'eau actuel (0 à MAX_WATER_LEVEL)
+    private float currentWaterLevel; // Niveau d'eau actuel (0 a MAX_WATER_LEVEL)
     private int age;             // Progression de la croissance
     private int ticksWithoutWater; // Compteur pour la mort de soif
-    private boolean hasFertilizer; // Si de l'engrais a été mis
+    private boolean hasFertilizer; // Si de l'engrais a ete mis
 
     private ImageIcon sprite; // Image actuelle de la plante
 
@@ -30,7 +30,7 @@ public class Plant {
     public Plant(PlantType type) {
         this.type = type;
         this.state = PlantState.GRAINE;
-        this.currentWaterLevel = 0.0f; // Humidité initiale
+        this.currentWaterLevel = 0.0f; // Humidite initiale
         this.age = 0;
         this.ticksWithoutWater = 0;
         this.hasFertilizer = false;
@@ -38,11 +38,11 @@ public class Plant {
     }
 
     /**
-     * Méthode appelée à chaque cycle de jeu (Tick).
-     * Gère l'eau, la croissance et la mort.
+     * Méthode appelée a chaque cycle de jeu (Tick).
+     * Gere l'eau, la croissance et la mort.
      */
     public void tick() {
-        // Si la plante est morte ou mangée, elle ne fait rien (mais l'eau s'évapore quand même)
+        // Si la plante est morte ou mangée, elle ne fait rien (mais l'eau s'évapore quand meme)
         if (state == PlantState.MORT || state == PlantState.EATEN) {
             if (currentWaterLevel > 0) currentWaterLevel -= 0.5f; // Évaporation naturelle
             return;
@@ -61,7 +61,7 @@ public class Plant {
         if (ticksWithoutWater >= TIME_BEFORE_DEATH) {
             state = PlantState.MORT;
             updateSprite();
-            return; // Fin de la mise à jour
+            return; // Fin de la mise a jour
         }
 
         //  Gestion de la Croissance et des États
@@ -71,19 +71,19 @@ public class Plant {
             if (hasFertilizer) croissance = 2; // Bonus Engrais
 
             age += croissance;
-            updateState(); // La mise à jour de l'état (et du sprite si besoin) est gérée ici
+            updateState(); // La mise a jour de l'état (et du sprite si besoin) est gérée ici
         }
     }
 
     /**
-     * Mise à jour de l'état de la plante en fonction de son âge et de son type.
+     * Mise a jour de l'état de la plante en fonction de son age et de son type.
      * GRAINE -> POUSSE -> CROISSANCE -> MATURE
      */
     private void updateState() {
         PlantState oldState = this.state;
         int duration = type.getGrowthDuration();
 
-        // On ne met à jour que si la plante n'est pas déjà mature, morte ou mangée
+        // On ne met a jour que si la plante n'est pas déja mature, morte ou mangée
         if (state != PlantState.MATURE && state != PlantState.MORT && state != PlantState.EATEN) {
             if (age >= duration) {
                 state = PlantState.MATURE;
@@ -124,7 +124,7 @@ public class Plant {
     }
 
     /**
-     * Applique de l'engrais à la plante, ce qui accélère sa croissance.
+     * Applique de l'engrais à la plante, ce qui accélere sa croissance.
      *
      * @return true si l'engrais a été appliqué, false sinon (ex: déjà mature, morte ou mangée)
      */
@@ -207,7 +207,7 @@ public class Plant {
     /**
      * INDISPENSABLE POUR LA RÉCOLTE
      *
-     * @return true si la plante est mûre et peut être récoltée, false sinon
+     * @return true si la plante est mure et peut etre récoltée, false sinon
      */
     public boolean isHarvestable() {
         return state == PlantState.MATURE;

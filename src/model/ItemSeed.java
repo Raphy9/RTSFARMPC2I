@@ -3,7 +3,7 @@ package src.model;
 public class ItemSeed extends Item {
 
     /*
-    Constructeur de la classe ItemSeed, qui prend en paramètre le type de plante (PlantType) et initialise l'image correspondante.
+    Constructeur de la classe ItemSeed, qui prend en parametre le type de plante (PlantType) et initialise l'image correspondante.
      */
     public ItemSeed(PlantType plantType) {
         super(plantType);
@@ -11,8 +11,8 @@ public class ItemSeed extends Item {
     }
 
     /*
-    Constructeur de la classe ItemSeed, qui prend en paramètre le type de plante (PlantType) et la quantité de graines (int quantity) et initialise l'image correspondante,
-    pour permettre de créer un item avec une quantité définie (uitilisé pour tester l'inventaire sans gameplay pour l'instant)
+    Constructeur de la classe ItemSeed, qui prend en parametre le type de plante (PlantType) et la quantite de graines (int quantity) et initialise l'image correspondante,
+    pour permettre de creer un item avec une quantite definie (uitilise pour tester l'inventaire sans gameplay pour l'instant)
      */
     public ItemSeed(PlantType plantType, int quantity) {
         super(plantType, quantity);
@@ -20,7 +20,7 @@ public class ItemSeed extends Item {
     }
 
     /*
-    Méthode pour définir l'image de l'item en fonction du type (PlantType)
+    Methode pour definir l'image de l'item en fonction du type (PlantType)
     */
     private void initializeImage() {
         // On utilise une image différente pour les graines que pour les plantes, on affiche l'image du paquet de graines

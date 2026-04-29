@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 import java.awt.Point;
 
 /**
- * Contrôleur responsable de la persistance (sauvegarde / chargement).
+ * Controleur responsable de la persistance (sauvegarde / chargement).
  */
 public class SaveController {
 	private static final String SAVES_DIR = "saves";
@@ -35,6 +35,7 @@ public class SaveController {
 			oos.writeObject(data);
 			oos.close();
 			fos.close();
+			System.out.println("Partie sauvegardee avec succes : " + savePath.toString());
 			return true;
 		} catch (Exception ex) {
 			System.err.println("Erreur lors de la sauvegarde : " + ex.getMessage());

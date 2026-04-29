@@ -1,8 +1,8 @@
 package src.model;
 
 /**
- * La classe Barn représente une grange dans le jeu, qui peut stocker des items (plantes et graines).
- * Elle hérite de Inventory et ajoute des fonctionnalités spécifiques à la gestion d'une grange.
+ * La classe Barn represente une grange dans le jeu, qui peut stocker des items (plantes et graines).
+ * Elle herite de Inventory et ajoute des fonctionnalites specifiques a la gestion d'une grange.
  */
 public class Barn extends Inventory {
 
@@ -22,7 +22,7 @@ public class Barn extends Inventory {
     }
 
     /**
-     * Vend une certaine quantité d'un item de la grange.
+     * Vend une certaine quantite d'un item de la grange.
      */
     public int sellItem(Item item, int qty) {
         int itemPrice = 0;
@@ -53,7 +53,7 @@ public class Barn extends Inventory {
     }
 
     /**
-     * Achète une certaine quantité d'un item.
+     * Achete une certaine quantite d'un item.
      */
     public int buyItem(Item item, int qty) {
         int itemPrice = 0;

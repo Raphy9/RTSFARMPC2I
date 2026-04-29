@@ -4,7 +4,7 @@ import src.model.Gardener;
 import src.model.World;
 
 /**
- * Classe abstraite représentant une tâche pour un jardinier.
+ * Classe abstraite représentant une tache pour un jardinier.
  */
 public abstract class Action {
     protected int targetX;

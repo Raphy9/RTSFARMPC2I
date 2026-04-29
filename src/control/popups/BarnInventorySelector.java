@@ -9,8 +9,11 @@ import java.awt.event.ActionListener;
 
 /**
  * Controleur pour les boutons d'items dans le popup de la grange.
- * Supporte clic simple = transfert d'une unité, shift-clic = transfert de toute la pile.
- * Exécute un callback après transfert pour rafraîchir l'UI.
+ * Supporte clic simple = transfert d'une unite
+, shift-clic = transfert de toute la pile.
+ * Exe
+cute un callback apre
+s transfert pour rafraîchir l'UI.
  */
 public class BarnInventorySelector implements ActionListener {
 
@@ -18,7 +21,7 @@ public class BarnInventorySelector implements ActionListener {
     private Inventory source;
     private Inventory target;
     private Item item;
-    private int qty; // quantité par défaut à transférer (1 ou -1 pour tout)
+    private int qty; // quantite par defaut à transferer (1 ou -1 pour tout)
     private Runnable afterTransfer; // callback pour rafraîchir le popup
 
     public BarnInventorySelector(Display display, Inventory source, Inventory target, Item item, int qty, Runnable afterTransfer) {
@@ -31,9 +34,9 @@ public class BarnInventorySelector implements ActionListener {
     }
 
     /**
-     * Lorsque le bouton d'item est cliqué, cette méthode est appelée.
-     * Elle doit acheter avec clic gauche de la souris des unités de l'item
-     * Elle doit vendre avec clic droit de la souris des unités de l'item
+     * Lorsque le bouton d'item est clique, cette methode est appelee.
+     * Elle doit acheter avec clic gauche de la souris des unites de l'item
+     * Elle doit vendre avec clic droit de la souris des unites de l'item
      * @param e the event to be processed
      */
     @Override

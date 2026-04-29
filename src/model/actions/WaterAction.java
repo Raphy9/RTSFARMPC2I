@@ -7,15 +7,15 @@ import src.model.*;
  */
 public class WaterAction extends Action {
 
-    // Les coordonnées de la case à arroser
+    // Les coordonnées de la case a arroser
     private int waterX, waterY;
 
     /**
      * Constructeur de WaterAction.
      * @param execX Les coordonnées x de la tuile d'exécution (où le jardinier doit se déplacer pour effectuer l'action).
      * @param execY Les coordonnées y de la tuile d'exécution.
-     * @param waterX Les coordonnées x de la case à arroser.
-     * @param waterY Les coordonnées y de la case à arroser.
+     * @param waterX Les coordonnées x de la case a arroser.
+     * @param waterY Les coordonnées y de la case a arroser.
      */
     public WaterAction(int execX, int execY, int waterX, int waterY) {
         super(execX, execY);
@@ -29,7 +29,7 @@ public class WaterAction extends Action {
     public void perform(Gardener gardener, World world) {
         Tile tile = world.getTile(waterX, waterY);
 
-        // Vérifier que la tile est une PlantTile et qu'elle contient une plante à arroser
+        // Vérifier que la tile est une PlantTile et qu'elle contient une plante a arroser
         if (tile instanceof PlantTile) {
             PlantTile plantTile = (PlantTile) tile;
             if (plantTile.getPlant() != null) {
@@ -38,10 +38,10 @@ public class WaterAction extends Action {
                 world.registerQuestAction(Quests.ACTION_WATER_TILE);
             }
             else {
-                System.out.println("Erreur : Il n'y a pas de plante à arroser sur cette case.");
+                System.out.println("Erreur : Il n'y a pas de plante a arroser sur cette case.");
             }
         } else {
-            System.out.println("Erreur : Ce n'est pas une case avec une plante à arroser.");
+            System.out.println("Erreur : Ce n'est pas une case avec une plante a arroser.");
         }
     }
 }

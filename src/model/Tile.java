@@ -4,19 +4,19 @@ import javax.swing.*;
 import java.util.ArrayList;
 
 /**
- * La classe Tile représente une tuile dans le jeu.
- * Chaque tuile a des coordonnées (x, y) indiquant sa position dans le monde du jeu.
- * Chaque tuile peut contenir différents éléments (parcel, entités, etc.).
+ * La classe Tile represente une tuile dans le jeu.
+ * Chaque tuile a des coordonnees (x, y) indiquant sa position dans le monde du jeu.
+ * Chaque tuile peut contenir differents elements (parcel, entites, etc.).
  */
 public class Tile {
     private int x;
     private int y;
 
-    private ImageIcon sprite; // L'image représentant la tuile
+    private ImageIcon sprite; // L'image representant la tuile
 
     private ArrayList<Entity> entities;
 
-    // Par défaut la tuile est franchissable
+    // Par defaut la tuile est franchissable
     private boolean walkable = true;
     private boolean plowable = true;
 
@@ -32,7 +32,7 @@ public class Tile {
     }
 
     /**
-     * Méthode pour changer le sprite de la tuile.
+     * Methode pour changer le sprite de la tuile.
      * @param sprite
      */
     public void setSprite(ImageIcon sprite) {
@@ -40,8 +40,8 @@ public class Tile {
     }
 
     /**
-     * Méthode appelée à chaque cycle de jeu.
-     * Par défaut, une tuile normale ne fait rien.
+     * Methode appelee a chaque cycle de jeu.
+     * Par defaut, une tuile normale ne fait rien.
      * Les enfants (comme CasePlantable) surchargeront cette méthode.
      */
     public void tick() {
@@ -68,7 +68,7 @@ public class Tile {
 //    public boolean isPlantable() {return false;}
 
     /**
-     * Vérifie si cette case contient déjà une poule.
+     * Vérifie si cette case contient déja une poule.
      * Utile pour gérer les collisions entre ennemis.
      */
     public boolean hasChicken() {

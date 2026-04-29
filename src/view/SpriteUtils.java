@@ -8,18 +8,18 @@ import java.io.File;
 
 public class SpriteUtils {
 
-    /** Rend l'image parfaitement carrée (sans l'écraser) et enlève le fond noir */
+    /** Rend l'image parfaitement carree (sans l'ecraser) et enleve le fond noir */
     public static ImageIcon processFenceImage(String path) {
         try {
             BufferedImage original = ImageIO.read(new File(path));
-            // Trouve la plus grande dimension pour créer un carré parfait
+            // Trouve la plus grande dimension pour creer un carre parfait
             int maxDim = Math.max(original.getWidth(), original.getHeight());
 
-            // Crée une image carrée vide (transparente)
+            // Cree une image carree vide (transparente)
             BufferedImage squared = new BufferedImage(maxDim, maxDim, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = squared.createGraphics();
 
-            // On prend la couleur du tout premier pixel (en haut à gauche) comme référence pour le fond (noir)
+            // On prend la couleur du tout premier pixel (en haut a gauche) comme reference pour le fond (noir)
             int bgColor = original.getRGB(0, 0);
 
             // On supprime ce fond noir pour le rendre transparent
@@ -31,7 +31,7 @@ public class SpriteUtils {
                 }
             }
 
-            // Dessine l'image originale bien au CENTRE du carré
+            // Dessine l'image originale bien au CENTRE du carre
             int offsetX = (maxDim - original.getWidth()) / 2;
             int offsetY = (maxDim - original.getHeight()) / 2;
             g2d.drawImage(original, offsetX, offsetY, null);
@@ -44,7 +44,7 @@ public class SpriteUtils {
         }
     }
 
-    /** Fait une rotation mathématique de l'image */
+    /** Fait une rotation mathematique de l'image */
     public static ImageIcon rotateImageIcon(ImageIcon icon, double angleDegrees) {
         Image img = icon.getImage();
         int w = icon.getIconWidth();

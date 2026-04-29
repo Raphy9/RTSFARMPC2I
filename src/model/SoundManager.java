@@ -10,7 +10,7 @@ import java.util.concurrent.*;
  * Utilise javax.sound.sampled pour la lecture de clips audio.
  * Les sons sont chargés en mémoire sous forme de SoundData (format + données brutes) pour permettre une lecture rapide.
  * Permet de jouer des sons ponctuels (playSound) et des boucles identifiées par une clé (playLoop/stopLoop).
- * Gère également les fondues d'apparition et de disparition pour les boucles.
+ * Gere également les fondues d'apparition et de disparition pour les boucles.
  */
 public class SoundManager {
 
@@ -24,7 +24,7 @@ public class SoundManager {
         }
     }
 
-    // --- Variables statiques publiques pour accès direct depuis le reste du code ---
+    // --- Variables statiques publiques pour acces direct depuis le reste du code ---
     public static SoundData BG;
     public static SoundData MENU;
     public static SoundData LEVEL_UP;
@@ -48,7 +48,7 @@ public class SoundManager {
     private static boolean musicMuted = false;
     private static boolean sfxMuted = false;
 
-    // Mémorisation de la musique en cours pour pouvoir la relancer après un unmute
+    // Mémorisation de la musique en cours pour pouvoir la relancer apres un unmute
     private static String currentMusicKey = null;
     private static SoundData currentMusicData = null;
 
@@ -64,7 +64,7 @@ public class SoundManager {
     });
     private static final Map<String, ScheduledFuture<?>> fadeFutures = Collections.synchronizedMap(new HashMap<>());
 
-    // --- NOUVEAU : Méthodes de contrôle du son (Mute/Unmute) ---
+    // --- NOUVEAU : Méthodes de contrele du son (Mute/Unmute) ---
 
     public static boolean isMusicMuted() { return musicMuted; }
     public static boolean isSfxMuted() { return sfxMuted; }
@@ -72,7 +72,7 @@ public class SoundManager {
     public static void toggleSFX() {
         sfxMuted = !sfxMuted;
         if (sfxMuted) {
-            // Arrête tous les bruitages actifs (ceux qui ne sont pas des boucles)
+            // Arrete tous les bruitages actifs (ceux qui ne sont pas des boucles)
             List<Clip> copy;
             synchronized (activeClips) {
                 copy = new ArrayList<>(activeClips);
@@ -93,10 +93,10 @@ public class SoundManager {
             // Coupe toutes les musiques (boucles) en cours sans les oublier
             List<String> activeLoops = new ArrayList<>(loopClips.keySet());
             for (String key : activeLoops) {
-                stopLoop(key, 0L); // Arrêt immédiat
+                stopLoop(key, 0L); // Arret immédiat
             }
         } else {
-            // Relance la dernière musique prévue si elle existe
+            // Relance la derniere musique prévue si elle existe
             if (currentMusicKey != null && currentMusicData != null) {
                 playLoop(currentMusicKey, currentMusicData);
             }
@@ -174,7 +174,7 @@ public class SoundManager {
     }
 
     /**
-     * Joue une instance à partir d'une SoundData. Retourne le Clip (ou null si échec).
+     * Joue une instance a partir d'une SoundData. Retourne le Clip (ou null si échec).
      */
     public static Clip playSound(SoundData sd) {
         // MODIFICATION : On ignore si les bruitages sont coupés
@@ -200,7 +200,7 @@ public class SoundManager {
 
     /**
      * Démarre une boucle identifiée par keyLoop en utilisant directement une SoundData.
-     * Si une boucle existe déjà sous keyLoop, elle est arrêtée.
+     * Si une boucle existe déja sous keyLoop, elle est arretée.
      */
     public static Clip playLoop(String keyLoop, SoundData sd) {
         return playLoop(keyLoop, sd, 0L);
@@ -208,7 +208,7 @@ public class SoundManager {
 
     /**
      * Démarre une boucle identifiée par keyLoop en utilisant directement une SoundData.
-     * Si une boucle existe déjà sous keyLoop, elle est arrêtée. Le fondu d'apparition (fade-in)
+     * Si une boucle existe déja sous keyLoop, elle est arretée. Le fondu d'apparition (fade-in)
      * se fait sur fadeMs millisecondes si > 0.
      */
     public static Clip playLoop(String keyLoop, SoundData sd, long fadeMs) {
@@ -259,7 +259,7 @@ public class SoundManager {
 
     /**
      * Stoppe la boucle identifiée par keyLoop ; si fadeMs > 0, on fait un fondu de sortie pendant fadeMs ms
-     * puis on arrête et ferme le clip.
+     * puis on arrete et ferme le clip.
      */
     public static void stopLoop(String keyLoop, long fadeMs) {
         if (keyLoop == null) return;

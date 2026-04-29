@@ -75,7 +75,7 @@ public class HomeScreenPanel extends JPanel {
     }
 
     private void showSaveSelectionDialog(Runnable onPlayWithSave, JButton playButton) {
-        JDialog popupFrame = new JDialog(parentFrame, "Charger/Créer Partie", true);
+        JDialog popupFrame = new JDialog(parentFrame, "Charger/Creer Partie", true);
         selectedSave = null;
 
         SaveSelectionPopup popup = new SaveSelectionPopup(selectedSaveName -> {

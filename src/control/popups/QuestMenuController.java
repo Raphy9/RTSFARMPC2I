@@ -11,9 +11,9 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 /**
- * Contrôleur du menu quêtes.
- * Il relie les boutons de la vue aux opérations de navigation de la Display,
- * sans laisser la vue embarquer la logique de contrôle.
+ * Controleur du menu quetes.
+ * Il relie les boutons de la vue aux operations de navigation de la Display,
+ * sans laisser la vue embarquer la logique de controle.
  */
 public class QuestMenuController implements ActionListener {
     private final Display display;
@@ -30,13 +30,13 @@ public class QuestMenuController implements ActionListener {
     }
 
     /**
-     * Branche tous les listeners du menu quêtes : ouverture, fermeture, navigation, refresh modèle.
+     * Branche tous les listeners du menu quetes : ouverture, fermeture, navigation, refresh modele.
      */
     public void bind() {
         display.getQuestMenuButton().addActionListener(this);
         display.getQuestSidePanel().getCloseButton().addActionListener(e -> closeMenu());
 
-        // Le modèle notifie le contrôleur, qui rafraîchit ensuite la vue et rebranche les boutons.
+        // Le modele notifie le controleur, qui rafraîchit ensuite la vue et rebranche les boutons.
         display.setQuestChangeCallback(() -> SwingUtilities.invokeLater(this::refreshFromModel));
         refreshFromModel();
     }
@@ -64,8 +64,8 @@ public class QuestMenuController implements ActionListener {
         Quests quests = display.getQuests();
         if (quests == null || quests.getQuestLines().isEmpty()) {
             display.getQuestSidePanel().render(QuestPanelState.empty(
-                    "Aucune quête disponible",
-                    "Le système de quêtes n'a pas été initialisé."
+                    "Aucune quete disponible",
+                    "Le systeme de quetes n'a pas ete initialise."
             ));
             return;
         }
@@ -105,7 +105,7 @@ public class QuestMenuController implements ActionListener {
 
         int activeIndex = quests.getActiveQuestLineIndex();
         if (chapterIndex > activeIndex) {
-            return; // chapitres futurs verrouillés
+            return; // chapitres futurs verrouilles
         }
 
         selectedChapterIndex = Math.max(0, Math.min(chapterIndex, quests.getQuestLines().size() - 1));
@@ -123,8 +123,8 @@ public class QuestMenuController implements ActionListener {
             boolean selected = i == selectedIndex;
             boolean enabled = i <= activeIndex;
             String status = line.isCompleted()
-                    ? "Terminé"
-                    : (line.isUnlocked() ? "En cours" : "Verrouillé");
+                    ? "Termine"
+                    : (line.isUnlocked() ? "En cours" : "Verrouille");
             buttons.add(new QuestPanelState.ChapterButtonState(
                     i,
                     "Chap " + (i + 1),

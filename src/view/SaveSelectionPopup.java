@@ -19,7 +19,7 @@ public class SaveSelectionPopup extends JPanel {
         this.setOpaque(true);
         this.setBackground(PopupPanel.SDV_BG);
 
-        JLabel titleLabel = new JLabel("Charger/Créer Partie", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Charger/Creer Partie", SwingConstants.CENTER);
         titleLabel.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 18f) : new Font("Arial", Font.BOLD, 18));
         titleLabel.setForeground(PopupPanel.SDV_TEXT);
         titleLabel.setBorder(new EmptyBorder(10, 0, 10, 0));
@@ -225,7 +225,7 @@ public class SaveSelectionPopup extends JPanel {
         boolean confirmed = GameDialog.showConfirm(
                 this,
                 "Supprimer la sauvegarde",
-                "Êtes-vous sûr de vouloir supprimer '" + saveName + "' ?\nCette action est irréversible."
+                "Etes-vous sur de vouloir supprimer '" + saveName + "' ?\nCette action est irreversible."
         );
 
         if (confirmed) {
@@ -239,10 +239,10 @@ public class SaveSelectionPopup extends JPanel {
     }
 
     private void refreshSaveList() {
-        // Reconstruire le panel avec la liste mise à jour
+        // Reconstruire le panel avec la liste mise a jour
         removeAll();
 
-        JLabel titleLabel = new JLabel("Charger/Créer Partie", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Charger/Creer Partie", SwingConstants.CENTER);
         titleLabel.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 18f) : new Font("Arial", Font.BOLD, 18));
         titleLabel.setForeground(PopupPanel.SDV_TEXT);
         titleLabel.setBorder(new EmptyBorder(10, 0, 10, 0));

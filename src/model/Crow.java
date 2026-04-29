@@ -17,7 +17,7 @@ public class Crow extends Entity implements Runnable {
     private Thread crowThread;
     private boolean hasCawed = false;
 
-    // Compteur de satiété et d'ennui
+    // Compteur de satieté et d'ennui
     private int plantsEaten = 0;
     private int boredom = 0;
 
@@ -55,7 +55,7 @@ public class Crow extends Entity implements Runnable {
                 if (targetPlant == null) {
                     boredom++;
                     if (boredom >= 3) {
-                        System.out.println("Le corbeau ne trouve rien à manger et s'envole !");
+                        System.out.println("Le corbeau ne trouve rien a manger et s'envole !");
                         this.currentState = State.FLEEING;
                     } else {
                         wanderRandomly();
@@ -85,7 +85,7 @@ public class Crow extends Entity implements Runnable {
                     // VÉRIFICATION EN TEMPS RÉEL : Le corbeau a-t-il repéré un épouvantail ?
                     if (isNearScarecrow()) {
                         System.out.println("Croa ! Le corbeau a vu un épouvantail et panique !");
-                        // On ne fait PAS appel à flee() pour ne pas s'interrompre soi-même,
+                        // On ne fait PAS appel a flee() pour ne pas s'interrompre soi-meme,
                         // on modifie juste l'état et on coupe la boucle de vol.
                         this.currentState = State.FLEEING;
                         SoundManager.playSound(SoundManager.CROW_RUN);
@@ -95,7 +95,7 @@ public class Crow extends Entity implements Runnable {
                     int newX = step.getX();
                     int newY = step.getY();
 
-                    // On empêche simplement que deux corbeaux se posent sur la même case
+                    // On empeche simplement que deux corbeaux se posent sur la meme case
                     if (hasCrow(world.getTile(newX, newY))) {
                         break;
                     }
@@ -144,7 +144,7 @@ public class Crow extends Entity implements Runnable {
                             this.currentState = State.FLEEING;
                             continue;
                         } else {
-                            System.out.println("Le corbeau digère et se prépare à voler vers une autre...");
+                            System.out.println("Le corbeau digere et se prépare a voler vers une autre...");
                             this.currentState = State.IDLE;
                             Thread.sleep(1000);
                             wanderRandomly();
@@ -181,7 +181,7 @@ public class Crow extends Entity implements Runnable {
     }
 
     /**
-     * Génère un chemin en ligne droite vers la cible, en ignorant tous les obstacles.
+     * Génere un chemin en ligne droite vers la cible, en ignorant tous les obstacles.
      */
     private List<Tile> getFlightPath(int tx, int ty) {
         List<Tile> path = new ArrayList<>();
@@ -223,7 +223,7 @@ public class Crow extends Entity implements Runnable {
         List<Tile> path = getFlightPath(targetX, targetY);
 
         if (path != null && !path.isEmpty()) {
-            // CORRECTION ICI : On laisse l'état à FLEEING ! L'animation utilisera quand même le sprite FLYING
+            // CORRECTION ICI : On laisse l'état à FLEEING ! L'animation utilisera quand meme le sprite FLYING
             for (Tile step : path) {
                 int newX = step.getX();
                 int newY = step.getY();
@@ -291,7 +291,7 @@ public class Crow extends Entity implements Runnable {
                 for (Tile step : path) {
                     if (!isRunning || this.currentState == State.FLEEING) break;
 
-                    // Si on repère un épouvantail pendant qu'on se balade
+                    // Si on repere un épouvantail pendant qu'on se balade
                     if (isNearScarecrow()) {
                         this.currentState = State.FLEEING;
                         SoundManager.playSound(SoundManager.CROW_RUN);

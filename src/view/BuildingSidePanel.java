@@ -19,7 +19,7 @@ public class BuildingSidePanel extends JPanel {
     private final JPanel itemsPanel;
     private JScrollPane scrollPane; // champ pour pouvoir revalider depuis showCategory
     private Runnable onClose;
-    private String currentCategory = "Bâtiments";
+    private String currentCategory = "Batiments";
 
     public BuildingSidePanel(BuildingManager manager, Display display, World world, Runnable onClose) {
         this.manager = manager;
@@ -28,19 +28,19 @@ public class BuildingSidePanel extends JPanel {
         this.onClose = onClose;
 
         this.setLayout(new BorderLayout(0, 0));
-        this.setOpaque(false); // On dessine le fond nous-mêmes
+        this.setOpaque(false); // On dessine le fond nous-memes
 
         // --- Barre du haut : Onglets + Fermeture ---
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
         topBar.setBorder(new EmptyBorder(15, 15, 5, 15));
 
-        // Conteneur pour les catégories
+        // Conteneur pour les categories
         JPanel categories = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         categories.setOpaque(false);
 
-        // Onglets — noms AVEC accents, cohérents avec getEntriesFor()
-        String[] cats = new String[]{"Bâtiments", "Décoration", "Nature", "Chemin"};
+        // Onglets — noms SANS accents, coherents avec getEntriesFor()
+        String[] cats = new String[]{"Batiments", "Decoration", "Nature", "Chemin"};
         for (String c : cats) {
             categories.add(createTabButton(c));
         }
@@ -58,7 +58,7 @@ public class BuildingSidePanel extends JPanel {
         ));
         btnClose.addActionListener(e -> {
             this.setVisible(false);
-            display.onBuildingPanelClose(); // Restaure l'icône de construction
+            display.onBuildingPanelClose(); // Restaure l'icone de construction
             if (this.onClose != null) this.onClose.run();
         });
 
@@ -83,8 +83,8 @@ public class BuildingSidePanel extends JPanel {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         this.add(scrollPane, BorderLayout.CENTER);
 
-        // CORRECTION DE L'ACCENT : Ouvre bien l'onglet par défaut !
-        showCategory("Bâtiments");
+        // CORRECTION DE L'ACCENT : Ouvre bien l'onglet par defaut !
+        showCategory("Batiments");
     }
 
     private JButton createTabButton(String text) {
@@ -102,12 +102,12 @@ public class BuildingSidePanel extends JPanel {
     }
 
     public void refresh() {
-        // SwingUtilities assure que l'UI se met à jour sans lag ni glitch
+        // SwingUtilities assure que l'UI se met a jour sans lag ni glitch
         SwingUtilities.invokeLater(() -> {
             if (currentCategory != null) {
                 showCategory(currentCategory);
             }
-            // On force le panneau entier à recalculer ses dimensions et à se repeindre
+            // On force le panneau entier a recalculer ses dimensions et a se repeindre
             this.revalidate();
             this.repaint();
         });
@@ -122,7 +122,7 @@ public class BuildingSidePanel extends JPanel {
             itemsPanel.add(Box.createVerticalStrut(10));
         }
 
-        // On force la mise à jour en cascade
+        // On force la mise a jour en cascade
         itemsPanel.revalidate();
         itemsPanel.repaint();
 
@@ -136,7 +136,7 @@ public class BuildingSidePanel extends JPanel {
     private static ImageIcon LOCK_ICON = null;
     private static ImageIcon NEW_BADGE_ICON = null;
 
-    /** Charge une image de façon synchrone via ImageIO (évite les artefacts de chargement asynchrone). */
+    /** Charge une image de façon synchrone via ImageIO (evite les artefacts de chargement asynchrone). */
     private static java.awt.image.BufferedImage loadSync(String path) {
         try {
             return javax.imageio.ImageIO.read(new java.io.File(path));
@@ -147,7 +147,7 @@ public class BuildingSidePanel extends JPanel {
 
     private int countBuiltInstances(Entry e) {
         int count = 0;
-        // Vérifiez que getBuildings() correspond bien à la méthode de votre classe World
+        // Verifiez que getBuildings() correspond bien a la methode de votre classe World
         if (world.getBuildings() != null) {
             for (Building b : world.getBuildings()) {
                 if (b.getClass().equals(e.creator.get().getClass())) {
@@ -172,14 +172,14 @@ public class BuildingSidePanel extends JPanel {
         card.setBackground(locked ? new Color(170, 160, 150) : new Color(235, 185, 120));
         card.setBorder(BorderFactory.createLineBorder(PopupPanel.SDV_BORDER_DARK, 2));
 
-        // Image à gauche
+        // Image a gauche
         int iconSz = 50;
         ImageIcon rawIcon;
         if (locked) {
             if (LOCK_ICON == null) LOCK_ICON = new ImageIcon("src/assets/lock.png");
             rawIcon = new ImageIcon(LOCK_ICON.getImage().getScaledInstance(iconSz, iconSz, Image.SCALE_SMOOTH));
         } else if (isNew) {
-            // Chargement synchrone pour éviter l'image vide (ImageIcon asynchrone)
+            // Chargement synchrone pour eviter l'image vide (ImageIcon asynchrone)
             java.awt.image.BufferedImage baseImg = loadSync(e.iconPath);
             if (NEW_BADGE_ICON == null) NEW_BADGE_ICON = new ImageIcon("src/assets/new.png");
             java.awt.image.BufferedImage badgeImg = loadSync("src/assets/new.png");
@@ -224,7 +224,7 @@ public class BuildingSidePanel extends JPanel {
         card.add(info, BorderLayout.CENTER);
 
 
-        // Bouton Poser (grisé et désactivé si bloqué)
+        // Bouton Poser (grise et desactive si bloque)
         JButton place = new JButton("Poser");
         place.setFocusable(false);
         place.setFont(GameFonts.MINECRAFT_FONT != null ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 12f) : new Font("Arial", Font.BOLD, 12));
@@ -235,7 +235,7 @@ public class BuildingSidePanel extends JPanel {
             place.setBackground(new Color(150, 145, 140));
             place.setForeground(new Color(100, 95, 90));
         } else if (e.maxCount != -1 && builtCount >= e.maxCount) {
-            // Le bâtiment est débloqué mais la limite est atteinte
+            // Le batiment est debloque mais la limite est atteinte
             place.setEnabled(false);
             place.setText("Max atteint");
             place.setBackground(new Color(150, 145, 140));
@@ -279,7 +279,7 @@ public class BuildingSidePanel extends JPanel {
     }
 
     /**
-     * Méthode qui construit un panel au milieu de l'écran pour afficher la description de l'entrée
+     * Methode qui construit un panel au milieu de l'ecran pour afficher la description de l'entree
     */
     private void createDescriptionPanel(Entry e) {
         GameDialog.showMessage(display.getGlobalView(), e.title, e.description);
@@ -305,35 +305,35 @@ public class BuildingSidePanel extends JPanel {
     private List<Entry> getEntriesFor(String category) {
         List<Entry> out = new ArrayList<>();
         switch (category) {
-            case "Bâtiments":
+            case "Batiments":
                 out.add(new Entry("Grange", "src/assets/Buildings/barn.png", "Le batiment principal de votre ferme qui permet de \nstocker/vendre/acheter les objets/plantes", () -> new BarnBuilding(), 0, 1, 1));
-                out.add(new Entry("Puits",            "src/assets/Buildings/well.png",  "Un puits traditionnel  qui ajoute une touche \nde charme indispensable à toute ferme.",    () -> new Well(),      40, 3, 2));
                 out.add(new Entry("Arroseur auto",    "src/assets/arroseur.png", "Le meilleur ami du fermier paresseux. \nIl arrose automatiquement toutes les plantations dans un rayon de 2 cases. (zone de 5x5)", () -> new Arroseur(), 120, 3));
-                out.add(new Entry("Boîte aux lettres","src/assets/Buildings/mailbox1.png", "Indispensable pour recevoir les nouvelles \ndu voisinage (ou juste pour le style).", () -> new Mailbox1(),  30, 4, 1));
-                out.add(new Entry("Linge",            "src/assets/Buildings/linge.png",  "Un élément décoratif qui donne un air de \ncampagne habitée à votre ferme.",  () -> new Linge(),    50, 5,2));
-                out.add(new Entry("Epouvantail",      "src/assets/Buildings/scarecrow.png", "Le protecteur de vos champs. Il effraie et fait \nfuir instantanément les corbeaux dans un rayon de 3 cases (zone de 7x7).",() -> new Scarecrow(), 100, 2));
+                out.add(new Entry("Epouvantail",      "src/assets/Buildings/scarecrow.png", "Le protecteur de vos champs. Il effraie et fait \nfuir instantanement les corbeaux dans un rayon de 3 cases (zone de 7x7).",() -> new Scarecrow(), 100, 5));
                 break;
-            case "Décoration":
+            case "Decoration":
 
-                out.add(new Entry("Tonneau 1", "src/assets/Buildings/barrel1.png", "De simples tonneaux en bois concu pour décorer votre terrain.", () -> new Barrel1(), 10, 1,30));
-                out.add(new Entry("Tonneau 2", "src/assets/Buildings/barrel2.png", "De simples tonneaux en bois concu pour décorer votre terrain.", () -> new Barrel2(), 10, 1,30));
-                out.add(new Entry("Enseigne carrote",  "src/assets/Buildings/carrotsign.png", "Idéal pour organiser votre potager et ne plus \nconfondre vos plantations de carottes avec le reste.",  () -> new carrotsign(),   10, 2,3));
-                out.add(new Entry("Poteau",    "src/assets/Buildings/poto.png",  "Un simple poteau décoratif",  () -> new Poto(),    20, 2,30));
-                out.add(new Entry("Enseigne choux",  "src/assets/Buildings/chouxsign.png", "Une petite pancarte artisanale pour indiquer \nfièrement où poussent vos plus beaux spécimens de choux.",  () -> new chouxsign(),   10, 2,3));
+                out.add(new Entry("Tonneau 1", "src/assets/Buildings/barrel1.png", "De simples tonneaux en bois concu pour decorer votre terrain.", () -> new Barrel1(), 10, 1,30));
+                out.add(new Entry("Tonneau 2", "src/assets/Buildings/barrel2.png", "De simples tonneaux en bois concu pour decorer votre terrain.", () -> new Barrel2(), 10, 1,30));
+                out.add(new Entry("Enseigne carrote",  "src/assets/Buildings/carrotsign.png", "Ideal pour organiser votre potager et ne plus \nconfondre vos plantations de carottes avec le reste.",  () -> new carrotsign(),   10, 2,3));
+                out.add(new Entry("Poteau",    "src/assets/Buildings/poto.png",  "Un simple poteau decoratif",  () -> new Poto(),    20, 2,30));
+                out.add(new Entry("Enseigne choux",  "src/assets/Buildings/chouxsign.png", "Une petite pancarte artisanale pour indiquer \nfierement ou poussent vos plus beaux specimens de choux.",  () -> new chouxsign(),   10, 2,3));
+                out.add(new Entry("Puits",            "src/assets/Buildings/well.png",  "Un puits traditionnel  qui ajoute une touche \nde charme indispensable a toute ferme.",    () -> new Well(),      40, 3, 2));
                 out.add(new Entry("Grande enseigne",  "src/assets/Buildings/bigsign.png", "Un grand panneau imposant \npour marquer votre territoire.",  () -> new Bigsign(),   20, 3,3));
-                out.add(new Entry("Enseigne citrouille",  "src/assets/Buildings/pumpkinsign.png", "Une petite pancarte pour baliser \nvos plantations de citrouilles et préparer sereinement Halloween.",  () -> new pumpkinsign(),   10, 3,3));
-                out.add(new Entry("Enseigne fraise",  "src/assets/Buildings/strawberrysign.png", "Pour ne jamais perdre de vue \nvos précieux plants de fraises.",  () -> new strawberrysign(),   10, 4,3));
+                out.add(new Entry("Enseigne citrouille",  "src/assets/Buildings/pumpkinsign.png", "Une petite pancarte pour baliser \nvos plantations de citrouilles et preparer sereinement Halloween.",  () -> new pumpkinsign(),   10, 3,3));
+                out.add(new Entry("Enseigne fraise",  "src/assets/Buildings/strawberrysign.png", "Pour ne jamais perdre de vue \nvos precieux plants de fraises.",  () -> new strawberrysign(),   10, 4,3));
+                out.add(new Entry("Boite aux lettres","src/assets/Buildings/mailbox1.png", "Indispensable pour recevoir les nouvelles \ndu voisinage (ou juste pour le style).", () -> new Mailbox1(),  30, 4, 1));
+                out.add(new Entry("Linge",            "src/assets/Buildings/linge.png",  "Un element decoratif qui donne un air de \ncampagne habitee a votre ferme.",  () -> new Linge(),    50, 5,2));
                 break;
             case "Nature":
-                out.add(new Entry("Rocher",  "src/assets/Buildings/rock1.png", "Un élément naturel et robuste pour décorer votre \nterrain avec un aspect sauvage.",() -> new Rock1(), 10, 1,30));
-                out.add(new Entry("Arbre 1", "src/assets/Buildings/tree1.png", "Un petit arbre décoratif qui apporte un peu de verdure \net d'ombre à votre terrain.",() -> new Tree1(), 10, 2,30));
-                out.add(new Entry("Arbre 2", "src/assets/Buildings/tree2.png", "Plusieurs petits arbres décoratifs qui apportent un peu \nde verdure et d'ombre à votre terrain.",() -> new Tree2(), 25, 3,15));
+                out.add(new Entry("Rocher",  "src/assets/Buildings/rock1.png", "Un element naturel et robuste pour decorer votre \nterrain avec un aspect sauvage.",() -> new Rock1(), 10, 1,30));
+                out.add(new Entry("Arbre 1", "src/assets/Buildings/tree1.png", "Un petit arbre decoratif qui apporte un peu de verdure \net d'ombre a votre terrain.",() -> new Tree1(), 10, 2,30));
+                out.add(new Entry("Arbre 2", "src/assets/Buildings/tree2.png", "Plusieurs petits arbres decoratifs qui apportent un peu \nde verdure et d'ombre a votre terrain.",() -> new Tree2(), 25, 3,15));
                 break;
             case "Chemin":
-                out.add(new Entry("Barrière (Face)", "src/assets/Obstacles/fence_face.png", "Des clôtures modulables qui s'adaptent et forment des angles \nautomatiquement pour bloquer les entités terrestres.",() -> new FenceFace(), 10, 1));
-                out.add(new Entry("Barrière (Côté)", "src/assets/Obstacles/fence_side.png", "Des clôtures modulables qui s'adaptent et forment des angles \nautomatiquement pour bloquer les entités terrestres.",() -> new FenceSide(), 10, 1));
-                out.add(new Entry("Porte (Face)",    "src/assets/Obstacles/fence_face.png", "Une version améliorée de la barrière qui permet à \nvos jardiniers de circuler librement dans vos enclos.", () -> new GateFace(),  15, 4));
-                out.add(new Entry("Porte (Côté)",    "src/assets/Obstacles/fence_side.png", "Une version améliorée de la barrière qui permet à \nvos jardiniers de circuler librement dans vos enclos.",() -> new GateSide(),  15, 4));
+                out.add(new Entry("Barriere (Face)", "src/assets/Obstacles/fence_face.png", "Des clotures modulables qui s'adaptent et forment des angles \nautomatiquement pour bloquer les entites terrestres.",() -> new FenceFace(), 10, 1));
+                out.add(new Entry("Barriere (Cote)", "src/assets/Obstacles/fence_side.png", "Des clotures modulables qui s'adaptent et forment des angles \nautomatiquement pour bloquer les entites terrestres.",() -> new FenceSide(), 10, 1));
+                out.add(new Entry("Porte (Face)",    "src/assets/Obstacles/fence_face.png", "Une version amelioree de la barriere qui permet a \nvos jardiniers de circuler librement dans vos enclos.", () -> new GateFace(),  15, 4));
+                out.add(new Entry("Porte (Cote)",    "src/assets/Obstacles/fence_side.png", "Une version amelioree de la barriere qui permet a \nvos jardiniers de circuler librement dans vos enclos.",() -> new GateSide(),  15, 4));
                 break;
         }
         return out;

@@ -5,18 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * La classe CasePlantable représente une tuile de terrain qui peut être cultivée.
- * Elle hérite de Tile et ajoute des fonctionnalités spécifiques à l'agriculture (planter, arroser, fertiliser, récolter).
+ * La classe CasePlantable représente une tuile de terrain qui peut etre cultivée.
+ * Elle hérite de Tile et ajoute des fonctionnalités spécifiques a l'agriculture (planter, arroser, fertiliser, récolter).
  */
 public class PlantTile extends Tile {
 
     private static final ImageIcon DRY_SPRITE = new ImageIcon("src/assets/parcel.png");
     private static final ImageIcon WET_SPRITE = new ImageIcon("src/assets/parcel_wet.jpg");
-    // --- Attributs spécifiques à l'agriculture ---
+    // --- Attributs spécifiques a l'agriculture ---
     private Plant plant;// La plante (null si vide)
     private boolean plantingBlocked = false;
 
-    // La parcelle à laquelle cette case appartient
+    // La parcelle a laquelle cette case appartient
     private Parcel parcel = new Parcel(new ArrayList<>(List.of(this))); // Init avec une parcelle singleton
 
     /** Constructeur de CasePlantable.
@@ -32,43 +32,43 @@ public class PlantTile extends Tile {
     // --- SURCHARGE (OVERRIDE) ---
 
     /**
-     * Une case plantable est considérée comme "farmable" si elle ne contient pas déjà une plante.
-     * Contrairement à une tuile normale, on peut planter directement dessus sans devoir labourer.
+     * Une case plantable est considérée comme "farmable" si elle ne contient pas déja une plante.
+     * Contrairement a une tuile normale, on peut planter directement dessus sans devoir labourer.
      *
-     * @return true si la case est prête à être plantée, false sinon
+     * @return true si la case est prete a etre plantée, false sinon
      */
     @Override
     public boolean isFarmable() {
-        // On peut planter SEULEMENT s'il n'y a pas déjà une plante
+        // On peut planter SEULEMENT s'il n'y a pas déja une plante
         return this.plant == null && !this.plantingBlocked;
     }
 
     /**
-     * Une case plantable ne peut pas être labourée, car elle est déjà prête à être plantée.
+     * Une case plantable ne peut pas etre labourée, car elle est déja prete a etre plantée.
      *
      * @return false, car on ne peut pas labourer une case plantable
      */
     @Override
     public boolean isPlowable() {
-        // On ne peut pas labourer une case plantable, elle est déjà prête à être plantée
+        // On ne peut pas labourer une case plantable, elle est déja prete a etre plantée
         return false;
     }
 
-    /** Renvoie la parcelle à laquelle cette case appartient, ou null si elle n'est pas encore assignée à une parcelle */
+    /** Renvoie la parcelle a laquelle cette case appartient, ou null si elle n'est pas encore assignée a une parcelle */
     public Parcel getParcel() {
         return parcel;
     }
 
-    /** Assigne une parcelle à cette case.
+    /** Assigne une parcelle a cette case.
      * Cette méthode est utilisée lors de la création ou de la destruction de parcelles.
-     * @param parcel La parcelle à assigner à cette case
+     * @param parcel La parcelle a assigner a cette case
      */
     public void setParcel(Parcel parcel) {
         this.parcel = parcel;
     }
 
     /**
-     * La méthode tick() est appelée à chaque cycle de jeu.
+     * La méthode tick() est appelée a chaque cycle de jeu.
      * Elle fait grandir la plante si elle existe.
      */
     @Override
@@ -84,8 +84,8 @@ public class PlantTile extends Tile {
     /**
      * Tente de planter une graine de type donné sur cette case.
      *
-     * @param type Le type de plante à planter
-     * @return true si la plantation a réussi, false si la case est déjà occupée
+     * @param type Le type de plante a planter
+     * @return true si la plantation a réussi, false si la case est déja occupée
      */
     public boolean plant(PlantType type) {
         if (this.plant != null || this.plantingBlocked) {
@@ -107,7 +107,7 @@ public class PlantTile extends Tile {
 
     /**
      * Applique de l'engrais à la plante présente sur cette case, si elle existe.
-     * L'engrais accélère la croissance de la plante.
+     * L'engrais accélere la croissance de la plante.
      *
      * @return true si l'engrais a été appliqué, false sinon (ex: pas de plante ou déjà mature)
      */
@@ -120,14 +120,14 @@ public class PlantTile extends Tile {
 
     /**
      * Tente de récolter la plante présente sur cette case.
-     * Si la plante est mûre, elle est récoltée et la case se vide.
+     * Si la plante est mure, elle est récoltée et la case se vide.
      *
      * @return le gain en argent de la récolte, ou 0 si la plante n'était pas récoltable
      */
     public int harvest() {
         if (this.plant != null && this.plant.isHarvestable()) {
             int gain = this.plant.getType().getValue();
-            this.plant = null; // La case se vide après la récolte
+            this.plant = null; // La case se vide apres la récolte
             return gain;
         }
         return 0;
@@ -135,7 +135,7 @@ public class PlantTile extends Tile {
 
     /**
      * Nettoie la case en supprimant la plante morte ou pourrie.
-     * Cette méthode peut être appelée après une récolte ratée ou pour préparer la case à une nouvelle plantation.
+     * Cette méthode peut etre appelée apres une récolte ratée ou pour préparer la case à une nouvelle plantation.
      */
     public void clean() {
         if (this.plant != null &&
@@ -160,7 +160,7 @@ public class PlantTile extends Tile {
         return plant;
     }
 
-    /** Bloque/débloque la possibilité de planter sur cette case (ex: bâtiment posé dessus). */
+    /** Bloque/débloque la possibilité de planter sur cette case (ex: batiment posé dessus). */
     public void setPlantingBlocked(boolean plantingBlocked) {
         this.plantingBlocked = plantingBlocked;
     }

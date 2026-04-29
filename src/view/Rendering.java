@@ -3,12 +3,12 @@ package src.view;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicLong;
 
-/** Thread qui gère le rendu de la vue globale et des popups,
- * en appelant la méthode repaint() de la classe Display */
+/** Thread qui gere le rendu de la vue globale et des popups,
+ * en appelant la methode repaint() de la classe Display */
 public class Rendering extends TimerTask {
 
     public static final int FPS = 30;
-    private static final long SAVE_INTERVAL_MS = 3000;
+    private static final long SAVE_INTERVAL_MS = 60000;
 
     private Display display;
     private AtomicLong lastSaveTime = new AtomicLong(0);

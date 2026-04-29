@@ -19,7 +19,7 @@ public abstract class Building {
     protected PlacementRule placementRule;
     protected ImageIcon sprite;
     protected int buyPrice = 0;
-    /** Niveau requis pour débloquer ce bâtiment dans le shop (0 = disponible dès le départ) */
+    /** Niveau requis pour débloquer ce batiment dans le shop (0 = disponible des le départ) */
     protected int levelRequirement = 0;
 
     public Building(int width, int height, boolean isPassable, PlacementRule rule, ImageIcon sprite) {
@@ -52,6 +52,6 @@ public abstract class Building {
 
     public int getSellPrice() { return (int) Math.ceil(buyPrice * 0.4); }
 
-    /** Retourne true si ce bâtiment est une porte franchissable. */
+    /** Retourne true si ce batiment est une porte franchissable. */
     public boolean isGate() { return false; }
 }

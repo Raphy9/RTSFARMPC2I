@@ -27,17 +27,17 @@ public class HarvestAction extends Action {
 
             if (plant != null) {
 
-                //  La plante est mûre (Récolte normale : Donne le légume)
+                //  La plante est mure (Récolte normale : Donne le légume)
                 if (plant.isHarvestable()) {
                     PlantType type = plant.getType();
 
                     parcel.harvest(); // Vide la case
-                    // La quête de récolte avance seulement sur une vraie récolte mûre.
+                    // La quete de récolte avance seulement sur une vraie récolte mure.
                     world.registerHarvestEvent(type);
 
-                    // Ajout à l'inventaire du jardinier
+                    // Ajout a l'inventaire du jardinier
                     gardener.getInventory().addItem(new ItemPlant(type, 1));
-                    System.out.println("Succès : Le jardinier a récolté " + type.getName() + " !");
+                    System.out.println("Succes : Le jardinier a récolté " + type.getName() + " !");
 
                     SoundManager.playSound(SoundManager.HARVEST);
                     stats.addExp(type.getExpGain());
@@ -49,7 +49,7 @@ public class HarvestAction extends Action {
                 //  La plante est morte ou mangée (Nettoyage : Ne donne rien)
                 else if (plant.getState() == src.model.PlantState.MORT || plant.getState() == src.model.PlantState.EATEN) {
                     parcel.clean(); // Vide la case
-                    System.out.println("Le jardinier a nettoyé les restes de la plante. La case est prête pour une nouvelle graine !");
+                    System.out.println("Le jardinier a nettoyé les restes de la plante. La case est prete pour une nouvelle graine !");
                 }
 
             } else {

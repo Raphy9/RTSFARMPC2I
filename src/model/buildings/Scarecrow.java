@@ -18,14 +18,14 @@ public class Scarecrow extends Building {
 
     @Override
     public void applyEffect(World world) {
-        // À chaque "tick" de la journée, ou en temps réel, l'épouvantail effraie les corbeaux
+        // A chaque "tick" de la journée, ou en temps réel, l'épouvantail effraie les corbeaux
         if (world.getCrows() != null) {
             for (Crow crow : world.getCrows()) {
                 // Si le corbeau entre dans le rayon de l'épouvantail
                 if (Math.abs(crow.getX() - this.getX()) <= RADIUS &&
                         Math.abs(crow.getY() - this.getY()) <= RADIUS) {
 
-                    // On le force à s'enfuir immédiatement !
+                    // On le force a s'enfuir immédiatement !
                     crow.flee();
                 }
             }

@@ -40,7 +40,7 @@ public class HarvestActionBuilder extends ActionBuilder {
             getGardener().addAction(new HarvestAction(p.x, p.y, world.getStats(), getDisplay()));
         }
 
-        // Après avoir tout récolté, on va à la grange
+        // Apres avoir tout récolté, on va a la grange
         Point barnPos = world.findClosestWalkableAdjacent(world.getBarnX(), world.getBarnY(), getGardener());
         if (barnPos != null) {
             getGardener().addAction(new MoveAction(barnPos.x, barnPos.y));

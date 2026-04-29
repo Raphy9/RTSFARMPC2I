@@ -3,24 +3,24 @@ package src.model.actions;
 import src.model.*;
 
 /**
- * Action concrète exécutée par le jardinier pour planter une graine sur le terrain.
+ * Action concrete exécutée par le jardinier pour planter une graine sur le terrain.
  * Cette action est conçue pour s'exécuter depuis une case adjacente (execX,execY) :
- * le MoveAction précédent amènera le jardinier sur execX/execY, puis cette action
+ * le MoveAction précédent amenera le jardinier sur execX/execY, puis cette action
  * plantera sur plantX/plantY sans déplacer le jardinier.
  */
 public class PlantAction extends Action {
 
-    // Informations nécessaires pour planter : le type de plante et les coordonnées de la parcelle à planter
+    // Informations nécessaires pour planter : le type de plante et les coordonnées de la parcelle a planter
     private PlantType plantType;
-    private int plantX, plantY; // coordonnées de la parcelle à planter
+    private int plantX, plantY; // coordonnées de la parcelle a planter
 
     /**
      * Constructeur de PlantAction.
-     * @param execX Les coordonnées x de la tuile d'exécution (adjacente à la parcelle à planter).
+     * @param execX Les coordonnées x de la tuile d'exécution (adjacente a la parcelle a planter).
      * @param execY Les coordonnées y de la tuile d'exécution.
      * @param plantX Les coordonnées x de la parcelle où planter.
      * @param plantY Les coordonnées y de la parcelle où planter.
-     * @param plantType Le type de plante à planter (ex: chou, carotte, etc.).
+     * @param plantType Le type de plante a planter (ex: chou, carotte, etc.).
      */
     public PlantAction(int execX, int execY, int plantX, int plantY, PlantType plantType) {
         super(execX, execY);
@@ -34,12 +34,12 @@ public class PlantAction extends Action {
      * Elle vérifie que la tuile ciblée pour planter (plantX, plantY) est une PlantTile et qu'elle est encore libre (farmable).
      * Si c'est le cas, elle plante la graine de type plantType dans cette parcelle, ce qui crée un objet Plant dans la case.
      * Ensuite, elle déduit 1 unité de la graine utilisée depuis l'inventaire du jardinier.
-     * Si la parcelle n'est pas plantable ou si elle est déjà occupée au moment de l'exécution, un message d'erreur est affiché dans la console.
+     * Si la parcelle n'est pas plantable ou si elle est déja occupée au moment de l'exécution, un message d'erreur est affiché dans la console.
      */
     @Override
     public void perform(Gardener gardener, World world) {
         if (world.hasBuildingAt(plantX, plantY)) {
-            System.out.println("Erreur : Impossible de planter, un bâtiment occupe la case ciblée.");
+            System.out.println("Erreur : Impossible de planter, un batiment occupe la case ciblée.");
             return;
         }
 
@@ -61,7 +61,7 @@ public class PlantAction extends Action {
                 boolean success = parcel.plant(plantType);
 
                 if (success) {
-                    System.out.println("Succès : Le jardinier a planté " + plantType.getName() + " !");
+                    System.out.println("Succes : Le jardinier a planté " + plantType.getName() + " !");
                     // On ne progresse que si la plantation a réellement fonctionné.
                     world.registerPlantEvent(plantType);
 
@@ -82,7 +82,7 @@ public class PlantAction extends Action {
 
                 }
             } else {
-                System.out.println("Trop tard ! La case est déjà occupée.");
+                System.out.println("Trop tard ! La case est déja occupée.");
             }
         } else {
             System.out.println("Erreur : Ce n'est pas une case plantable.");

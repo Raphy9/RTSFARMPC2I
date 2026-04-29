@@ -21,7 +21,7 @@ public class FenceSide extends Building {
     private static void loadSprites() {
         if (loaded) return;
 
-        // Image de base pour la barrière de côté
+        // Image de base pour la barriere de coté
         baseSprite = SpriteUtils.processFenceImage("src/assets/Obstacles/fence_side.png");
 
         // On charge les 4 angles
@@ -46,13 +46,13 @@ public class FenceSide extends Building {
         boolean hasE = isFence(world.getBuildingAt(x + 1, y));
         boolean hasW = isFence(world.getBuildingAt(x - 1, y));
 
-        // Détection d'angle droit (même logique que pour la face)
+        // Détection d'angle droit (meme logique que pour la face)
         if (hasW && hasS && !hasN && !hasE) return cornerTR;
         if (hasN && hasW && !hasS && !hasE) return cornerBR;
         if (hasN && hasE && !hasS && !hasW) return cornerBL;
         if (hasS && hasE && !hasN && !hasW) return cornerTL;
 
-        // Sinon, on reste sur l'image de Côté
+        // Sinon, on reste sur l'image de Coté
         return baseSprite;
     }
 

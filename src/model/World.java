@@ -12,8 +12,8 @@ import javax.swing.Timer;
 import java.awt.Point;
 import java.util.List;
 
-/** * La classe World représente le monde du jeu, contenant les cases (tiles), le jardinier, la grange, etc.
- * Elle gère l'initialisation du monde, le chargement des sprites, et la logique de mise à jour (tick).
+/** * La classe World represente le monde du jeu, contenant les cases (tiles), le jardinier, la grange, etc.
+ * Elle gere l'initialisation du monde, le chargement des sprites, et la logique de mise a jour (tick).
  */
 public class World {
     // Dimensions du monde (en nombre de cases)
@@ -30,11 +30,11 @@ public class World {
 
 
     private Stats stats;
-    // Gestionnaire global des quêtes du joueur (chapitres + progression).
+    // Gestionnaire global des quetes du joueur (chapitres + progression).
     private src.model.Quests quests;
     private java.util.function.IntConsumer levelUpCallback;
 
-    // Réservations de labour en attente (actions planifiées mais pas encore exécutées).
+    // Reservations de labour en attente (actions planifiees mais pas encore executees).
     private int reservedPlowTiles = 0;
 
     // --- ENNEMIS ---
@@ -46,10 +46,10 @@ public class World {
     // Liste des sprites d'obstacles (ex: cailloux, arbres) à ajouter plus tard pour diversifier le terrain
     private List<ImageIcon> obstacleSprites = new ArrayList<>();
 
-    // Liste des bâtiments (grange, futur silo, etc.) présents dans le monde
+    // Liste des batiments (grange, futur silo, etc.) presents dans le monde
     private List<Building> buildings = new ArrayList<>();
 
-    /** Constructeur du monde : charge les sprites, initialise les cases, crée le jardinier et la grange, et lance le thread du jardinier et l'horloge de tick.
+    /** Constructeur du monde : charge les sprites, initialise les cases, cree le jardinier et la grange, et lance le thread du jardinier et l'horloge de tick.
      */
     public World() {
         loadTerrainSprites();
@@ -60,7 +60,7 @@ public class World {
         // Jardiniers - Commencer avec un seul jardinier
         this.testGardener = new Gardener(WIDTH/2, HEIGHT/2, this);
         this.gardeners.add(testGardener);
-        // Les autres jardiniers seront débloqués aux niveaux 3 et 7
+        // Les autres jardiniers seront debloques aux niveaux 3 et 7
 
         for (Gardener gardener : gardeners) {
             Thread t = new Thread(gardener);
@@ -77,12 +77,12 @@ public class World {
         this.crowSpawner = new CrowSpawner(this);
         this.crowSpawner.start();
 
-        // Initialisation de la grange et remplissage de départ pour les tests
+        // Initialisation de la grange et remplissage de depart pour les tests
         barn = new Barn(stats);
         fstSetBarn();
 
 
-        // Création d'une horloge qui appelle la méthode tick() toutes les secondes (1000 ms)
+        // Creation d'une horloge qui appelle la méthode tick() toutes les secondes (1000 ms)
         Timer gameTimer = new Timer(1000, e -> this.tick());
         gameTimer.start();
     }
@@ -103,7 +103,7 @@ public class World {
     }
 
     /** Charge les sprites d'obstacles depuis le dossier src/assets/Obstacles et les stocke dans la liste obstacleSprites.
-     * Ces sprites pourront être utilisés pour ajouter de la variété au terrain avec des obstacles décoratifs (non franchissables).
+     * Ces sprites pourront etre utilisés pour ajouter de la variété au terrain avec des obstacles décoratifs (non franchissables).
      */
     private void loadObstacleSprites() {
         String[] names = {
@@ -122,7 +122,7 @@ public class World {
      * Initialise les statistiques du monde
      */
     private void initalizeStats() {
-        stats = new Stats(0); // Commence avec 0 pièces d'argent
+        stats = new Stats(0); // Commence avec 0 pieces d'argent
         quests = new src.model.Quests();
         stats.setLevelUpCallback(this::onLevelUp);
     }
@@ -132,19 +132,19 @@ public class World {
 
         // Débloquer de nouveaux jardiniers aux niveaux 3 et 7
         if (newLevel == 3 && gardeners.size() == 1) {
-            // Débloquer le deuxième jardinier au niveau 3
+            // Débloquer le deuxieme jardinier au niveau 3
             Gardener secondGardener = new Gardener(WIDTH/2+1, HEIGHT/2, this);
             gardeners.add(secondGardener);
             Thread t = new Thread(secondGardener);
             t.start();
-            System.out.println("Deuxième jardinier débloqué au niveau 3 !");
+            System.out.println("Deuxieme jardinier débloqué au niveau 3 !");
         } else if (newLevel == 7 && gardeners.size() == 2) {
-            // Débloquer le troisième jardinier au niveau 7
+            // Débloquer le troisieme jardinier au niveau 7
             Gardener thirdGardener = new Gardener(WIDTH/2-1, HEIGHT/2, this);
             gardeners.add(thirdGardener);
             Thread t = new Thread(thirdGardener);
             t.start();
-            System.out.println("Troisième jardinier débloqué au niveau 7 !");
+            System.out.println("Troisieme jardinier débloqué au niveau 7 !");
         }
 
         if (levelUpCallback != null) {
@@ -194,7 +194,7 @@ public class World {
                     base.setPlowable(false);
                     tiles[y][x] = base;
 
-                    // Créer un Obstacle (Building) et l'ajouter à la liste des bâtiments
+                    // Créer un Obstacle (Building) et l'ajouter à la liste des batiments
                     Obstacle obs = new Obstacle(obsSprite);
                     obs.setPosition(x, y);
                     buildings.add(obs);
@@ -235,8 +235,8 @@ public class World {
 
     /**
      * Retourne le prochain jardinier disponible en round-robin :
-     * - d'abord un jardinier complètement libre (WAITING + 0 actions en attente),
-     * en commençant APRÈS le dernier assigné pour répartir équitablement la charge,
+     * - d'abord un jardinier completement libre (WAITING + 0 actions en attente),
+     * en commençant APRES le dernier assigné pour répartir équitablement la charge,
      * - sinon celui qui a le moins d'actions en attente (toujours en round-robin si égalité).
      * Fonctionne pour n jardiniers.
      */
@@ -244,7 +244,7 @@ public class World {
         if (gardeners == null || gardeners.isEmpty()) return null;
         int n = gardeners.size();
 
-        // 1. Chercher un jardinier complètement libre en round-robin
+        // 1. Chercher un jardinier completement libre en round-robin
         for (int i = 1; i <= n; i++) {
             int idx = (lastAssignedIndex + i) % n;
             Gardener g = gardeners.get(idx);
@@ -254,7 +254,7 @@ public class World {
             }
         }
 
-        // 2. Aucun complètement libre : prendre le moins chargé (round-robin si égalité)
+        // 2. Aucun completement libre : prendre le moins chargé (round-robin si égalité)
         Gardener best = null;
         int bestPending = Integer.MAX_VALUE;
         int bestIdx = -1;
@@ -283,7 +283,7 @@ public class World {
     public int getBarnX() {
         for (Building b : buildings) {
             if (b instanceof BarnBuilding) {
-                // Point d'accès: colonne centrale de la grange
+                // Point d'acces: colonne centrale de la grange
                 return b.getX() + (b.getWidth() / 2);
             }
         }
@@ -293,7 +293,7 @@ public class World {
     public int getBarnY() {
         for (Building b : buildings) {
             if (b instanceof BarnBuilding) {
-                // Point d'accès: ligne basse de la grange
+                // Point d'acces: ligne basse de la grange
                 return b.getY() + (b.getHeight() - 1);
             }
         }
@@ -421,7 +421,7 @@ public class World {
 
     /**
      * Trouve la meilleure tuile adjacente orthogonale (haut, bas, gauche, droite) à la case cible (tx,ty)
-     * qui est marchable (isWalkable). Ne considère pas la case cible elle-même.
+     * qui est marchable (isWalkable). Ne considere pas la case cible elle-meme.
      * Retourne la tuile adjacente la plus proche de l'entité (distance Manhattan minimale) ou null.
      */
     public Point findClosestWalkableAdjacent(int tx, int ty, Entity entity) {
@@ -463,29 +463,29 @@ public class World {
     }
 
     /**
-     * Arrête tous les threads actifs du monde.
+     * Arrete tous les threads actifs du monde.
      * À appeler lors de la fermeture du jeu ou du retour au menu principal.
      */
     public void stopWorld() {
-        System.out.println("Arrêt du monde : fermeture des Threads...");
+        System.out.println("Arret du monde : fermeture des Threads...");
 
-        // Arrêter les spawners
+        // Arreter les spawners
         if (this.chickenSpawner != null) this.chickenSpawner.stop();
         if (this.crowSpawner != null) this.crowSpawner.stop();
 
-        // Arrêter le jardinier
+        // Arreter le jardinier
         for (Gardener gardener : gardeners) {
             gardener.stopGardener();
         }
 
-        // Arrêter tous les ennemis (poules)
+        // Arreter tous les ennemis (poules)
         if (this.enemies != null) {
             for (Chicken enemy : enemies) {
                 enemy.stop();
             }
         }
 
-        // Arrêter tous les corbeaux (NOUVEAU)
+        // Arreter tous les corbeaux (NOUVEAU)
         if (this.crows != null) {
             for (Crow crow : crows) {
                 crow.stop();
@@ -508,7 +508,7 @@ public class World {
                     ArrayList<PlantTile> parcelTiles = new ArrayList<>();
                     floodFillParcel(x, y, visited, parcelTiles);
 
-                    // On crée la parcelle (le constructeur de Parcel lie automatiquement les cases à lui-même)
+                    // On crée la parcelle (le constructeur de Parcel lie automatiquement les cases à lui-meme)
                     new Parcel(parcelTiles);
                 }
             }
@@ -547,7 +547,7 @@ public class World {
         }
     }
 
-    // Ajoute un bâtiment au monde
+    // Ajoute un batiment au monde
     public void addBuilding(Building b) {
         buildings.add(b);
     }
@@ -573,13 +573,13 @@ public class World {
         }
     }
 
-    // Récupère la liste des bâtiments (utile pour l'affichage)
+    // Récupere la liste des batiments (utile pour l'affichage)
     public List<Building> getBuildings() {
         return buildings;
     }
 
     public void removeBuilding(Building b) {
-        this.buildings.remove(b); // Doit être la même liste que celle utilisée par getBuildings()
+        this.buildings.remove(b); // Doit etre la meme liste que celle utilisée par getBuildings()
 
         // IMPORTANT : Remettre les cases en mode "marchable"
         for (int x = b.getX(); x < b.getX() + b.getWidth(); x++) {
@@ -595,11 +595,11 @@ public class World {
     }
 
     /**
-     * Vérifie si un bâtiment recouvre la case (x, y)
+     * Vérifie si un batiment recouvre la case (x, y)
      */
     public boolean hasBuildingAt(int x, int y) {
         for (src.model.buildings.Building b : buildings) {
-            // Si la case testée est à l'intérieur de l'empreinte du bâtiment
+            // Si la case testée est à l'intérieur de l'empreinte du batiment
             if (x >= b.getX() && x < b.getX() + b.getWidth() &&
                     y >= b.getY() && y < b.getY() + b.getHeight()) {
                 return true;
@@ -622,19 +622,19 @@ public class World {
         return stats;
     }
 
-    /** Retourne le moteur de quêtes du monde pour l'UI et la sauvegarde. */
+    /** Retourne le moteur de quetes du monde pour l'UI et la sauvegarde. */
     public src.model.Quests getQuests() {
         return quests;
     }
 
-    /** Permet à la vue de se rafraîchir quand la progression des quêtes change. */
+    /** Permet à la vue de se rafraîchir quand la progression des quetes change. */
     public void setQuestChangeCallback(Runnable callback) {
         if (quests != null) {
             quests.setChangeListener(callback);
         }
     }
 
-    /** Notifie le système de quêtes qu'une plantation vient de réussir. */
+    /** Notifie le systeme de quetes qu'une plantation vient de réussir. */
     public void registerPlantEvent(PlantType plantType) {
         if (quests != null) {
             syncLevelMilestones();
@@ -642,7 +642,7 @@ public class World {
         }
     }
 
-    /** Notifie le système de quêtes qu'une récolte vient de réussir. */
+    /** Notifie le systeme de quetes qu'une récolte vient de réussir. */
     public void registerHarvestEvent(PlantType plantType) {
         if (quests != null) {
             syncLevelMilestones();
@@ -650,7 +650,7 @@ public class World {
         }
     }
 
-    /** Notifie le système de quêtes qu'un bâtiment vient d'être posé. */
+    /** Notifie le systeme de quetes qu'un batiment vient d'etre posé. */
     public void registerBuildEvent(Building building) {
         if (quests != null) {
             syncLevelMilestones();
@@ -703,7 +703,7 @@ public class World {
         reservedPlowTiles += amount;
     }
 
-    /** Libère des réservations de labour (ex: annulation ou fin d'action). */
+    /** Libere des réservations de labour (ex: annulation ou fin d'action). */
     public synchronized void releasePlowTiles(int amount) {
         if (amount <= 0) {
             return;

@@ -11,10 +11,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Panneau latéral des quêtes.
- * - en haut : chapitres miniatures centrés avec marges propres
- * - au centre : le chapitre sélectionné affiché plus grand
- * - les chapitres futurs restent verrouillés
+ * Panneau lateral des quetes.
+ * - en haut : chapitres miniatures centres avec marges propres
+ * - au centre : le chapitre selectionne affiche plus grand
+ * - les chapitres futurs restent verrouilles
  */
 public class QuestSidePanel extends JPanel {
     private static final int CHAPTER_SLOTS = 4;
@@ -40,7 +40,7 @@ public class QuestSidePanel extends JPanel {
         topBar.setOpaque(false);
         topBar.setBorder(new EmptyBorder(15, 15, 5, 15));
 
-        JLabel title = new JLabel("Quêtes", SwingConstants.CENTER);
+        JLabel title = new JLabel("Quetes", SwingConstants.CENTER);
         title.setFont(GameFonts.MINECRAFT_FONT != null
                 ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 22f)
                 : new Font("Arial", Font.BOLD, 22));
@@ -90,14 +90,14 @@ public class QuestSidePanel extends JPanel {
     }
 
     /**
-     * Reconstruit toute la liste à partir de l'état courant du moteur de quêtes.
+     * Reconstruit toute la liste a partir de l'etat courant du moteur de quetes.
      */
     public void refresh() {
         contentPanel.removeAll();
         chapterButtons.clear();
 
         if (quests == null || quests.getQuestLines().isEmpty()) {
-            contentPanel.add(createInfoCard("Aucune quête disponible", "Le système de quêtes n'a pas été initialisé."), BorderLayout.CENTER);
+            contentPanel.add(createInfoCard("Aucune quete disponible", "Le systeme de quetes n'a pas ete initialise."), BorderLayout.CENTER);
         } else {
             int activeIndex = quests.getActiveQuestLineIndex();
             selectedChapterIndex = clampIndex(selectedChapterIndex);
@@ -157,7 +157,7 @@ public class QuestSidePanel extends JPanel {
             if (chapter.locked) {
                 JPanel card = new JPanel(new GridLayout(QUEST_SLOTS, 1, 0, 8));
                 card.setOpaque(false);
-                card.add(createInfoCard("Chapitre verrouillé", "Ce chapitre n'est pas encore accessible."));
+                card.add(createInfoCard("Chapitre verrouille", "Ce chapitre n'est pas encore accessible."));
                 for (int i = 1; i < QUEST_SLOTS; i++) {
                     card.add(createInvisibleSlot());
                 }
@@ -251,8 +251,8 @@ public class QuestSidePanel extends JPanel {
 
     private String buildChapterButtonHtml(Quests.QuestLine line, boolean selected) {
         String status = line.isCompleted()
-                ? "Terminé"
-                : (line.isUnlocked() ? "En cours" : "Verrouillé");
+                ? "Termine"
+                : (line.isUnlocked() ? "En cours" : "Verrouille");
 
         if (selected) {
             return "<html><center><b>" + line.getTitle() + "</b><br><span style='font-size:10px;'>" + status + "</span></center></html>";
@@ -263,7 +263,7 @@ public class QuestSidePanel extends JPanel {
     private JComponent createSelectedChapterCard(int selectedIndex, int activeIndex) {
         List<Quests.QuestLine> lines = quests.getQuestLines();
         if (lines.isEmpty()) {
-            return createInfoCard("Aucune quête disponible", "Le système de quêtes n'a pas été initialisé.");
+            return createInfoCard("Aucune quete disponible", "Le systeme de quetes n'a pas ete initialise.");
         }
 
         int safeIndex = clampIndex(selectedIndex);
@@ -272,7 +272,7 @@ public class QuestSidePanel extends JPanel {
         if (!line.isUnlocked()) {
             JPanel card = new JPanel(new GridLayout(QUEST_SLOTS, 1, 0, 8));
             card.setOpaque(false);
-            card.add(createInfoCard("Chapitre verrouillé", "Ce chapitre n'est pas encore accessible."));
+            card.add(createInfoCard("Chapitre verrouille", "Ce chapitre n'est pas encore accessible."));
             for (int i = 1; i < QUEST_SLOTS; i++) {
                 card.add(createInvisibleSlot());
             }
@@ -315,16 +315,16 @@ public class QuestSidePanel extends JPanel {
 
     private String buildLineState(Quests.QuestLine line, int selectedIndex, int activeIndex) {
         if (!line.isUnlocked()) {
-            return "Chapitre bloqué";
+            return "Chapitre bloque";
         }
         if (selectedIndex == activeIndex) {
             return line.isCompleted()
-                    ? "Chapitre actuel terminé"
+                    ? "Chapitre actuel termine"
                     : "Chapitre en cours";
         }
         return line.isCompleted()
-                ? "Chapitre précédent terminé"
-                : "Chapitre précédent accessible";
+                ? "Chapitre precedent termine"
+                : "Chapitre precedent accessible";
     }
 
     private JComponent createQuestCard(Quest quest) {
@@ -349,7 +349,7 @@ public class QuestSidePanel extends JPanel {
                 + quest.getDescription()
                 + " <span style='color:rgb(80,40,10);'>[" + quest.getProgress() + "/" + quest.getGoal() + "]</span>"
                 + "<br><b>Gain:</b> " + quest.getRewardMoney() + " PO, " + quest.getRewardExp() + " XP"
-                + (quest.isCompleted() ? " <i>(Terminée)</i>" : "")
+                + (quest.isCompleted() ? " <i>(Terminee)</i>" : "")
                 + "</body></html>";
         JLabel desc = new JLabel(details);
         desc.setForeground(new Color(75, 35, 10));
@@ -455,7 +455,7 @@ public class QuestSidePanel extends JPanel {
                 + state.description
                 + " <span style='color:rgb(80,40,10);'>[" + state.progress + "/" + state.goal + "]</span>"
                 + "<br><b>Gain:</b> " + state.rewardMoney + " PO, " + state.rewardExp + " XP"
-                + (state.completed ? " <i>(Terminée)</i>" : "")
+                + (state.completed ? " <i>(Terminee)</i>" : "")
                 + "</body></html>";
         JLabel desc = new JLabel(details);
         desc.setForeground(new Color(75, 35, 10));

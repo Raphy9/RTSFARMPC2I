@@ -8,7 +8,7 @@ import java.util.ArrayList; // N'oublie pas l'import !
 
 /**
  * Action de stockage : le jardinier se déplace sur la tuile d'exécution (targetX,targetY) et dépose tous les items de son inventaire dans la grange.
- * Cette action est généralement utilisée pour vider l'inventaire du jardinier après une récolte.
+ * Cette action est généralement utilisée pour vider l'inventaire du jardinier apres une récolte.
  */
 public class StoreAction extends Action {
 
@@ -29,16 +29,16 @@ public class StoreAction extends Action {
         System.out.println("Déposer les items dans la grange...");
 
         // FIX : On crée une COPIE de la liste des items
-        // On itère sur la copie pendant que transferTo() modifie l'original
+        // On itere sur la copie pendant que transferTo() modifie l'original
         ArrayList<Item> itemsToStore = new ArrayList<>(gardener.getInventory().getItems());
 
         for (Item item : itemsToStore) {
             if (item != null) {
-                // On transfère toute la quantité de cet item
+                // On transfere toute la quantité de cet item
                 gardener.getInventory().transferTo(barn, item, item.getQuantity());
             }
         }
 
-        System.out.println("Inventaire du jardinier vidé avec succès.");
+        System.out.println("Inventaire du jardinier vidé avec succes.");
     }
 }

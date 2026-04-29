@@ -5,14 +5,14 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
- * Utilitaire de dialogues modaux stylisés Stardew Valley.
- * Remplace JOptionPane pour rester cohérent avec le reste de l'UI.
+ * Utilitaire de dialogues modaux stylises Stardew Valley.
+ * Remplace JOptionPane pour rester coherent avec le reste de l'UI.
  */
 public class GameDialog {
 
     /**
      * Affiche une boîte de confirmation "Oui / Non" bloquante.
-     * @return true si l'utilisateur a cliqué "Oui", false sinon.
+     * @return true si l'utilisateur a clique "Oui", false sinon.
      */
     public static boolean showConfirm(Component parent, String title, String message) {
         boolean[] result = {false};
@@ -36,12 +36,12 @@ public class GameDialog {
         dialog.pack();
         dialog.setMinimumSize(new Dimension(380, dialog.getPreferredSize().height));
         dialog.setLocationRelativeTo(parent);
-        dialog.setVisible(true); // bloquant jusqu'à fermeture
+        dialog.setVisible(true); // bloquant jusqu'a fermeture
         return result[0];
     }
 
     /**
-     * Affiche un message d'information stylisé avec un bouton "OK".
+     * Affiche un message d'information stylise avec un bouton "OK".
      */
     public static void showMessage(Component parent, String title, String message) {
         JDialog dialog = buildDialog(parent, title);
@@ -61,7 +61,7 @@ public class GameDialog {
     }
 
     /**
-     * Affiche une boîte de saisie stylisée et retourne le texte saisi, ou null si annulé.
+     * Affiche une boîte de saisie stylisee et retourne le texte saisi, ou null si annule.
      */
     public static String showInput(Component parent, String title, String message, String defaultValue) {
         final String[] result = {null};
@@ -90,7 +90,7 @@ public class GameDialog {
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 14, 10));
         buttons.setOpaque(false);
 
-        JButton ok = buildButton("Créer", new Color(80, 140, 70), new Color(50, 100, 45));
+        JButton ok = buildButton("Creer", new Color(80, 140, 70), new Color(50, 100, 45));
         ok.addActionListener(e -> {
             String value = input.getText();
             if (value != null) {
@@ -110,7 +110,7 @@ public class GameDialog {
         buttons.add(cancel);
         dialog.add(buttons, BorderLayout.SOUTH);
 
-        // Valider rapidement avec Entrée.
+        // Valider rapidement avec Entree.
         dialog.getRootPane().setDefaultButton(ok);
 
         dialog.pack();
@@ -121,9 +121,9 @@ public class GameDialog {
         return result[0];
     }
 
-    // ── Helpers privés ────────────────────────────────────────────────────────
+    // ── Helpers prives ────────────────────────────────────────────────────────
 
-    /** Crée le JDialog modal sans décoration avec le fond style SDV. */
+    /** Cree le JDialog modal sans decoration avec le fond style SDV. */
     private static JDialog buildDialog(Component parent, String title) {
         Window w = SwingUtilities.getWindowAncestor(parent);
         JDialog dialog = new JDialog(w instanceof Frame ? (Frame) w : null, true);
@@ -162,7 +162,7 @@ public class GameDialog {
         return dialog;
     }
 
-    /** Crée le label de message HTML centré. */
+    /** Cree le label de message HTML centre. */
     private static JPanel buildMessage(String message) {
         Font textFont = GameFonts.MINECRAFT_FONT != null
                 ? GameFonts.MINECRAFT_FONT.deriveFont(13f)
@@ -180,7 +180,7 @@ public class GameDialog {
         return p;
     }
 
-    /** Crée un bouton stylisé SDV avec changement de couleur au survol. */
+    /** Cree un bouton stylise SDV avec changement de couleur au survol. */
     private static JButton buildButton(String text, Color normal, Color hover) {
         Font btnFont = GameFonts.MINECRAFT_FONT != null
                 ? GameFonts.MINECRAFT_FONT.deriveFont(Font.BOLD, 13f)

@@ -6,23 +6,23 @@ import src.model.ItemSeed;
 import src.model.Item;
 
 /** * Action pour récupérer des graine spécifiques depuis la grange.
- * Cette action est planifiée après que le jardinier se soit déplacé à la tuile
- * adjacente de la grange, et elle suppose que le jardinier est déjà sur place au moment de l'exécution.
+ * Cette action est planifiée apres que le jardinier se soit déplacé a la tuile
+ * adjacente de la grange, et elle suppose que le jardinier est déja sur place au moment de l'exécution.
  * La perform() va chercher dans la grange une pile d'ItemSeed correspondant au type
  * de graine demandé (seedPrototype), et transférer la quantite demandee de cette graine dans l'inventaire du jardinier.
  * Si la grange ne contient pas suffisement de graine de ce type, ou si le transfert échoue, un message d'erreur est affiché dans la console.
- * Note : cette action ne gère pas le déplacement vers la grange, elle doit être utilisée en combinaison avec un MoveAction qui
- * amène le jardinier à la bonne position avant d'exécuter cette action.
+ * Note : cette action ne gere pas le déplacement vers la grange, elle doit etre utilisée en combinaison avec un MoveAction qui
+ * amene le jardinier a la bonne position avant d'exécuter cette action.
  */
 public class FetchSeedAction extends Action {
 
-    private ItemSeed seedPrototype; // type de graine à récupérer
+    private ItemSeed seedPrototype; // type de graine a récupérer
 
     /**
      * Constructeur de FetchSeedAction.
-     * @param targetX Les coordonnées x de la tuile où le jardinier doit être pour exécuter cette action (généralement une tuile adjacente à la grange).
-     * @param targetY Les coordonnées y de la tuile où le jardinier doit être pour exécuter cette action.
-     * @param seedPrototype Un objet ItemSeed qui sert de prototype pour identifier le type de graine à récupérer et la quantite
+     * @param targetX Les coordonnées x de la tuile où le jardinier doit etre pour exécuter cette action (généralement une tuile adjacente a la grange).
+     * @param targetY Les coordonnées y de la tuile où le jardinier doit etre pour exécuter cette action.
+     * @param seedPrototype Un objet ItemSeed qui sert de prototype pour identifier le type de graine a récupérer et la quantite
      */
     public FetchSeedAction(int targetX, int targetY, ItemSeed seedPrototype) {
         super(targetX, targetY);
@@ -34,7 +34,7 @@ public class FetchSeedAction extends Action {
      * Elle va chercher dans la grange une pile d'ItemSeed correspondant au type de graine demandé,
      * et transférer le meme nombre d'unités de cette graine que dans le prototype demande dans l'inventaire du jardinier.
      * @param gardener Le jardinier qui exécute cette action.
-     * @param world Le monde dans lequel le jardinier évolue, utilisé pour accéder à la grange.
+     * @param world Le monde dans lequel le jardinier évolue, utilisé pour accéder a la grange.
      */
     @Override
     public void perform(Gardener gardener, World world) {

@@ -36,7 +36,7 @@ public class BarnController implements ActionListener {
         int currentMoney = barn.getMoney();
 
         if (isBuyAction) {
-            // On vérifie d'abord si le joueur a assez d'argent
+            // On verifie d'abord si le joueur a assez d'argent
             int unitPrice = barn.buyItem(item, 0);
             if (currentMoney >= unitPrice * qty) {
                 barn.buyItem(item, qty);
@@ -45,10 +45,10 @@ public class BarnController implements ActionListener {
                 }
             } else {
                 GameDialog.showMessage(popupBarn, "Achat impossible",
-                        "Vous n'avez pas assez d'argent !\nCoût : " + (unitPrice * qty) + " PO\nPortefeuille : " + currentMoney + " PO");
+                        "Vous n'avez pas assez d'argent !\nCout : " + (unitPrice * qty) + " PO\nPortefeuille : " + currentMoney + " PO");
             }
         } else {
-            // On vérifie d'abord si le joueur a assez de stock
+            // On verifie d'abord si le joueur a assez de stock
             if (item.getQuantity() >= qty) {
                 barn.sellItem(item, qty);
                 if (item instanceof ItemPlant) {
@@ -61,14 +61,14 @@ public class BarnController implements ActionListener {
                 }
             } else {
                 GameDialog.showMessage(popupBarn, "Vente impossible",
-                        "Vous n'avez pas assez de cet objet en stock !\nEn stock : " + item.getQuantity() + "\nQuantité demandée : " + qty);
+                        "Vous n'avez pas assez de cet objet en stock !\nEn stock : " + item.getQuantity() + "\nQuantite demandee : " + qty);
             }
         }
 
-        // Après validation, on remet le champ à "1" par défaut (plus agréable pour le joueur)
+        // Apres validation, on remet le champ à "1" par defaut (plus agreable pour le joueur)
         quantityInput.setText("1");
 
-        // Recharger la grille pour refléter les quantités et l'argent mis à jour
+        // Recharger la grille pour refleter les quantites et l'argent mis à jour
         popupBarn.refresh();
     }
 
@@ -80,7 +80,7 @@ public class BarnController implements ActionListener {
 
         try {
             int parsed = Integer.parseInt(raw.trim());
-            return Math.max(parsed, 1); // Force à au moins 1 (empêche de rentrer 0 ou un nombre négatif)
+            return Math.max(parsed, 1); // Force à au moins 1 (empeche de rentrer 0 ou un nombre negatif)
         } catch (NumberFormatException ex) {
             return 1;
         }

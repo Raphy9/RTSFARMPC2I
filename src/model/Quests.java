@@ -20,7 +20,7 @@ public class Quests {
     public static final String ACTION_CLICK_CROW = "CLICK_CROW";
 
     /**
-     * Une ligne de quêtes représente un chapitre : elle contient plusieurs quêtes et se débloque en bloc.
+     * Une ligne de quetes represente un chapitre : elle contient plusieurs quetes et se debloque en bloc.
      */
     public static class QuestLine {
         private final String title;
@@ -162,7 +162,7 @@ public class Quests {
         return java.util.Collections.unmodifiableList(questLines);
     }
 
-    /** Permet à l'interface de se rafraîchir dès qu'une quête évolue. */
+    /** Permet a l'interface de se rafraîchir des qu'une quete evolue. */
     public void setChangeListener(Runnable changeListener) {
         this.changeListener = changeListener;
     }
@@ -203,8 +203,8 @@ public class Quests {
     }
 
     /**
-     * Fait avancer la première quête compatible du chapitre courant.
-     * Quand toutes les quêtes d'une ligne sont finies, le chapitre suivant se débloque.
+     * Fait avancer la premiere quete compatible du chapitre courant.
+     * Quand toutes les quetes d'une ligne sont finies, le chapitre suivant se debloque.
      */
     private void handleEvent(Quest.Type type, PlantType plantType, src.model.buildings.Building building, Stats stats) {
         handleEvent(type, plantType, building, null, stats, 1);
@@ -253,8 +253,8 @@ public class Quests {
     }
 
     /**
-     * Retourne un instantané simple des progrès pour la sauvegarde.
-     * La structure est : ligne de quêtes -> liste des progressions de chaque quête.
+     * Retourne un instantane simple des progres pour la sauvegarde.
+     * La structure est : ligne de quetes -> liste des progressions de chaque quete.
      */
     public java.util.List<java.util.List<Integer>> getProgressSnapshot() {
         java.util.List<java.util.List<Integer>> snapshot = new java.util.ArrayList<>();
@@ -269,7 +269,7 @@ public class Quests {
     }
 
     /**
-     * Restaure les progrès et le chapitre actif depuis une sauvegarde.
+     * Restaure les progres et le chapitre actif depuis une sauvegarde.
      */
     public void restoreProgress(java.util.List<java.util.List<Integer>> progresses, int restoredActiveLineIndex) {
         for (int i = 0; i < questLines.size(); i++) {

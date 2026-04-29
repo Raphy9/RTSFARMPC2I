@@ -10,15 +10,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /** Controleur du bouton labourer dans le menu de choix d'action
- * Lance le mode de sélection d'une case à labourer
+ * Lance le mode de selection d'une case à labourer
  */
 public class PlowActionSelector implements ActionListener {
     private Display display;
     private PlowActionBuilder builder;
 
-    /** Le constructeur reçoit la display pour pouvoir lancer le mode de sélection et
-     * builder pour construire l'action une fois la case sélectionnée
-     * @param display la display pour lancer le mode de sélection
+    /** Le constructeur reçoit la display pour pouvoir lancer le mode de selection et
+     * builder pour construire l'action une fois la case selectionnee
+     * @param display la display pour lancer le mode de selection
      * @param world le monde pour construire le PlowActionBuilder
      * @param gardener le jardinier pour construire le PlowActionBuilder
      */
@@ -28,14 +28,14 @@ public class PlowActionSelector implements ActionListener {
         this.builder.setDisplay(display);
     }
 
-    /** Lorsque le bouton est cliqué, on lance le mode de sélection de la display avec un critère de labourage.
-     * La display doit alors permettre à l'utilisateur de cliquer sur une case valide pour labourer, et une fois la case sélectionnée,
+    /** Lorsque le bouton est clique, on lance le mode de selection de la display avec un critere de labourage.
+     * La display doit alors permettre à l'utilisateur de cliquer sur une case valide pour labourer, et une fois la case selectionnee,
      * elle doit appeler builder.buildAction() pour construire et ajouter l'action au jardinier.
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("Lancement du mode de sélection pour labourer");
-        // Le critère : La case doit être labourable (pas déjà labourée, pas d'obstacle, etc.)
+        System.out.println("Lancement du mode de selection pour labourer");
+        // Le critere : La case doit etre labourable (pas dejà labourée, pas d'obstacle, etc.)
         display.switchToSelection(Tile::isPlowable, builder.getSelectionMessage(), builder);
     }
 }
