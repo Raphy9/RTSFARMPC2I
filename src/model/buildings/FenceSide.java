@@ -22,19 +22,19 @@ public class FenceSide extends Building {
         if (loaded) return;
 
         // Image de base pour la barriere de coté
-        baseSprite = SpriteUtils.processFenceImage("src/assets/Obstacles/fence_side.png");
+        baseSprite = SpriteUtils.processFenceImage("src/assets/Obstacles/fence.png");
 
-        // On charge les 4 angles
-        cornerTR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_top_right.png");
-        cornerBR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_right.png");
-        cornerBL = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_left.png");
-        cornerTL = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_top_left.png");
+//        // On charge les 4 angles
+//        cornerTR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_top_right.png");
+//        cornerBR = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_right.png");
+//        cornerBL = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_bottom_left.png");
+//        cornerTL = SpriteUtils.processFenceImage("src/assets/Obstacles/corner_top_left.png");
 
         loaded = true;
     }
 
     private boolean isFence(Building b) {
-        return b instanceof FenceFace || b instanceof FenceSide;
+        return b instanceof FenceSide;
     }
 
     @Override

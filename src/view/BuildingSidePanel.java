@@ -41,7 +41,7 @@ public class BuildingSidePanel extends JPanel {
         categories.setOpaque(false);
 
         // Onglets — noms SANS accents, coherents avec getEntriesFor()
-        String[] cats = new String[]{"Batiment", "Decoration", "Nature", "Batis"};
+        String[] cats = new String[]{"Batiment", "Decoration", "Nature", "Divers"};
         for (String c : cats) {
             categories.add(createTabButton(c));
         }
@@ -325,16 +325,14 @@ public class BuildingSidePanel extends JPanel {
                 out.add(new Entry("Arbre 1", "src/assets/Buildings/tree1.png", "Un petit arbre decoratif qui apporte un peu de verdure \net d'ombre a votre terrain.",() -> new Tree1(), 10, 2,30));
                 out.add(new Entry("Arbre 2", "src/assets/Buildings/tree2.png", "Plusieurs petits arbres decoratifs qui apportent un peu \nde verdure et d'ombre a votre terrain.",() -> new Tree2(), 25, 3,15));
                 break;
-            case "Batis":
-                out.add(new Entry("Barriere (Face)", "src/assets/Obstacles/fence_face.png", "Des clotures modulables qui s'adaptent et forment des angles \nautomatiquement pour bloquer les entites terrestres.",() -> new FenceFace(), 10, 1));
-                out.add(new Entry("Barriere (Cote)", "src/assets/Obstacles/fence_side.png", "Des clotures modulables qui s'adaptent et forment des angles \nautomatiquement pour bloquer les entites terrestres.",() -> new FenceSide(), 10, 1));
+            case "Divers":
+                out.add(new Entry("Barriere", "src/assets/Obstacles/fence.png", "Des clotures modulables qui s'adaptent et forment des angles \nautomatiquement pour bloquer les entites terrestres.",() -> new    Fence(), 10, 1));
                 out.add(new Entry("Enseigne carrote",  "src/assets/Buildings/carrotsign.png", "Ideal pour organiser votre potager et ne plus \nconfondre vos plantations de carottes avec le reste.",  () -> new carrotsign(),   10, 2,3));
                 out.add(new Entry("Enseigne choux",  "src/assets/Buildings/chouxsign.png", "Une petite pancarte artisanale pour indiquer \nfierement ou poussent vos plus beaux specimens de choux.",  () -> new chouxsign(),   10, 2,3));
                 out.add(new Entry("Enseigne citrouille",  "src/assets/Buildings/pumpkinsign.png", "Une petite pancarte pour baliser \nvos plantations de citrouilles et preparer sereinement Halloween.",  () -> new pumpkinsign(),   10, 3,3));
                 out.add(new Entry("Grande enseigne",  "src/assets/Buildings/bigsign.png", "Un grand panneau imposant \npour marquer votre territoire.",  () -> new Bigsign(),   20, 3,3));
                 out.add(new Entry("Enseigne fraise",  "src/assets/Buildings/strawberrysign.png", "Pour ne jamais perdre de vue \nvos precieux plants de fraises.",  () -> new strawberrysign(),   10, 4,3));
-                out.add(new Entry("Porte (Face)",    "src/assets/Obstacles/fence_face.png", "Une version amelioree de la barriere qui permet a \nvos jardiniers de circuler librement dans vos enclos.", () -> new GateFace(),  15, 4));
-                out.add(new Entry("Porte (Cote)",    "src/assets/Obstacles/fence_side.png", "Une version amelioree de la barriere qui permet a \nvos jardiniers de circuler librement dans vos enclos.",() -> new GateSide(),  15, 4));
+                out.add(new Entry("Porte",    "src/assets/Obstacles/fence.png", "Une version amelioree de la barriere qui permet a \nvos jardiniers de circuler librement dans vos enclos.", () -> new GateFace(),  15, 4));
                 break;
         }
         return out;

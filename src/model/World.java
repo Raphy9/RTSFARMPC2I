@@ -1,10 +1,6 @@
 package src.model;
 
-import src.model.buildings.Building;
-import src.model.buildings.Obstacle;
-import src.model.buildings.BarnBuilding;
-import src.model.buildings.FenceFace;
-import src.model.buildings.FenceSide;
+import src.model.buildings.*;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -122,7 +118,7 @@ public class World {
      * Initialise les statistiques du monde
      */
     private void initalizeStats() {
-        stats = new Stats(0); // Commence avec 0 pieces d'argent
+        stats = new Stats(1000); // Commence avec 0 pieces d'argent
         quests = new src.model.Quests();
         stats.setLevelUpCallback(this::onLevelUp);
     }
@@ -591,6 +587,24 @@ public class World {
         return buildings;
     }
 
+    public void organizeFences() {
+        ArrayList<Building> fences = new ArrayList<>();
+        for (Building b : buildings) {
+            if (b instanceof Fence) {
+                fences.add(b);
+                buildings.remove(b); // On les retire de la liste principale pour les remettre dans l'ordre après
+            }
+        }
+        // Ordonne la liste fences selon la coordonnées x, dans l'ordre croissant peu importe la coordonnée y
+        fences.sort((b1, b2) -> Integer.compare(b1.getX(), b2.getX()));
+
+        // Remet les barrières organisées dans la liste principale
+        for (Building b : fences) {
+            buildings.add(b);
+            fences.remove(b);
+        }
+    }
+
     public void removeBuilding(Building b) {
         this.buildings.remove(b); // Doit etre la meme liste que celle utilisée par getBuildings()
 
@@ -668,7 +682,7 @@ public class World {
         if (quests != null) {
             syncLevelMilestones();
             quests.onBuild(building, stats);
-            if (building instanceof FenceFace || building instanceof FenceSide) {
+            if (building instanceof Fence) {
                 quests.onAction(src.model.Quests.ACTION_PLACE_FENCE, stats);
             }
         }
